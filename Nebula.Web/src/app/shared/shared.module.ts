@@ -1,7 +1,7 @@
 import { NgModule, ModuleWithProviders } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { NotFoundComponent } from './pages';
 import { HeaderNavComponent } from './components';
 import { UnauthenticatedComponent } from './pages/unauthenticated/unauthenticated.component';
@@ -30,65 +30,59 @@ import { ClearGridFiltersButtonComponent } from './components/clear-grid-filters
 import { EditorModule, TINYMCE_SCRIPT_SRC } from '@tinymce/tinymce-angular';
 import { TinyMceConfigPipe } from './pipes/tiny-mce-config.pipe';
 
-@NgModule({
-  declarations: [
-    AlertDisplayComponent,
-    HeaderNavComponent,
-    NotFoundComponent,
-    UnauthenticatedComponent,
-    SubscriptionInsufficientComponent,
-    WatershedMapComponent,
-    WatershedDetailPopupComponent,
-    LinkRendererComponent,
-    FontAwesomeIconLinkRendererComponent,
-    MultiLinkRendererComponent,
-    CustomRichTextComponent,
-    FieldDefinitionComponent,
-    FieldDefinitionGridHeaderComponent,
-    NgSelectCustomComponent,
-    SelectedDataCardComponent,
-    StationSelectCardComponent,
-    LinkToAnalysisComponent,
-    CustomDropdownFilterComponent,
-    CsvDownloadButtonComponent,
-    ClearGridFiltersButtonComponent,
-    TinyMceConfigPipe
-  ],
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    HttpClientModule,
-    RouterModule,
-    SelectDropDownModule,
-    EditorModule,
-    NgbModule,
-    NgSelectModule,
-    AutoCompleteModule
-  ],
-  exports: [
-    AlertDisplayComponent,
-    CommonModule,
-    FormsModule,
-    NotFoundComponent,
-    WatershedMapComponent,
-    HeaderNavComponent,
-    CustomRichTextComponent,
-    FieldDefinitionComponent,
-    FieldDefinitionGridHeaderComponent,
-    NgSelectCustomComponent,
-    SelectedDataCardComponent,
-    StationSelectCardComponent,
-    LinkToAnalysisComponent,
-    CsvDownloadButtonComponent,
-    ClearGridFiltersButtonComponent,
-    EditorModule,
-    TinyMceConfigPipe
-  ],
-  providers:[
-    { provide: TINYMCE_SCRIPT_SRC, useValue: 'assets/tinymce/tinymce.min.js' }
-  ]
-})
+@NgModule({ declarations: [
+        AlertDisplayComponent,
+        HeaderNavComponent,
+        NotFoundComponent,
+        UnauthenticatedComponent,
+        SubscriptionInsufficientComponent,
+        WatershedMapComponent,
+        WatershedDetailPopupComponent,
+        LinkRendererComponent,
+        FontAwesomeIconLinkRendererComponent,
+        MultiLinkRendererComponent,
+        CustomRichTextComponent,
+        FieldDefinitionComponent,
+        FieldDefinitionGridHeaderComponent,
+        NgSelectCustomComponent,
+        SelectedDataCardComponent,
+        StationSelectCardComponent,
+        LinkToAnalysisComponent,
+        CustomDropdownFilterComponent,
+        CsvDownloadButtonComponent,
+        ClearGridFiltersButtonComponent,
+        TinyMceConfigPipe
+    ],
+    exports: [
+        AlertDisplayComponent,
+        CommonModule,
+        FormsModule,
+        NotFoundComponent,
+        WatershedMapComponent,
+        HeaderNavComponent,
+        CustomRichTextComponent,
+        FieldDefinitionComponent,
+        FieldDefinitionGridHeaderComponent,
+        NgSelectCustomComponent,
+        SelectedDataCardComponent,
+        StationSelectCardComponent,
+        LinkToAnalysisComponent,
+        CsvDownloadButtonComponent,
+        ClearGridFiltersButtonComponent,
+        EditorModule,
+        TinyMceConfigPipe
+    ], imports: [CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        RouterModule,
+        SelectDropDownModule,
+        EditorModule,
+        NgbModule,
+        NgSelectModule,
+        AutoCompleteModule], providers: [
+        { provide: TINYMCE_SCRIPT_SRC, useValue: 'assets/tinymce/tinymce.min.js' },
+        provideHttpClient(withInterceptorsFromDi())
+    ] })
 export class SharedModule {
   static forRoot(): ModuleWithProviders<SharedModule> {
     return {
