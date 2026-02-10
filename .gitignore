@@ -24,3 +24,4 @@ Nebula.Web/.vscode
 /Nebula.GeoServer/data_dir/gwc/diskquota_page_store_hsql/diskquota.data
 /Nebula.GeoServer/data_dir/gwc/diskquota_page_store_hsql/diskquota.properties
 /Nebula.GeoServer/data_dir/gwc/diskquota_page_store_hsql/diskquota.script
+Nebula.Tests/environment.json
