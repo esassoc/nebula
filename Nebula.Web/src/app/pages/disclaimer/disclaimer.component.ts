@@ -5,9 +5,10 @@ import { UserDto, UserService } from 'src/app/shared/generated';
 import { CustomRichTextTypeEnum } from 'src/app/shared/generated/enum/custom-rich-text-type-enum';
 
 @Component({
-  selector: 'nebula-disclaimer',
-  templateUrl: './disclaimer.component.html',
-  styleUrls: ['./disclaimer.component.scss']
+    selector: 'nebula-disclaimer',
+    templateUrl: './disclaimer.component.html',
+    styleUrls: ['./disclaimer.component.scss'],
+    standalone: false
 })
 export class DisclaimerComponent implements OnInit {
 

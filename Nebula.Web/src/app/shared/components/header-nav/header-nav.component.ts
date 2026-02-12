@@ -8,9 +8,10 @@ import { RoleEnum } from '../../generated/enum/role-enum';
 import { CustomPageService, CustomPageWithRolesDto, UserDto, UserService } from '../../generated';
 
 @Component({
-  selector: 'header-nav',
-  templateUrl: './header-nav.component.html',
-  styleUrls: ['./header-nav.component.scss']
+    selector: 'header-nav',
+    templateUrl: './header-nav.component.html',
+    styleUrls: ['./header-nav.component.scss'],
+    standalone: false
 })
 
 export class HeaderNavComponent implements OnInit, OnDestroy {

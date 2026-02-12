@@ -8,9 +8,10 @@ import { FieldDefinitionDto, FieldDefinitionService, UserDto } from 'src/app/sha
 import { Observable } from 'rxjs';
 
 @Component({
-  selector: 'nebula-field-definition-edit',
-  templateUrl: './field-definition-edit.component.html',
-  styleUrls: ['./field-definition-edit.component.scss']
+    selector: 'nebula-field-definition-edit',
+    templateUrl: './field-definition-edit.component.html',
+    styleUrls: ['./field-definition-edit.component.scss'],
+    standalone: false
 })
 export class FieldDefinitionEditComponent implements OnInit {
   

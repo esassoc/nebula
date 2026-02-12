@@ -7,9 +7,10 @@ import { CustomRichTextDto, CustomRichTextService, UserDto } from '../../generat
 import { EditorComponent } from '@tinymce/tinymce-angular';
 
 @Component({
-  selector: 'custom-rich-text',
-  templateUrl: './custom-rich-text.component.html',
-  styleUrls: ['./custom-rich-text.component.scss']
+    selector: 'custom-rich-text',
+    templateUrl: './custom-rich-text.component.html',
+    styleUrls: ['./custom-rich-text.component.scss'],
+    standalone: false
 })
 export class CustomRichTextComponent implements OnInit {
   @ViewChild('tinyMceEditor') tinyMceEditor : EditorComponent;

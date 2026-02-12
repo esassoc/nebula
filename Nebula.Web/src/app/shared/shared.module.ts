@@ -30,59 +30,61 @@ import { ClearGridFiltersButtonComponent } from './components/clear-grid-filters
 import { EditorModule, TINYMCE_SCRIPT_SRC } from '@tinymce/tinymce-angular';
 import { TinyMceConfigPipe } from './pipes/tiny-mce-config.pipe';
 
-@NgModule({ declarations: [
-        AlertDisplayComponent,
-        HeaderNavComponent,
-        NotFoundComponent,
-        UnauthenticatedComponent,
-        SubscriptionInsufficientComponent,
-        WatershedMapComponent,
-        WatershedDetailPopupComponent,
-        LinkRendererComponent,
-        FontAwesomeIconLinkRendererComponent,
-        MultiLinkRendererComponent,
-        CustomRichTextComponent,
-        FieldDefinitionComponent,
-        FieldDefinitionGridHeaderComponent,
-        NgSelectCustomComponent,
-        SelectedDataCardComponent,
-        StationSelectCardComponent,
-        LinkToAnalysisComponent,
-        CustomDropdownFilterComponent,
-        CsvDownloadButtonComponent,
-        ClearGridFiltersButtonComponent,
-        TinyMceConfigPipe
-    ],
-    exports: [
-        AlertDisplayComponent,
-        CommonModule,
-        FormsModule,
-        NotFoundComponent,
-        WatershedMapComponent,
-        HeaderNavComponent,
-        CustomRichTextComponent,
-        FieldDefinitionComponent,
-        FieldDefinitionGridHeaderComponent,
-        NgSelectCustomComponent,
-        SelectedDataCardComponent,
-        StationSelectCardComponent,
-        LinkToAnalysisComponent,
-        CsvDownloadButtonComponent,
-        ClearGridFiltersButtonComponent,
-        EditorModule,
-        TinyMceConfigPipe
-    ], imports: [CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
-        RouterModule,
-        SelectDropDownModule,
-        EditorModule,
-        NgbModule,
-        NgSelectModule,
-        AutoCompleteModule], providers: [
-        { provide: TINYMCE_SCRIPT_SRC, useValue: 'assets/tinymce/tinymce.min.js' },
-        provideHttpClient(withInterceptorsFromDi())
-    ] })
+@NgModule({
+  declarations: [
+    AlertDisplayComponent,
+    HeaderNavComponent,
+    NotFoundComponent,
+    UnauthenticatedComponent,
+    SubscriptionInsufficientComponent,
+    WatershedMapComponent,
+    WatershedDetailPopupComponent,
+    LinkRendererComponent,
+    FontAwesomeIconLinkRendererComponent,
+    MultiLinkRendererComponent,
+    CustomRichTextComponent,
+    FieldDefinitionComponent,
+    FieldDefinitionGridHeaderComponent,
+    NgSelectCustomComponent,
+    SelectedDataCardComponent,
+    StationSelectCardComponent,
+    LinkToAnalysisComponent,
+    CustomDropdownFilterComponent,
+    CsvDownloadButtonComponent,
+    ClearGridFiltersButtonComponent,
+    TinyMceConfigPipe
+  ],
+  exports: [
+    AlertDisplayComponent,
+    CommonModule,
+    FormsModule,
+    NotFoundComponent,
+    WatershedMapComponent,
+    HeaderNavComponent,
+    CustomRichTextComponent,
+    FieldDefinitionComponent,
+    FieldDefinitionGridHeaderComponent,
+    NgSelectCustomComponent,
+    SelectedDataCardComponent,
+    StationSelectCardComponent,
+    LinkToAnalysisComponent,
+    CsvDownloadButtonComponent,
+    ClearGridFiltersButtonComponent,
+    EditorModule,
+    TinyMceConfigPipe
+  ], imports: [CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    SelectDropDownModule,
+    EditorModule,
+    NgbModule,
+    NgSelectModule,
+    AutoCompleteModule], providers: [
+      { provide: TINYMCE_SCRIPT_SRC, useValue: 'assets/tinymce/tinymce.min.js' },
+      provideHttpClient(withInterceptorsFromDi())
+    ]
+})
 export class SharedModule {
   static forRoot(): ModuleWithProviders<SharedModule> {
     return {

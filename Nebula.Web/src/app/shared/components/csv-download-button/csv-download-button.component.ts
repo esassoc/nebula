@@ -3,9 +3,10 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { UtilityFunctionsService } from 'src/app/services/utility-functions.service';
 
 @Component({
-  selector: 'nebula-csv-download-button',
-  templateUrl: './csv-download-button.component.html',
-  styleUrls: ['./csv-download-button.component.scss']
+    selector: 'nebula-csv-download-button',
+    templateUrl: './csv-download-button.component.html',
+    styleUrls: ['./csv-download-button.component.scss'],
+    standalone: false
 })
 export class CsvDownloadButtonComponent {
   @Input() grid: AgGridAngular;

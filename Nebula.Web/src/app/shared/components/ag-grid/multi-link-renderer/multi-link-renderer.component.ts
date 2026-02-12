@@ -2,9 +2,10 @@ import { Component } from '@angular/core';
 import { AgRendererComponent } from 'ag-grid-angular';
 
 @Component({
-  selector: 'nebula-multi-link-renderer',
-  templateUrl: './multi-link-renderer.component.html',
-  styleUrls: ['./multi-link-renderer.component.scss']
+    selector: 'nebula-multi-link-renderer',
+    templateUrl: './multi-link-renderer.component.html',
+    styleUrls: ['./multi-link-renderer.component.scss'],
+    standalone: false
 })
 
 export class MultiLinkRendererComponent implements AgRendererComponent {

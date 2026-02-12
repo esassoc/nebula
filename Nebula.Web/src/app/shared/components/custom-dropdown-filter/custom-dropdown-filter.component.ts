@@ -3,9 +3,10 @@ import { AgFilterComponent } from 'ag-grid-angular';
 import { IDoesFilterPassParams, RowNode } from 'ag-grid-community';
 
 @Component({
-  selector: 'nebula-custom-dropdown-filter',
-  templateUrl: './custom-dropdown-filter.component.html',
-  styleUrls: ['./custom-dropdown-filter.component.scss']
+    selector: 'nebula-custom-dropdown-filter',
+    templateUrl: './custom-dropdown-filter.component.html',
+    styleUrls: ['./custom-dropdown-filter.component.scss'],
+    standalone: false
 })
 export class CustomDropdownFilterComponent implements AgFilterComponent {
 

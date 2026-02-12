@@ -2,9 +2,10 @@ import { Component } from '@angular/core';
 import { AgRendererComponent } from 'ag-grid-angular';
 
 @Component({
-  selector: 'nebula-link-renderer',
-  templateUrl: './link-renderer.component.html',
-  styleUrls: ['./link-renderer.component.scss']
+    selector: 'nebula-link-renderer',
+    templateUrl: './link-renderer.component.html',
+    styleUrls: ['./link-renderer.component.scss'],
+    standalone: false
 })
 
 export class LinkRendererComponent implements AgRendererComponent {

@@ -5,7 +5,6 @@
     },
     "version": 1,
     "newProjectRoot": "projects",
-
     "projects": {
         "Nebula.Web": {
             "root": "",
@@ -39,15 +38,12 @@
                                 "output": "/assets/tinymce/"
                             }
                         ],
-
                         "styles": [
                             "src/styles.scss",
                             "node_modules/leaflet.fullscreen/Control.FullScreen.css",
                             "node_modules/leaflet-gesture-handling/dist/leaflet-gesture-handling.css",
                             "node_modules/leaflet-loading/src/Control.Loading.css",
-                            "node_modules/@ng-select/ng-select/themes/default.theme.css",
-                            "node_modules/primeng/resources/themes/saga-blue/theme.css",
-                            "node_modules/primeng/resources/primeng.min.css"
+                            "node_modules/@ng-select/ng-select/themes/default.theme.css"
                         ],
                         "scripts": [
                             "node_modules/jquery/dist/jquery.slim.min.js",
@@ -139,13 +135,19 @@
                             "src/styles.scss"
                         ],
                         "scripts": [],
-                        "assets": ["src/favicon.ico", "src/assets"]
+                        "assets": [
+                            "src/favicon.ico",
+                            "src/assets"
+                        ]
                     }
                 },
                 "lint": {
                     "builder": "@angular-eslint/builder:lint",
                     "options": {
-                        "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
+                        "lintFilePatterns": [
+                            "src/**/*.ts",
+                            "src/**/*.html"
+                        ]
                     }
                 }
             }

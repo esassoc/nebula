@@ -11,9 +11,10 @@ import { UserDto, UserService } from 'src/app/shared/generated';
 declare let $:any;
 
 @Component({
-  selector: 'nebula-user-list',
-  templateUrl: './user-list.component.html',
-  styleUrls: ['./user-list.component.scss']
+    selector: 'nebula-user-list',
+    templateUrl: './user-list.component.html',
+    styleUrls: ['./user-list.component.scss'],
+    standalone: false
 })
 export class UserListComponent implements OnInit, OnDestroy {
   @ViewChild('usersGrid') usersGrid: AgGridAngular;

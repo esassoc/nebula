@@ -9,10 +9,11 @@ import { RoleDto, RoleService, UserDto, UserService, UserUpsertDto } from 'src/a
 
 
 @Component({
-  selector: 'nebula-user-edit',
-  templateUrl: './user-edit.component.html',
-  styleUrls: ['./user-edit.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'nebula-user-edit',
+    templateUrl: './user-edit.component.html',
+    styleUrls: ['./user-edit.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class UserEditComponent implements OnInit, OnDestroy {
   

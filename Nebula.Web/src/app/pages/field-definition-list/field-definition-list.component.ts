@@ -7,9 +7,10 @@ import { CustomRichTextTypeEnum } from 'src/app/shared/generated/enum/custom-ric
 import { FieldDefinitionDto, FieldDefinitionService, UserDto } from 'src/app/shared/generated';
 
 @Component({
-  selector: 'nebula-field-definition-list',
-  templateUrl: './field-definition-list.component.html',
-  styleUrls: ['./field-definition-list.component.scss']
+    selector: 'nebula-field-definition-list',
+    templateUrl: './field-definition-list.component.html',
+    styleUrls: ['./field-definition-list.component.scss'],
+    standalone: false
 })
 export class FieldDefinitionListComponent implements OnInit {
 
