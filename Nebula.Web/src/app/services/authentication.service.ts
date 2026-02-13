@@ -21,19 +21,19 @@ export class AuthenticationService {
   public currentUserSetObservable = this._currentUserSetSubject.asObservable();
 
   constructor(private router: Router,
-              private oauthService: OAuthService,
-              private cookieStorageService: CookieStorageService,
-              private userService: UserService,
-              private alertService: AlertService) {
+    private oauthService: OAuthService,
+    private cookieStorageService: CookieStorageService,
+    private userService: UserService,
+    private alertService: AlertService) {
     this.oauthService.events
       .pipe(filter(e => ['discovery_document_loaded'].includes(e.type)))
-      .subscribe(e => { 
+      .subscribe(e => {
         this.checkAuthentication();
       });
 
     this.oauthService.events
       .pipe(filter(e => ['token_received'].includes(e.type)))
-      .subscribe(e => { 
+      .subscribe(e => {
         this.checkAuthentication();
         this.oauthService.loadUserProfile();
       });
@@ -48,7 +48,7 @@ export class AuthenticationService {
   public initialLoginSequence() {
     this.oauthService.loadDiscoveryDocument()
       .then(() => this.oauthService.tryLogin())
-      .then(() => Promise.resolve()).catch(() => {});
+      .then(() => Promise.resolve()).catch(() => { });
   }
 
   public checkAuthentication() {
@@ -58,7 +58,7 @@ export class AuthenticationService {
       this.getUser(claims);
     }
   }
-  
+
   public getUser(claims: any) {
     const globalID = claims.sub;
 
@@ -111,7 +111,7 @@ export class AuthenticationService {
 
   public getCurrentUserID(): Observable<number> {
     return race(
-      new Observable(subscriber => {
+      new Observable<number>(subscriber => {
         if (this.currentUser) {
           subscriber.next(this.currentUser.UserID);
           subscriber.complete();
@@ -163,7 +163,7 @@ export class AuthenticationService {
   public isCurrentUserAnAdministrator(): boolean {
     return this.isUserAnAdministrator(this.currentUser);
   }
-  
+
   public isUserUnassigned(user: UserDto): boolean {
     const role = user && user.Role
       ? user.Role.RoleID
@@ -204,8 +204,7 @@ export class AuthenticationService {
   }
 
   public doesCurrentUserHaveOneOfTheseRoles(roleIDs: Array<number>): boolean {
-    if(roleIDs.length === 0)
-    {
+    if (roleIDs.length === 0) {
       return false;
     }
     const roleID = this.currentUser && this.currentUser.Role

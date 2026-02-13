@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, DOCUMENT } from '@angular/core';
 import { OAuthService } from 'angular-oauth2-oidc';
 import { JwksValidationHandler } from 'angular-oauth2-oidc-jwks';
 import { environment } from '../environments/environment';
@@ -6,7 +6,7 @@ import { Router, RouteConfigLoadStart, RouteConfigLoadEnd, NavigationEnd } from 
 import { BusyService } from './shared/services';
 import { AuthenticationService } from './services/authentication.service';
 import { Title } from '@angular/platform-browser';
-import { DOCUMENT } from '@angular/common';
+
 
 declare let require: any
 

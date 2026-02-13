@@ -3,22 +3,22 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { UtilityFunctionsService } from 'src/app/services/utility-functions.service';
 
 @Component({
-    selector: 'nebula-csv-download-button',
-    templateUrl: './csv-download-button.component.html',
-    styleUrls: ['./csv-download-button.component.scss'],
-    standalone: false
+  selector: 'nebula-csv-download-button',
+  templateUrl: './csv-download-button.component.html',
+  styleUrls: ['./csv-download-button.component.scss'],
+  standalone: false
 })
 export class CsvDownloadButtonComponent {
   @Input() grid: AgGridAngular;
   @Input() fileName: string;
   @Input() colIDsToExclude = [];
 
-  constructor(private utilityFunctionsService: UtilityFunctionsService) {}
+  constructor(private utilityFunctionsService: UtilityFunctionsService) { }
 
-  public exportToCsv() {   
-    const columnsKeys = this.grid.columnApi.getAllDisplayedColumns();
+  public exportToCsv() {
+    const columnsKeys = this.grid.api.getAllDisplayedColumns();
     const columnIDs = columnsKeys.map(keys => keys.getColId()).filter(x => this.colIDsToExclude.indexOf(x) < 0);
-    
+
     this.utilityFunctionsService.exportGridToCsv(this.grid, this.fileName + '.csv', columnIDs);
-  }  
+  }
 }

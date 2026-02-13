@@ -8,18 +8,18 @@ import { UtilityFunctionsService } from 'src/app/services/utility-functions.serv
 import { RoleEnum } from 'src/app/shared/generated/enum/role-enum';
 import { UserDto, UserService } from 'src/app/shared/generated';
 
-declare let $:any;
+declare let $: any;
 
 @Component({
-    selector: 'nebula-user-list',
-    templateUrl: './user-list.component.html',
-    styleUrls: ['./user-list.component.scss'],
-    standalone: false
+  selector: 'nebula-user-list',
+  templateUrl: './user-list.component.html',
+  styleUrls: ['./user-list.component.scss'],
+  standalone: false
 })
 export class UserListComponent implements OnInit, OnDestroy {
   @ViewChild('usersGrid') usersGrid: AgGridAngular;
   @ViewChild('unassignedUsersGrid') unassignedUsersGrid: AgGridAngular;
-  
+
   private currentUser: UserDto;
 
   public rowData = [];
@@ -29,10 +29,10 @@ export class UserListComponent implements OnInit, OnDestroy {
   unassignedUsers: UserDto[];
 
   constructor(
-    private cdr: ChangeDetectorRef, 
-    private authenticationService: AuthenticationService, 
-    private utilityFunctionsService: UtilityFunctionsService, 
-    private userService: UserService, 
+    private cdr: ChangeDetectorRef,
+    private authenticationService: AuthenticationService,
+    private utilityFunctionsService: UtilityFunctionsService,
+    private userService: UserService,
     private decimalPipe: DecimalPipe
   ) { }
 
@@ -42,9 +42,8 @@ export class UserListComponent implements OnInit, OnDestroy {
       this.usersGrid?.api.showLoadingOverlay();
       this.userService.usersGet().subscribe(users => {
         this.rowData = users;
-        this.usersGrid.api.hideOverlay();
         this.users = users;
-        this.unassignedUsers = users.filter(u =>{ return u.Role.RoleID === RoleEnum.Unassigned});
+        this.unassignedUsers = users.filter(u => { return u.Role.RoleID === RoleEnum.Unassigned });
 
         this.cdr.detectChanges();
       });
@@ -74,9 +73,9 @@ export class UserListComponent implements OnInit, OnDestroy {
         },
         { headerName: 'Email', field: 'Email', sortable: true, filter: true },
         { headerName: 'Role', field: 'Role.RoleDisplayName', sortable: true, filter: true, width: 100 },
-        { headerName: 'Receives System Communications?', field: 'ReceiveSupportEmails', valueGetter: function (params) { return params.data.ReceiveSupportEmails ? 'Yes' : 'No';}, sortable: true, filter: true, width: 250 },
+        { headerName: 'Receives System Communications?', field: 'ReceiveSupportEmails', valueGetter: function (params) { return params.data.ReceiveSupportEmails ? 'Yes' : 'No'; }, sortable: true, filter: true, width: 250 },
       ];
-        
+
       this.columnDefs.forEach(x => {
         x.resizable = true;
       });
@@ -85,21 +84,20 @@ export class UserListComponent implements OnInit, OnDestroy {
 
 
   ngOnDestroy() {
-    
-    
+
+
     this.cdr.detach();
   }
 
   public exportToCsv() {
     // we need to grab all columns except the first one (trash icon)
-    const columnsKeys = this.usersGrid.columnApi.getAllDisplayedColumns(); 
-    const columnIds: Array<any> = []; 
-    columnsKeys.forEach(keys => 
-    { 
-      const columnName: string = keys.getColId(); 
-      columnIds.push(columnName); 
+    const columnsKeys = this.usersGrid.api.getAllDisplayedColumns();
+    const columnIds: Array<any> = [];
+    columnsKeys.forEach(keys => {
+      const columnName: string = keys.getColId();
+      columnIds.push(columnName);
     });
     columnIds.splice(0, 1);
     this.utilityFunctionsService.exportGridToCsv(this.usersGrid, 'users.csv', columnIds);
-  }  
+  }
 }
