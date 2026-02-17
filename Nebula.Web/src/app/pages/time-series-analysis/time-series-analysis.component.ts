@@ -18,9 +18,10 @@ declare let $: any;
 declare let vegaEmbed: any;
 
 @Component({
-  selector: 'nebula-time-series-analysis',
-  templateUrl: './time-series-analysis.component.html',
-  styleUrls: ['./time-series-analysis.component.scss']
+    selector: 'nebula-time-series-analysis',
+    templateUrl: './time-series-analysis.component.html',
+    styleUrls: ['./time-series-analysis.component.scss'],
+    standalone: false
 })
 export class TimeSeriesAnalysisComponent implements OnInit {
   public watchUserChangeSubscription: any;

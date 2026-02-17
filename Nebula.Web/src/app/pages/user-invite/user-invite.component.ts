@@ -10,10 +10,11 @@ import { RoleDto, RoleService, UserDto, UserInviteDto, UserService } from 'src/a
 
 
 @Component({
-  selector: 'nebula-user-invite',
-  templateUrl: './user-invite.component.html',
-  styleUrls: ['./user-invite.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'nebula-user-invite',
+    templateUrl: './user-invite.component.html',
+    styleUrls: ['./user-invite.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class UserInviteComponent implements OnInit, OnDestroy {
     

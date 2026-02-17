@@ -8,9 +8,10 @@ import { AlertContext } from 'src/app/shared/models/enums/alert-context.enum';
 import { AlertService } from 'src/app/shared/services/alert.service';
 
 @Component({
-  selector: 'nebula-custom-page-edit-properties',
-  templateUrl: './custom-page-edit-properties.component.html',
-  styleUrls: ['./custom-page-edit-properties.component.scss']
+    selector: 'nebula-custom-page-edit-properties',
+    templateUrl: './custom-page-edit-properties.component.html',
+    styleUrls: ['./custom-page-edit-properties.component.scss'],
+    standalone: false
 })
 export class CustomPageEditPropertiesComponent implements OnInit, OnDestroy {
   private watchUserChangeSubscription: any;

@@ -14,9 +14,10 @@ import { AlertContext } from 'src/app/shared/models/enums/alert-context.enum';
 import { AlertService } from 'src/app/shared/services/alert.service';
 
 @Component({
-  selector: 'nebula-custom-page-list',
-  templateUrl: './custom-page-list.component.html',
-  styleUrls: ['./custom-page-list.component.scss']
+    selector: 'nebula-custom-page-list',
+    templateUrl: './custom-page-list.component.html',
+    styleUrls: ['./custom-page-list.component.scss'],
+    standalone: false
 })
 export class CustomPageListComponent implements OnInit, OnDestroy {
   @ViewChild('pageGrid') pageGrid: AgGridAngular;

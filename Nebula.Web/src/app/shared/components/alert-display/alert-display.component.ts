@@ -4,9 +4,10 @@ import {Alert} from '../../models/alert';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-alert-display',
-  templateUrl: './alert-display.component.html',
-  styleUrls: ['./alert-display.component.css']
+    selector: 'app-alert-display',
+    templateUrl: './alert-display.component.html',
+    styleUrls: ['./alert-display.component.css'],
+    standalone: false
 })
 export class AlertDisplayComponent implements OnInit, OnDestroy {
 

@@ -5,9 +5,10 @@ import { forkJoin } from 'rxjs';
 import { UserDto, WatershedDto, WatershedService } from 'src/app/shared/generated';
 
 @Component({
-  selector: 'template-watershed-detail',
-  templateUrl: './watershed-detail.component.html',
-  styleUrls: ['./watershed-detail.component.scss']
+    selector: 'template-watershed-detail',
+    templateUrl: './watershed-detail.component.html',
+    styleUrls: ['./watershed-detail.component.scss'],
+    standalone: false
 })
 export class WatershedDetailComponent implements OnInit, OnDestroy {
   

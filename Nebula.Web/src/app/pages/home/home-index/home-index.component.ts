@@ -7,9 +7,10 @@ import { RoleEnum } from 'src/app/shared/generated/enum/role-enum';
 import { UserDto } from 'src/app/shared/generated';
 
 @Component({
-  selector: 'app-home-index',
-  templateUrl: './home-index.component.html',
-  styleUrls: ['./home-index.component.scss']
+    selector: 'app-home-index',
+    templateUrl: './home-index.component.html',
+    styleUrls: ['./home-index.component.scss'],
+    standalone: false
 })
 export class HomeIndexComponent implements OnInit, OnDestroy {
   public watchUserChangeSubscription: any;

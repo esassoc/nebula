@@ -10,9 +10,10 @@ import { FieldDefinitionDto, FieldDefinitionService, UserDto } from '../../gener
 declare let $ : any
 
 @Component({
-  selector: 'field-definition',
-  templateUrl: './field-definition.component.html',
-  styleUrls: ['./field-definition.component.scss']
+    selector: 'field-definition',
+    templateUrl: './field-definition.component.html',
+    styleUrls: ['./field-definition.component.scss'],
+    standalone: false
 })
 export class FieldDefinitionComponent implements OnInit {
 

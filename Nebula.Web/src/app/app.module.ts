@@ -41,6 +41,8 @@ import { CustomPageDetailComponent } from './pages/custom-page-detail/custom-pag
 import { CustomPageCreateComponent } from './pages/custom-page-create/custom-page-create.component';
 import { CustomPageEditPropertiesComponent } from './pages/custom-page-edit-properties/custom-page-edit-properties.component';
 import { ApiModule, Configuration } from './shared/generated';
+import { providePrimeNG } from 'primeng/config';
+import Lara from '@primeuix/themes/lara';
 
 
 export function init_app(appLoadService: AppInitService) {
@@ -104,7 +106,10 @@ export function init_app(appLoadService: AppInitService) {
     {
       provide: OAuthStorage,
       useClass: CookieStorageService
-    }
+    },
+    providePrimeNG({
+      theme: { preset: Lara }
+    })
   ],
   bootstrap: [AppComponent]
 })

@@ -18,9 +18,10 @@ declare let $: any;
 declare let vegaEmbed: any;
 
 @Component({
-  selector: 'nebula-diversion-scenario',
-  templateUrl: './diversion-scenario.component.html',
-  styleUrls: ['./diversion-scenario.component.scss']
+    selector: 'nebula-diversion-scenario',
+    templateUrl: './diversion-scenario.component.html',
+    styleUrls: ['./diversion-scenario.component.scss'],
+    standalone: false
 })
 export class DiversionScenarioComponent implements OnInit {
   public watchUserChangeSubscription: any;

@@ -1,10 +1,18 @@
 import { Injectable } from '@angular/core';
 import { from } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { ModuleRegistry } from 'ag-grid-community';
+import { AllCommunityModule } from 'ag-grid-community';
+
 declare let window: any;
 
 @Injectable()
 export class AppInitService {
+
+  constructor() {
+    // Register AG Grid modules
+    ModuleRegistry.registerModules([AllCommunityModule]);
+  }
 
   // This is the method you want to call at bootstrap
   // Important: It should return a Promise
