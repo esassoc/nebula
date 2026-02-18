@@ -55,7 +55,7 @@ namespace Nebula.EFModels.Entities
 
             var user = new User
             {
-                UserGuid = userGuid,
+                LegacyUserGuid = userGuid,
                 LoginName = loginName,
                 Email = userToCreate.Email,
                 FirstName = userToCreate.FirstName,
@@ -116,7 +116,7 @@ namespace Nebula.EFModels.Entities
         public static UserDto GetByUserGuid(NebulaDbContext dbContext, Guid userGuid)
         {
             var user = GetUserImpl(dbContext)
-                .SingleOrDefault(x => x.UserGuid == userGuid);
+                .SingleOrDefault(x => x.LegacyUserGuid == userGuid);
 
             return user?.AsDto();
         }
@@ -168,7 +168,7 @@ namespace Nebula.EFModels.Entities
             var user = dbContext.Users
                 .Single(x => x.UserID == userID);
 
-            user.UserGuid = userGuid;
+            user.LegacyUserGuid = userGuid;
             user.UpdateDate = DateTime.UtcNow;
 
             dbContext.SaveChanges();

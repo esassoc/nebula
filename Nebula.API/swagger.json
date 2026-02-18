@@ -1587,9 +1587,13 @@
             "type": "integer",
             "format": "int32"
           },
-          "UserGuid": {
+          "LegacyUserGuid": {
             "type": "string",
             "format": "uuid",
+            "nullable": true
+          },
+          "GlobalUserID": {
+            "type": "string",
             "nullable": true
           },
           "FirstName": {

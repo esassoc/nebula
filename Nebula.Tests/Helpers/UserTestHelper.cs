@@ -13,7 +13,7 @@ namespace Nebula.Tests.Helpers
             {
                 FirstName = Guid.NewGuid().ToString(),
                 LastName = Guid.NewGuid().ToString(),
-                Email = $"{Guid.NewGuid()}@sitkatech.com",
+                Email = $"{Guid.NewGuid()}@esassoc.com",
                 OrganizationName = Guid.NewGuid().ToString(),
                 PhoneNumber = Guid.NewGuid().ToString().Substring(0, 10),
                 ReceiveSupportEmails = true,
@@ -35,7 +35,8 @@ namespace Nebula.Tests.Helpers
             Assert.AreEqual(expectedValues.Phone, valuesToCheck.Phone);
             Assert.AreEqual(expectedValues.ReceiveSupportEmails, valuesToCheck.ReceiveSupportEmails);
             Assert.AreEqual(expectedValues.Role.RoleID, valuesToCheck.Role.RoleID);
-            Assert.AreEqual(expectedValues.UserGuid, valuesToCheck.UserGuid);
+            Assert.AreEqual(expectedValues.LegacyUserGuid, valuesToCheck.LegacyUserGuid);
+            Assert.AreEqual(expectedValues.GlobalUserID, valuesToCheck.GlobalUserID);
         }
 
         public static void AssertUserDtosAreEqualAndNotNull(UserUpsertDto expectedValues, UserDto valuesToCheck)
