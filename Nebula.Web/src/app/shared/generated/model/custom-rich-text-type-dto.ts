@@ -11,10 +11,10 @@
  */
 
 export class CustomRichTextTypeDto { 
-  CustomRichTextTypeID?: number;
-  CustomRichTextTypeName?: string;
-  CustomRichTextTypeDisplayName?: string;
-  constructor(obj?: any) {
-    Object.assign(this, obj);
-  }
+    CustomRichTextTypeID?: number;
+    CustomRichTextTypeName?: string;
+    CustomRichTextTypeDisplayName?: string;
+    constructor(obj?: any) {
+        Object.assign(this, obj);
+    }
 }

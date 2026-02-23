@@ -12,65 +12,6 @@
 @import "scss/_forms.scss";
 @import "scss/_custom-bootstrap.scss";
 
-//ckeditor css
-
-.image {
-    display: table;
-    clear: both;
-    text-align: center;
-    margin: 1em auto;
-}
-
-.image > img {
-    display: block;
-    margin: 0 auto;
-    max-width: 100%;
-    min-width: 50px;
-}
-
-.image-style-side,
-.image-style-align-left,
-.image-style-align-center,
-.image-style-align-right {
-    max-width: 50%;
-}
-
-.image-style-side {
-    float: right;
-    margin-left: var(--ck-image-style-spacing);
-}
-
-.image-style-align-left {
-    float: left;
-    margin-right: var(--ck-image-style-spacing);
-}
-
-.image-style-align-center {
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.image-style-align-right {
-    float: right;
-    margin-left: var(--ck-image-style-spacing);
-}
-
-blockquote {
-    overflow: hidden;
-    padding-right: 1.5em;
-    padding-left: 1.5em;
-    margin-left: 0;
-    margin-right: 0;
-    font-style: italic;
-    border-left: 5px solid #ccc;
-}
-
-.ck.ck-balloon-panel.ck-balloon-panel_visible {
-    //to account for in popover case
-    z-index: 1061;
-}
-//end ckeditor css
-
 .switch {
     position: relative;
     display: inline-block;
@@ -108,15 +49,15 @@ blockquote {
     transition: 0.4s;
 }
 
-input:checked + .slider {
+input:checked+.slider {
     background-color: $button-border-and-background;
 }
 
-input:focus + .slider {
+input:focus+.slider {
     box-shadow: 0 0 1px $button-border-and-background;
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
     -webkit-transform: translateX(77px);
     -ms-transform: translateX(7px);
     transform: translateX(77px);
@@ -139,11 +80,11 @@ input:checked + .slider:before {
     color: $button-text-color;
 }
 
-input:checked + .slider .on {
+input:checked+.slider .on {
     display: block;
 }
 
-input:checked + .slider .off {
+input:checked+.slider .off {
     display: none;
 }
 
@@ -229,14 +170,14 @@ station-select-card {
     border-radius: 50px;
     padding: 7px;
 
-    > .close {
+    >.close {
         font-size: 1.4rem;
         padding-left: 5px;
     }
 }
 
 ng-select-custom {
-    .ng-select.ng-select-focused:not(.ng-select-opened) > .ng-select-container {
+    .ng-select.ng-select-focused:not(.ng-select-opened)>.ng-select-container {
         border-color: $input-focus-border-color;
         box-shadow: $input-focus-box-shadow;
     }

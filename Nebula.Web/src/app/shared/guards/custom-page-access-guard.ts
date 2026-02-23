@@ -6,11 +6,11 @@ import { CustomPageService } from '../generated';
 @Injectable({
   providedIn: 'root'
 })
-export class CustomPageAccessGuard  {
+export class CustomPageAccessGuard {
   constructor(
-    private router: Router, 
-    private alertService: AlertService, 
-    private authenticationService: AuthenticationService, 
+    private router: Router,
+    private alertService: AlertService,
+    private authenticationService: AuthenticationService,
     private customPageService: CustomPageService
   ) { }
 
@@ -48,17 +48,17 @@ export class CustomPageAccessGuard  {
   async getCustomPageRoleIDsByVanityUrl(vanityUrl: string): Promise<Array<number>> {
 
     return new Promise((resolve, reject) => {
- 
+
       this.customPageService.customPagesGetByURLCustomPageVanityURLRolesGet(vanityUrl).subscribe(roles => {
         const viewableRoleIDs = roles.map(x => x.RoleID);
         resolve(viewableRoleIDs)
-      }, 
-      error => {
-        const errorMessage = <any>error;
-        if(errorMessage != null) {
-          reject(errorMessage);
+      },
+        error => {
+          const errorMessage = <any>error;
+          if (errorMessage != null) {
+            reject(errorMessage);
+          }
         }
-      }
       );
 
     })

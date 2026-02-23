@@ -7,6 +7,7 @@ api/custom-rich-text.service.ts
 api/field-definition.service.ts
 api/menu-item.service.ts
 api/role.service.ts
+api/system-info.service.ts
 api/user.service.ts
 api/watershed.service.ts
 configuration.ts
@@ -24,8 +25,8 @@ model/field-definition-type-dto.ts
 model/menu-item-dto.ts
 model/models.ts
 model/role-dto.ts
+model/system-info-dto.ts
 model/unassigned-user-report-dto.ts
-model/user-create-dto.ts
 model/user-dto.ts
 model/user-invite-dto.ts
 model/user-upsert-dto.ts

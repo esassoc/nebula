@@ -15,7 +15,7 @@ namespace Nebula.API.Controllers
         {
         }
 
-        [HttpGet("customRichText/{customRichTextTypeID}")]
+        [HttpGet("public/customRichText/{customRichTextTypeID}")]
         public ActionResult<CustomRichTextDto> GetCustomRichText([FromRoute] int customRichTextTypeID)
         {
             var customRichTextDto = CustomRichText.GetByCustomRichTextTypeID(_dbContext, customRichTextTypeID);

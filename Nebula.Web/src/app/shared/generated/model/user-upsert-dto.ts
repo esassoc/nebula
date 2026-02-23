@@ -11,14 +11,14 @@
  */
 
 export class UserUpsertDto { 
-  FirstName?: string;
-  LastName?: string;
-  OrganizationName?: string;
-  Email?: string;
-  PhoneNumber?: string;
-  RoleID: number;
-  ReceiveSupportEmails: boolean;
-  constructor(obj?: any) {
-    Object.assign(this, obj);
-  }
+    FirstName?: string;
+    LastName?: string;
+    OrganizationName?: string;
+    Email?: string;
+    PhoneNumber?: string;
+    RoleID: number;
+    ReceiveSupportEmails: boolean;
+    constructor(obj?: any) {
+        Object.assign(this, obj);
+    }
 }

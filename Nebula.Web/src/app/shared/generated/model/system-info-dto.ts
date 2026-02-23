@@ -10,15 +10,15 @@
  * Do not edit the class manually.
  */
 
-export class UserCreateDto { 
-  FirstName: string;
-  LastName: string;
-  Email: string;
-  LoginName: string;
-  UserGuid: string;
-  OrganizationName?: string;
-  PhoneNumber?: string;
-  constructor(obj?: any) {
-    Object.assign(this, obj);
-  }
+export class SystemInfoDto { 
+    Environment?: string;
+    CurrentTimeUTC?: string;
+    readonly Application?: string;
+    FullInformationalVersion?: string;
+    PodName?: string;
+    Version?: string;
+    CompilationDateTime?: string;
+    constructor(obj?: any) {
+        Object.assign(this, obj);
+    }
 }

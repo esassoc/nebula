@@ -6,17 +6,11 @@
     "createAccountUrl": [TODO],
     "createAccountRedirectUrl": [TODO],
   
-    "keystoneSupportBaseUrl": [TODO],
     "geoserverMapServiceUrl": [TODO],
-  
-    "keystoneAuthConfiguration": {
+
+    "auth0Configuration": {
+      "domain": [TODO],
       "clientId": [TODO],
-      "issuer": [TODO],
-      "redirectUriRelative": [TODO],
-      "scope": [TODO],
-      "sessionChecksEnabled": [TODO],
-      "logoutUrl": [TODO],
-      "postLogoutRedirectUri": [TODO],
-      "waitForTokenInMsec": [TODO]
+      "audience": [TODO]
     }
   }

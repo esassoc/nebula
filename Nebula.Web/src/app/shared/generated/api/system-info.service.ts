@@ -18,7 +18,7 @@ import { CustomHttpUrlEncodingCodec }                        from '../encoder';
 
 import { Observable }                                        from 'rxjs';
 
-import { MenuItemDto } from '../model/menu-item-dto';
+import { SystemInfoDto } from '../model/system-info-dto';
 
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
@@ -29,7 +29,7 @@ import { ApiService } from '../../services';
 @Injectable({
   providedIn: 'root'
 })
-export class MenuItemService {
+export class SystemInfoService {
 
     protected basePath = 'http://localhost';
     public defaultHeaders = new HttpHeaders();
@@ -67,10 +67,10 @@ export class MenuItemService {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public menuItemsGet(observe?: 'body', reportProgress?: boolean): Observable<Array<MenuItemDto>>;
-    public menuItemsGet(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<MenuItemDto>>>;
-    public menuItemsGet(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<MenuItemDto>>>;
-    public menuItemsGet(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public getSystemInfo(observe?: 'body', reportProgress?: boolean): Observable<SystemInfoDto>;
+    public getSystemInfo(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<SystemInfoDto>>;
+    public getSystemInfo(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<SystemInfoDto>>;
+    public getSystemInfo(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
         let headers = this.defaultHeaders;
 
@@ -89,7 +89,7 @@ export class MenuItemService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.get<Array<MenuItemDto>>(`${this.basePath}/menuItems`,
+        return this.httpClient.get<SystemInfoDto>(`${this.basePath}/`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,

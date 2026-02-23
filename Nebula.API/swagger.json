@@ -421,7 +421,7 @@
         }
       }
     },
-    "/customRichText/{customRichTextTypeID}": {
+    "/public/customRichText/{customRichTextTypeID}": {
       "get": {
         "tags": [
           "CustomRichText"
@@ -459,7 +459,9 @@
             }
           }
         }
-      },
+      }
+    },
+    "/customRichText/{customRichTextTypeID}": {
       "put": {
         "tags": [
           "CustomRichText"
@@ -733,6 +735,35 @@
         }
       }
     },
+    "/user-claims": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/invite": {
       "post": {
         "tags": [
@@ -765,52 +796,6 @@
       }
     },
     "/users": {
-      "post": {
-        "tags": [
-          "User"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserCreateDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserCreateDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserCreateDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserDto"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserDto"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserDto"
-                }
-              }
-            }
-          }
-        }
-      },
       "get": {
         "tags": [
           "User"
@@ -1535,47 +1520,6 @@
           "Count": {
             "type": "integer",
             "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "UserCreateDto": {
-        "required": [
-          "Email",
-          "FirstName",
-          "LastName",
-          "LoginName",
-          "UserGuid"
-        ],
-        "type": "object",
-        "properties": {
-          "FirstName": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "LastName": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "Email": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "LoginName": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "UserGuid": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "OrganizationName": {
-            "type": "string",
-            "nullable": true
-          },
-          "PhoneNumber": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false
