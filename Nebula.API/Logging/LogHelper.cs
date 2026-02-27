@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Nebula.Models.Helpers;
 using Serilog;
 using Serilog.Context;
 using Serilog.Events;
@@ -70,9 +71,9 @@ public class LogHelper
             LogContext.PushProperty("EndpointName", endpoint.DisplayName);
         }
 
-        if (httpContext.User.Identity is { IsAuthenticated: true } && httpContext.User.Claims.Any(c => c.Type == "sub"))
+        if (httpContext.User.Identity is { IsAuthenticated: true } && httpContext.User.Claims.Any(c => c.Type == ClaimsConstants.Sub))
         {
-            var sub = httpContext.User.Claims.Single(c => c.Type == "sub").Value;
+            var sub = httpContext.User.Claims.Single(c => c.Type == ClaimsConstants.Sub).Value;
             LogContext.PushProperty("UserGuid", sub ?? String.Empty);
         }
 

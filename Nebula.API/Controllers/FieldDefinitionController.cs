@@ -12,7 +12,7 @@ namespace Nebula.API.Controllers
     [ApiController]
     public class FieldDefinitionController : SitkaController<FieldDefinitionController>
     {
-        public FieldDefinitionController(NebulaDbContext dbContext, ILogger<FieldDefinitionController> logger, KeystoneService keystoneService, IOptions<NebulaConfiguration> nebulaConfiguration) : base(dbContext, logger, keystoneService, nebulaConfiguration)
+        public FieldDefinitionController(NebulaDbContext dbContext, ILogger<FieldDefinitionController> logger, IOptions<NebulaConfiguration> nebulaConfiguration) : base(dbContext, logger, nebulaConfiguration)
         {
         }
 

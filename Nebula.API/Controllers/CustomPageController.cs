@@ -14,7 +14,7 @@ namespace Nebula.API.Controllers
     [ApiController]
     public class CustomPageController : SitkaController<CustomPageController>
     {
-        public CustomPageController(NebulaDbContext dbContext, ILogger<CustomPageController> logger, KeystoneService keystoneService, IOptions<NebulaConfiguration> nebulaConfiguration) : base(dbContext, logger, keystoneService, nebulaConfiguration)
+        public CustomPageController(NebulaDbContext dbContext, ILogger<CustomPageController> logger, IOptions<NebulaConfiguration> nebulaConfiguration) : base(dbContext, logger, nebulaConfiguration)
         {
         }
 

@@ -17,8 +17,8 @@ namespace Nebula.API.Controllers
     public class SystemInfoController : SitkaController<SystemInfoController>
     {
 
-        public SystemInfoController(NebulaDbContext dbContext, ILogger<SystemInfoController> logger, KeystoneService keystoneService, IOptions<NebulaConfiguration> nebulaConfiguration)
-            : base(dbContext, logger, keystoneService, nebulaConfiguration)
+        public SystemInfoController(NebulaDbContext dbContext, ILogger<SystemInfoController> logger, IOptions<NebulaConfiguration> nebulaConfiguration)
+            : base(dbContext, logger, nebulaConfiguration)
         {
         }
 

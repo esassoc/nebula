@@ -1,26 +1,77 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nebula.API.Services;
 using Nebula.API.Services.Authorization;
 using Nebula.EFModels.Entities;
+using Nebula.Models.DataTransferObjects;
 using Nebula.Models.DataTransferObjects.User;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Mail;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Nebula.Models.DataTransferObjects;
 
 namespace Nebula.API.Controllers
 {
     [ApiController]
     public class UserController : SitkaController<UserController>
     {
-        public UserController(NebulaDbContext dbContext, ILogger<UserController> logger, KeystoneService keystoneService, IOptions<NebulaConfiguration> nebulaConfiguration) : base(dbContext, logger, keystoneService, nebulaConfiguration)
+        public UserController(NebulaDbContext dbContext, ILogger<UserController> logger, IOptions<NebulaConfiguration> nebulaConfiguration) : base(dbContext, logger, nebulaConfiguration)
         {
+        }
+
+        [HttpPost("user-claims")]
+        [Authorize]
+        public async Task<ActionResult<UserDto>> PostUserClaims()
+        {
+            // Access claims via the User property instead of injecting ClaimsPrincipal
+            var claims = User;
+            
+            // TODO validate first and last name?
+            var globalID = claims.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            var email = claims.Claims.Single(c => c.Type == ClaimTypes.Email).Value;
+            if (string.IsNullOrWhiteSpace(globalID) || string.IsNullOrWhiteSpace(email))
+            {
+                return BadRequest();
+            }
+
+            UserDto updatedUserDto;
+            var userDto = EFModels.Entities.User.GetByGlobalUserID(_dbContext, globalID) ?? EFModels.Entities.User.GetByEmail(_dbContext, email);  // get by globalid or email
+            if (userDto == null)
+            {
+                var userCreateDto = new UserCreateDto()
+                {
+                    // TODO these are not being sent yet
+                    FirstName = "Test",
+                    LastName = "User",
+                    Email = email,
+                    LoginName = email,
+                    GlobalUserID = globalID,
+                };
+                var validationMessages = EFModels.Entities.User.ValidateCreateUnassignedUser(_dbContext, userCreateDto);
+                validationMessages.ForEach(vm => { ModelState.AddModelError(vm.Type, vm.Message); });
+
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                updatedUserDto = EFModels.Entities.User.CreateUnassignedUser(_dbContext, userCreateDto);
+
+                var smtpClient = HttpContext.RequestServices.GetRequiredService<SitkaSmtpClientService>();
+                var mailMessage = GenerateUserCreatedEmail(_nebulaConfiguration.WEB_URL, updatedUserDto, _dbContext, smtpClient);
+                SitkaSmtpClientService.AddCcRecipientsToEmail(mailMessage,EFModels.Entities.User.GetEmailAddressesForAdminsThatReceiveSupportEmails(_dbContext));
+                await SendEmailMessage(smtpClient, mailMessage);
+            }
+            else
+            {
+                updatedUserDto = EFModels.Entities.User.UpdateClaims(_dbContext, userDto.UserID, claims, globalID);
+            }
+
+            return Ok(updatedUserDto);
         }
 
         [HttpPost("/users/invite")]
@@ -40,85 +91,18 @@ namespace Nebula.API.Controllers
                 return BadRequest("Role ID is required.");
             }
 
-            var inviteModel = new KeystoneService.KeystoneInviteModel
+            var newUser = new UserUpsertDto
             {
                 FirstName = inviteDto.FirstName,
                 LastName = inviteDto.LastName,
                 Email = inviteDto.Email,
-                Subject = $"Invitation to the Smart Watershed Network Platform",
-                WelcomeText = $"You are receiving this notification because an administrator of the Smart Watershed Network Platform, an online service of the Environmental Science Associates, has invited you to create an account.",
-                SiteName = "Smart Watershed Network Platform",
-                SignatureBlock = $"Environmental Science Associates<br /><a href='mailto:{_nebulaConfiguration.LeadOrganizationEmail}'>{_nebulaConfiguration.LeadOrganizationEmail}</a><a href='https://esassoc.com'>https://esassoc.com</a>",
-                RedirectURL = _nebulaConfiguration.KEYSTONE_REDIRECT_URL
-            };
-
-            var response = await _keystoneService.Invite(inviteModel);
-            if (response.StatusCode != HttpStatusCode.OK || response.Error != null)
-            {
-                ModelState.AddModelError("Email", $"There was a problem inviting the user to Keystone: {response.Error.Message}.");
-                if (response.Error.ModelState != null)
-                {
-                    foreach (var modelStateKey in response.Error.ModelState.Keys)
-                    {
-                        foreach (var err in response.Error.ModelState[modelStateKey])
-                        {
-                            ModelState.AddModelError(modelStateKey, err);
-                        }
-                    }
-                }
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var keystoneUser = response.Payload.Claims;
-            var existingUser = EFModels.Entities.User.GetByEmail(_dbContext, inviteDto.Email);
-            if (existingUser != null)
-            {
-                existingUser = EFModels.Entities.User.UpdateUserGuid(_dbContext, existingUser.UserID, keystoneUser.UserGuid);
-                return Ok(existingUser);
-            }
-
-            var newUser = new UserUpsertDto
-            {
-                FirstName = keystoneUser.FirstName,
-                LastName = keystoneUser.LastName,
-                OrganizationName = keystoneUser.OrganizationName,
-                Email = keystoneUser.Email,
-                PhoneNumber = keystoneUser.PrimaryPhone,
                 RoleID = inviteDto.RoleID.Value
             };
 
-            var user = EFModels.Entities.User.CreateNewUser(_dbContext, newUser, keystoneUser.LoginName,
-                keystoneUser.UserGuid);
-            return Ok(user);
-        }
-
-        [HttpPost("users")]
-        [LoggedInUnclassifiedFeature]
-        public async Task<ActionResult<UserDto>> CreateUser([FromBody] UserCreateDto userCreateDto)
-        {
-            // Validate request body; all fields required in Dto except Org Name and Phone
-            if (userCreateDto == null)
-            {
-                return BadRequest();
-            }
-
-            var validationMessages = EFModels.Entities.User.ValidateCreateUnassignedUser(_dbContext, userCreateDto);
-            validationMessages.ForEach(vm => { ModelState.AddModelError(vm.Type, vm.Message); });
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var user = EFModels.Entities.User.CreateUnassignedUser(_dbContext, userCreateDto);
+            var user = EFModels.Entities.User.CreateNewUser(_dbContext, newUser);
 
             var smtpClient = HttpContext.RequestServices.GetRequiredService<SitkaSmtpClientService>();
-            var mailMessage = GenerateUserCreatedEmail(_nebulaConfiguration.WEB_URL, user, _dbContext, smtpClient);
-            SitkaSmtpClientService.AddCcRecipientsToEmail(mailMessage,
-                        EFModels.Entities.User.GetEmailAddressesForAdminsThatReceiveSupportEmails(_dbContext));
+            var mailMessage = GenerateInviteUserEmail(_nebulaConfiguration.WEB_URL, user, _dbContext, smtpClient);
             await SendEmailMessage(smtpClient, mailMessage);
 
             return Ok(user);
@@ -152,16 +136,15 @@ namespace Nebula.API.Controllers
         [HttpGet("user-claims/{globalID}")]
         public ActionResult<UserDto> GetByGlobalID([FromRoute] string globalID)
         {
-            var isValidGuid = Guid.TryParse(globalID, out var globalIDAsGuid);
-            if (!isValidGuid)
+            if (!string.IsNullOrWhiteSpace(globalID))
             {
                 return BadRequest();
             }
 
-            var userDto = EFModels.Entities.User.GetByUserGuid(_dbContext, globalIDAsGuid);
+            var userDto = EFModels.Entities.User.GetByGlobalUserID(_dbContext, globalID);
             if (userDto == null)
             {
-                var notFoundMessage = $"User with GUID {globalIDAsGuid} does not exist!";
+                var notFoundMessage = $"User with GUID {globalID} does not exist!";
                 _logger.LogError(notFoundMessage);
                 return NotFound(notFoundMessage);
             }
@@ -179,8 +162,7 @@ namespace Nebula.API.Controllers
                 return actionResult;
             }
 
-            var validationMessages =
-                Nebula.EFModels.Entities.User.ValidateUpdate(_dbContext, userUpsertDto, userDto.UserID);
+            var validationMessages = EFModels.Entities.User.ValidateUpdate(_dbContext, userUpsertDto, userDto.UserID);
             validationMessages.ForEach(vm => { ModelState.AddModelError(vm.Type, vm.Message); });
 
             if (!ModelState.IsValid)
@@ -194,7 +176,7 @@ namespace Nebula.API.Controllers
                 return BadRequest($"Could not find a System Role with the ID {userUpsertDto.RoleID}");
             }
 
-            var updatedUserDto = Nebula.EFModels.Entities.User.UpdateUserEntity(_dbContext, userID, userUpsertDto);
+            var updatedUserDto = EFModels.Entities.User.UpdateUserEntity(_dbContext, userID, userUpsertDto);
             return Ok(updatedUserDto);
         }
 
@@ -207,7 +189,7 @@ namespace Nebula.API.Controllers
                 return actionResult;
             }
 
-            var updatedUserDto = Nebula.EFModels.Entities.User.SetDisclaimerAcknowledgedDate(_dbContext, userID);
+            var updatedUserDto = EFModels.Entities.User.SetDisclaimerAcknowledgedDate(_dbContext, userID);
             return Ok(updatedUserDto);
         }
 
@@ -227,6 +209,23 @@ As an administrator of the Smart Watershed Network Platform, you can assign them
             };
 
             mailMessage.To.Add(smtpClient.GetDefaultEmailFrom());
+            return mailMessage;
+        }
+
+        private MailMessage GenerateInviteUserEmail(string nebulaUrl, UserDto user, NebulaDbContext dbContext, SitkaSmtpClientService smtpClient)
+        {
+            var messageBody = $@"You are receiving this notification because an administrator of the Smart Watershed Network Platform, an online service of the 
+                Environmental Science Associates, has invited you to create an account. <br /><br />
+                Please go to the <a href='{nebulaUrl}'>Smart Watershed Network Platform</a> website and click the Create Account button. <br /> <br />
+                Environmental Science Associates<br /><a href='mailto:{_nebulaConfiguration.LeadOrganizationEmail}'>{_nebulaConfiguration.LeadOrganizationEmail}</a><a href='https://esassoc.com'>https://esassoc.com</a>";
+
+            var mailMessage = new MailMessage
+            {
+                Subject = $"Invitation to the Smart Watershed Network Platform",
+                Body = $"Hello,<br /><br />{messageBody}",
+            };
+
+            mailMessage.To.Add(user.Email);
             return mailMessage;
         }
 

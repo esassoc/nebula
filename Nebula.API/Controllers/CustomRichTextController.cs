@@ -11,7 +11,7 @@ namespace Nebula.API.Controllers
     [ApiController]
     public class CustomRichTextController : SitkaController<CustomRichTextController>
     {
-        public CustomRichTextController(NebulaDbContext dbContext, ILogger<CustomRichTextController> logger, KeystoneService keystoneService, IOptions<NebulaConfiguration> nebulaConfiguration) : base(dbContext, logger, keystoneService, nebulaConfiguration)
+        public CustomRichTextController(NebulaDbContext dbContext, ILogger<CustomRichTextController> logger, IOptions<NebulaConfiguration> nebulaConfiguration) : base(dbContext, logger, nebulaConfiguration)
         {
         }
 

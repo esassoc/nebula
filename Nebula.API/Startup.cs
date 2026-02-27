@@ -1,7 +1,7 @@
-﻿using IdentityServer4.AccessTokenValidation;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,11 +12,9 @@ using Nebula.API.Logging;
 using Nebula.API.Services;
 using Nebula.EFModels.Entities;
 using NetTopologySuite.IO.Converters;
-using SendGrid.Extensions.DependencyInjection;
+using SendGrid;
 using Serilog;
 using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http;
 using System.Text.Json.Serialization;
 using ILogger = Serilog.ILogger;
 
@@ -55,31 +53,16 @@ namespace Nebula.API
             services.Configure<NebulaConfiguration>(Configuration);
 
             var nebulaConfiguration = Configuration.Get<NebulaConfiguration>();
-            var keystoneHost = nebulaConfiguration.KEYSTONE_HOST;
-            services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    if (_environment.IsDevelopment())
-                    {
-                        // NOTE: CG 3/22 - This allows the self-signed cert on Keystone to work locally.
-                        options.BackchannelHttpHandler = new HttpClientHandler()
-                        {
-                            ServerCertificateCustomValidationCallback = (message, certificate2, arg3, arg4) => true
-                        };
-                        //These allow the use of the container name and the url when developing.
-                        options.TokenValidationParameters.ValidateIssuer = false;
-                    }
-                    options.TokenValidationParameters.ValidateAudience = false;
-                    options.Authority = keystoneHost;
-                    options.RequireHttpsMetadata = false;
-                    options.SecurityTokenValidators.Clear();
-                    options.SecurityTokenValidators.Add(new JwtSecurityTokenHandler
-                    {
-                        MapInboundClaims = false
-                    });
-                    options.TokenValidationParameters.NameClaimType = "name";
-                    options.TokenValidationParameters.RoleClaimType = "role";
-                });
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.Authority = Configuration["AUTH0_AUTHORITY"];
+                options.Audience = Configuration["AUTH0_AUDIENCE"];
+            });
 
             services.AddDbContext<NebulaDbContext>(c =>
             {
@@ -93,9 +76,7 @@ namespace Nebula.API
             services.AddSingleton(Configuration);
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-            services.AddTransient(s => new KeystoneService(s.GetService<IHttpContextAccessor>(), keystoneHost));
-
-            services.AddSendGrid(options => { options.ApiKey = nebulaConfiguration.SendGridApiKey; });
+            services.AddSingleton<ISendGridClient>(_ => new SendGridClient(nebulaConfiguration.SendGridApiKey));
             services.AddSingleton<SitkaSmtpClientService>();
 
             services.AddScoped(s => s.GetService<IHttpContextAccessor>().HttpContext);

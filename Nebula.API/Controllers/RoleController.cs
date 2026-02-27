@@ -10,7 +10,7 @@ namespace Nebula.API.Controllers
     [ApiController]
     public class RoleController : SitkaController<RoleController>
     {
-        public RoleController(NebulaDbContext dbContext, ILogger<RoleController> logger, KeystoneService keystoneService, IOptions<NebulaConfiguration> nebulaConfiguration) : base(dbContext, logger, keystoneService, nebulaConfiguration)
+        public RoleController(NebulaDbContext dbContext, ILogger<RoleController> logger, IOptions<NebulaConfiguration> nebulaConfiguration) : base(dbContext, logger, nebulaConfiguration)
         {
         }
 

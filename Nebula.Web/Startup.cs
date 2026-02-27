@@ -119,13 +119,13 @@ namespace Nebula.Web
     {
         public Auth0ConfigurationDto(IConfiguration configuration)
         {
-            Domain = configuration["Auth0_Domain"]
+            Domain = configuration["Auth0_Domain"];
             ClientID = configuration["Auth0_ClientID"];
             Audience = configuration["Auth0_Audience"];
         }
 
         [JsonPropertyName("domain")]
-        public string Domian { get; set; }
+        public string Domain { get; set; }
         [JsonPropertyName("clientId")]
         public string ClientID { get; set; }
         [JsonPropertyName("audience")]

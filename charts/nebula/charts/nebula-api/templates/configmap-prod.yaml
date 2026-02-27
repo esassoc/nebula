@@ -10,6 +10,6 @@ data:
   SITKA_EMAIL_REDIRECT: ""
   WEB_URL: "https://{{ .Values.global.domains.web }}"
   LeadOrganizationEmail: ""
-  KEYSTONE_HOST: "https://identity.sitkatech.com"
-  KEYSTONE_REDIRECT_URL: "https://{{ .Values.global.domains.web }}/create-user-callback"
+  AUTH0_AUTHORITY: "{{ .Values.global.env.auth0Authority }}"
+  AUTH0_AUDIENCE: "{{ .Values.global.env.auth0Audience }}"
 {{ end }}
