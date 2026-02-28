@@ -33,6 +33,7 @@
     <div *ngIf="isEditing">
         <editor
             #tinyMceEditor
+            licenseKey="gpl"
             [init]="tinyMceEditor | tinyMceConfig"
             [(ngModel)]="editedContent"
         >
