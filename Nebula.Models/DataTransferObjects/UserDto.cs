@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Nebula.Models.DataTransferObjects
+﻿namespace Nebula.Models.DataTransferObjects
 {
     public partial class UserDto
     {

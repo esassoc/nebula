@@ -91,7 +91,6 @@ namespace Nebula.Web
             Staging = bool.Parse(configuration["Staging"]);
             Dev = bool.Parse(configuration["Dev"]);
             MainAppApiUrl = configuration["MainAppApiUrl"];
-            CreateAccountRedirectUrl = configuration["CreateAccountRedirectUrl"];
             GeoserverMapServiceUrl = configuration["GeoserverMapServiceUrl"];
             Auth0Configuration = new Auth0ConfigurationDto(configuration);
             LyraBaseURL = configuration["LyraBaseURL"];
@@ -105,8 +104,6 @@ namespace Nebula.Web
         public bool Dev { get; set; }
         [JsonPropertyName("mainAppApiUrl")]
         public string MainAppApiUrl { get; set; }
-        [JsonPropertyName("createAccountRedirectUrl")]
-        public string CreateAccountRedirectUrl { get; set; }
         [JsonPropertyName("geoserverMapServiceUrl")]
         public string GeoserverMapServiceUrl { get; set; }
         [JsonPropertyName("auth0Configuration")]

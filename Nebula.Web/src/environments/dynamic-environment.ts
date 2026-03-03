@@ -29,10 +29,6 @@ export class DynamicEnvironment {
     return window.config.createAccountUrl;
   }
 
-  public get createAccountRedirectUrl() {
-    return window.config.createAccountRedirectUrl;
-  }
-
   public get geoserverMapServiceUrl() {
     return window.config.geoserverMapServiceUrl;
   }

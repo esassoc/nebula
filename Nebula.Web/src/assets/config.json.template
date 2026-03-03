@@ -4,7 +4,6 @@
     "dev": [TODO],
     "mainAppApiUrl": [TODO],
     "createAccountUrl": [TODO],
-    "createAccountRedirectUrl": [TODO],
   
     "geoserverMapServiceUrl": [TODO],
 
