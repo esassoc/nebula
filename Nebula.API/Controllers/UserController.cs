@@ -45,12 +45,13 @@ namespace Nebula.API.Controllers
             {
                 var firstName = claims?.Claims.SingleOrDefault(c => c.Type == ClaimsConstants.GivenName)?.Value;
                 var lastName = claims?.Claims.SingleOrDefault(c => c.Type == ClaimsConstants.FamilyName)?.Value;
+                var loginName = claims?.Claims.SingleOrDefault(c => c.Type == "nickname")?.Value;
                 var userCreateDto = new UserCreateDto()
                 {
                     FirstName = firstName ?? "First",
                     LastName = lastName ?? "Last",
                     Email = email,
-                    LoginName = email,
+                    LoginName = loginName ?? email,
                     GlobalUserID = globalID,
                 };
                 var validationMessages = EFModels.Entities.User.ValidateCreateUnassignedUser(_dbContext, userCreateDto);
