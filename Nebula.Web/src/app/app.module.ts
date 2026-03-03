@@ -20,7 +20,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { LoginCallbackComponent } from './pages/login-callback/login-callback.component';
 import { HelpComponent } from './pages/help/help.component';
 import { SelectDropDownModule } from 'ngx-select-dropdown'
-import { CreateUserCallbackComponent } from './pages/create-user-callback/create-user-callback.component';
 import { DisclaimerComponent } from './pages/disclaimer/disclaimer.component';
 import { FieldDefinitionListComponent } from './pages/field-definition-list/field-definition-list.component';
 import { FieldDefinitionEditComponent } from './pages/field-definition-edit/field-definition-edit.component';
@@ -60,7 +59,6 @@ export function init_app(authClientConfig: AuthClientConfig) {
     WatershedDetailComponent,
     LoginCallbackComponent,
     HelpComponent,
-    CreateUserCallbackComponent,
     DisclaimerComponent,
     FieldDefinitionListComponent,
     FieldDefinitionEditComponent,

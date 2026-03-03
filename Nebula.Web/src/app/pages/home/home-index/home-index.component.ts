@@ -60,9 +60,4 @@ export class HomeIndexComponent implements OnInit, OnDestroy {
   public createAccount(): void {
     this.authenticationService.createAccount();
   }
-
-  public requestSupportUrl(): string {
-    // TODO
-    return ""
-  }
 }

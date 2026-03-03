@@ -142,10 +142,7 @@ export class AuthenticationService {
   }
 
   public createAccount() {
-    // TODO remove create-user-callback?
-    const baseRedirect = environment.auth0Configuration?.redirectUri ?? window.location.origin;
-    const target = baseRedirect.replace(/\/$/, "") + "/create-user-callback";
-    this.auth.loginWithRedirect({ authorizationParams: { screen_hint: "signup", redirect_uri: target } } as any);
+    this.auth.loginWithRedirect({ authorizationParams: { screen_hint: "signup" } } as any);
   }
 
   public getAuthRedirectUrl() {

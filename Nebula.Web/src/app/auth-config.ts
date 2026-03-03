@@ -7,7 +7,6 @@ export function getAuthConfig(): import("@auth0/auth0-angular").AuthConfig {
     domain: environment.auth0Configuration.domain,
     clientId: environment.auth0Configuration.clientId,
     useRefreshTokens: true,
-    //useRefreshTokensFallback: true,  TODO
     cacheLocation: 'localstorage',
     authorizationParams: {
       redirect_uri: window.location.origin,
