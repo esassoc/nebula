@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Nebula.Models.DataTransferObjects;
 using Nebula.Models.DataTransferObjects.User;
+using Nebula.Models.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -184,7 +185,17 @@ namespace Nebula.EFModels.Entities
             user.LoginName = claims.Claims.Single(c => c.Type == "nickname").Value;
             user.Email = claims.Claims.Single(c => c.Type == ClaimTypes.Email).Value;
             user.LastActivityDate = DateTime.UtcNow;
-            // TODO FirstName and LastName?
+
+            var firstName = claims?.Claims.SingleOrDefault(c => c.Type == ClaimsConstants.GivenName)?.Value;
+            var lastName = claims?.Claims.SingleOrDefault(c => c.Type == ClaimsConstants.FamilyName)?.Value;
+            if (!string.IsNullOrWhiteSpace(firstName))
+            {
+                user.FirstName = firstName;
+            }
+            if (!string.IsNullOrWhiteSpace(lastName))
+            {
+                user.LastName = lastName;
+            }
 
             dbContext.SaveChanges();
             dbContext.Entry(user).Reload();

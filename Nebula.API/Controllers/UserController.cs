@@ -8,6 +8,7 @@ using Nebula.API.Services.Authorization;
 using Nebula.EFModels.Entities;
 using Nebula.Models.DataTransferObjects;
 using Nebula.Models.DataTransferObjects.User;
+using Nebula.Models.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +32,6 @@ namespace Nebula.API.Controllers
             // Access claims via the User property instead of injecting ClaimsPrincipal
             var claims = User;
             
-            // TODO validate first and last name?
             var globalID = claims.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
             var email = claims.Claims.Single(c => c.Type == ClaimTypes.Email).Value;
             if (string.IsNullOrWhiteSpace(globalID) || string.IsNullOrWhiteSpace(email))
@@ -43,11 +43,12 @@ namespace Nebula.API.Controllers
             var userDto = EFModels.Entities.User.GetByGlobalUserID(_dbContext, globalID) ?? EFModels.Entities.User.GetByEmail(_dbContext, email);  // get by globalid or email
             if (userDto == null)
             {
+                var firstName = claims?.Claims.SingleOrDefault(c => c.Type == ClaimsConstants.GivenName)?.Value;
+                var lastName = claims?.Claims.SingleOrDefault(c => c.Type == ClaimsConstants.FamilyName)?.Value;
                 var userCreateDto = new UserCreateDto()
                 {
-                    // TODO these are not being sent yet
-                    FirstName = "Test",
-                    LastName = "User",
+                    FirstName = firstName ?? "First",
+                    LastName = lastName ?? "Last",
                     Email = email,
                     LoginName = email,
                     GlobalUserID = globalID,
