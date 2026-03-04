@@ -219,7 +219,7 @@ As an administrator of the Smart Watershed Network Platform, you can assign them
             var messageBody = $@"You are receiving this notification because an administrator of the Smart Watershed Network Platform, an online service of the 
                 Environmental Science Associates, has invited you to create an account. <br /><br />
                 Please go to the <a href='{nebulaUrl}'>Smart Watershed Network Platform</a> website and click the Create Account button. <br /> <br />
-                Environmental Science Associates<br /><a href='mailto:{_nebulaConfiguration.LeadOrganizationEmail}'>{_nebulaConfiguration.LeadOrganizationEmail}</a><a href='https://esassoc.com'>https://esassoc.com</a>";
+                <a href='https://esassoc.com'>Environmental Science Associates</a><br /><a href='mailto:{_nebulaConfiguration.LeadOrganizationEmail}'>{_nebulaConfiguration.LeadOrganizationEmail}</a>";
 
             var mailMessage = new MailMessage
             {
