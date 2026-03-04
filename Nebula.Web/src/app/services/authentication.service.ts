@@ -36,7 +36,7 @@ export class AuthenticationService {
         }),
       ).subscribe(
         (user) => {
-          this.currentUserSubject.next(user);
+          this.updateUser(user);
         },
       );
 

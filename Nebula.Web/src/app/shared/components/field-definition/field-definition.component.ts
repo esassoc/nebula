@@ -7,13 +7,13 @@ import { NgbPopover } from '@ng-bootstrap/ng-bootstrap';
 import { FieldDefinitionTypeEnum } from '../../generated/enum/field-definition-type-enum';
 import { FieldDefinitionDto, FieldDefinitionService, UserDto } from '../../generated';
 
-declare let $ : any
+declare let $: any
 
 @Component({
-    selector: 'field-definition',
-    templateUrl: './field-definition.component.html',
-    styleUrls: ['./field-definition.component.scss'],
-    standalone: false
+  selector: 'field-definition',
+  templateUrl: './field-definition.component.html',
+  styleUrls: ['./field-definition.component.scss'],
+  standalone: false
 })
 export class FieldDefinitionComponent implements OnInit {
 
@@ -70,8 +70,7 @@ export class FieldDefinitionComponent implements OnInit {
     });
   }
 
-  private loadFieldDefinition(fieldDefinition:FieldDefinitionDto)
-  {
+  private loadFieldDefinition(fieldDefinition: FieldDefinitionDto) {
     this.fieldDefinition = fieldDefinition;
     this.emptyContent = fieldDefinition.FieldDefinitionValue?.length > 0 ? false : true;
     this.isLoading = false;
@@ -93,7 +92,7 @@ export class FieldDefinitionComponent implements OnInit {
   }
 
   public notEditingMouseLeave() {
-    setTimeout( () => {
+    setTimeout(() => {
       const hoveringPopover = this.elem.nativeElement.closest('body')
         .querySelector('.popover:hover')
       if (!hoveringPopover && !this.isEditing) {
