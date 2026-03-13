@@ -1,9 +1,6 @@
 <div class="container-fluid text-light my-0 py-0 d-none d-sm-block">
     <div class="row mt-0">
-        <div
-            class="col-sm homepageJumbotronImage"
-            id="homepageJumbotronImage1"
-        ></div>
+        <div class="col-sm homepageJumbotronImage" id="homepageJumbotronImage1"></div>
     </div>
 </div>
 
@@ -19,11 +16,7 @@
         </span>
     </ngb-alert>
 
-    <ngb-alert
-        *ngIf="userRoleIsDisabled()"
-        [type]="'info'"
-        [dismissible]="false"
-    >
+    <ngb-alert *ngIf="userRoleIsDisabled()" [type]="'info'" [dismissible]="false">
         <span>
             Your account is currently disabled. Please
             <a routerLink="/help">Request Support</a> if you would like to
@@ -38,9 +31,7 @@
             <div class="card">
                 <div class="card-header">
                     <ng-container *ngIf="!currentUser">Access</ng-container>
-                    <ng-container *ngIf="currentUser"
-                        >Quick actions</ng-container
-                    >
+                    <ng-container *ngIf="currentUser">Quick actions</ng-container>
                 </div>
                 <div class="card-body" *ngIf="!currentUser">
                     <div class="row">
@@ -51,16 +42,10 @@
                     </div>
                     <div class="row mt-2">
                         <div class="col mx-1">
-                            <button
-                                (click)="login()"
-                                class="btn btn-nebula me-1"
-                            >
+                            <button (click)="login()" class="btn btn-nebula me-1">
                                 Login
                             </button>
-                            <button
-                                (click)="createAccount()"
-                                class="btn btn-nebula ms-1"
-                            >
+                            <button (click)="createAccount()" class="btn btn-nebula ms-1">
                                 Create Account
                             </button>
                         </div>
@@ -69,34 +54,20 @@
                     <div class="row">
                         <div class="col">
                             <small style="font-size: 11px">
-                                Need help logging in? <br />
-                                <a href="{{ forgotPasswordUrl() }}"
-                                    >Forgot Password</a
-                                >
-                                |
-                                <a href="{{ forgotUsernameUrl() }}"
-                                    >Forgot Username</a
-                                >
-                                |
-                                <a href="{{ keystoneSupportUrl() }}"
-                                    >Request Support</a
-                                >
+                                Need help logging in?
+                                <a routerLink="/help">Request Support</a>
                             </small>
                         </div>
                     </div>
                 </div>
                 <div class="card-body" *ngIf="currentUser">
-                    <a class="btn btn-nebula" routerLink="/help"
-                        >Request Support</a
-                    >
+                    <a class="btn btn-nebula" routerLink="/help">Request Support</a>
                 </div>
             </div>
         </div>
         <div class="col-md-8 order-md-1 order-5 col-sm-12">
             <div class="mt-2">
-                <custom-rich-text
-                    [customRichTextTypeID]="richTextTypeID"
-                ></custom-rich-text>
+                <custom-rich-text [customRichTextTypeID]="richTextTypeID"></custom-rich-text>
             </div>
         </div>
     </div>

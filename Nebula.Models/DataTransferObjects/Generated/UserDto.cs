@@ -10,7 +10,8 @@ namespace Nebula.Models.DataTransferObjects
     public partial class UserDto
     {
         public int UserID { get; set; }
-        public Guid? UserGuid { get; set; }
+        public Guid? LegacyUserGuid { get; set; }
+        public string GlobalUserID { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
@@ -29,7 +30,8 @@ namespace Nebula.Models.DataTransferObjects
     public partial class UserSimpleDto
     {
         public int UserID { get; set; }
-        public Guid? UserGuid { get; set; }
+        public Guid? LegacyUserGuid { get; set; }
+        public string GlobalUserID { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }

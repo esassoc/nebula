@@ -11,11 +11,11 @@ namespace Nebula.API.Controllers
     [ApiController]
     public class CustomRichTextController : SitkaController<CustomRichTextController>
     {
-        public CustomRichTextController(NebulaDbContext dbContext, ILogger<CustomRichTextController> logger, KeystoneService keystoneService, IOptions<NebulaConfiguration> nebulaConfiguration) : base(dbContext, logger, keystoneService, nebulaConfiguration)
+        public CustomRichTextController(NebulaDbContext dbContext, ILogger<CustomRichTextController> logger, IOptions<NebulaConfiguration> nebulaConfiguration) : base(dbContext, logger, nebulaConfiguration)
         {
         }
 
-        [HttpGet("customRichText/{customRichTextTypeID}")]
+        [HttpGet("public/customRichText/{customRichTextTypeID}")]
         public ActionResult<CustomRichTextDto> GetCustomRichText([FromRoute] int customRichTextTypeID)
         {
             var customRichTextDto = CustomRichText.GetByCustomRichTextTypeID(_dbContext, customRichTextTypeID);

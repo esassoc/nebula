@@ -88,6 +88,14 @@ public partial class NebulaDbContext : DbContext
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.UserID).HasName("PK_User_UserID");
+
+            entity.HasIndex(e => e.GlobalUserID, "IX_User_GlobalUserID")
+                .IsUnique()
+                .HasFilter("([GlobalUserID] IS NOT NULL)");
+
+            entity.HasIndex(e => e.LegacyUserGuid, "IX_User_LegacyUserGuid")
+                .IsUnique()
+                .HasFilter("([LegacyUserGuid] IS NOT NULL)");
         });
 
         modelBuilder.Entity<Watershed>(entity =>

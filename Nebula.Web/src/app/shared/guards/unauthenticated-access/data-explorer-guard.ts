@@ -10,7 +10,7 @@ import { RoleEnum } from '../../generated/enum/role-enum';
 @Injectable({
   providedIn: 'root'
 })
-export class DataExplorerGuard  {
+export class DataExplorerGuard {
   constructor(private router: Router, private alertService: AlertService, private authenticationService: AuthenticationService) {
   }
   canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean {

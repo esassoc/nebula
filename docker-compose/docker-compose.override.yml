@@ -15,12 +15,12 @@ services:
       - ASPNETCORE_HTTPS_PORTS=8081
       - Kestrel__Certificates__Default__Path=/https/host.docker.internal.pfx
       - Kestrel__Certificates__Default__Password=password#1
-      - KEYSTONE_HOST=${KEYSTONE_HOST}
       - SITKA_EMAIL_REDIRECT=${SITKA_EMAIL_REDIRECT}
       - WEB_URL=${WEB_URL}
       - SECRET_PATH=${SECRET_PATH}
-      - KEYSTONE_REDIRECT_URL=${KEYSTONE_REDIRECT_URL}
       - LeadOrganizationEmail=${LeadOrganizationEmail}
+      - AUTH0_AUTHORITY=${AUTH0_AUTHORITY}
+      - AUTH0_AUDIENCE=${AUTH0_AUDIENCE}
     volumes:
       - ~/.aspnet/https:/https:ro 
 

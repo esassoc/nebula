@@ -8,14 +8,14 @@ import { RoleEnum } from '../../generated/enum/role-enum';
 import { CustomPageService, CustomPageWithRolesDto, UserDto, UserService } from '../../generated';
 
 @Component({
-    selector: 'header-nav',
-    templateUrl: './header-nav.component.html',
-    styleUrls: ['./header-nav.component.scss'],
-    standalone: false
+  selector: 'header-nav',
+  templateUrl: './header-nav.component.html',
+  styleUrls: ['./header-nav.component.scss'],
+  standalone: false
 })
 
 export class HeaderNavComponent implements OnInit, OnDestroy {
-    
+
   private currentUser: UserDto;
 
   windowWidth: number;
@@ -35,29 +35,31 @@ export class HeaderNavComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private customPageService: CustomPageService,
     private router: Router
-  ) {}
-    
+  ) { }
+
 
   ngOnInit() {
     // MP-AS 3-1-22 everywhere else fire and forget is fine, but if we need a refresh option, need to use currentUserSetObservable
-    this.watchUserChangeSubscription = this.authenticationService.currentUserSetObservable.subscribe(currentUser => {
+    this.watchUserChangeSubscription = this.authenticationService.currentUser$.subscribe(currentUser => {
       this.currentUser = currentUser;
-      if (currentUser && this.isAdministrator()){
-        this.userService.usersUnassignedReportGet().subscribe(report =>{
-          if (report.Count > 0){
-            this.alertService.pushAlert(new Alert(`There are ${report.Count} users who are waiting for you to configure their account. <a href='/users'>Manage Users</a>.`, AlertContext.Info, true, AlertService.USERS_AWAITING_CONFIGURATION));
-          }
-        })
+      if (currentUser) {
+        if (this.isAdministrator()) {
+          this.userService.usersUnassignedReportGet().subscribe(report => {
+            if (report.Count > 0) {
+              this.alertService.pushAlert(new Alert(`There are ${report.Count} users who are waiting for you to configure their account. <a href='/users'>Manage Users</a>.`, AlertContext.Info, true, AlertService.USERS_AWAITING_CONFIGURATION));
+            }
+          })
+        }
+        this.customPageService.customPagesWithRolesGet().subscribe(customPagesWithRoles => {
+          customPagesWithRoles = customPagesWithRoles
+            .filter(x => x.ViewableRoles.map(role => role.RoleID).includes(this.currentUser?.Role?.RoleID));
+          this.learnMorePages = customPagesWithRoles.filter(x => x.MenuItem.MenuItemName == 'LearnMore');
+        });
       }
-      this.customPageService.customPagesWithRolesGet().subscribe(customPagesWithRoles => {
-        customPagesWithRoles = customPagesWithRoles
-          .filter(x => x.ViewableRoles.map(role => role.RoleID).includes(this.currentUser?.Role?.RoleID));
-        this.learnMorePages = customPagesWithRoles.filter(x => x.MenuItem.MenuItemName == 'LearnMore');
-      });
     });
   }
 
-  ngOnDestroy() {  
+  ngOnDestroy() {
     this.watchUserChangeSubscription.unsubscribe();
     this.cdr.detach();
   }
@@ -66,7 +68,7 @@ export class HeaderNavComponent implements OnInit, OnDestroy {
     return this.authenticationService.isAuthenticated();
   }
 
-  public isHomepageCurrentPage(){
+  public isHomepageCurrentPage() {
     return this.router.url === '/';
   }
 
@@ -78,11 +80,11 @@ export class HeaderNavComponent implements OnInit, OnDestroy {
     return this.authenticationService.isUserAnAdministrator(this.currentUser);
   }
 
-  public isUnassigned(): boolean{
+  public isUnassigned(): boolean {
     return this.authenticationService.isUserUnassigned(this.currentUser);
   }
 
-  public isUnassignedOrDisabled(): boolean{
+  public isUnassignedOrDisabled(): boolean {
     return this.authenticationService.isUserUnassigned(this.currentUser) || this.authenticationService.isUserRoleDisabled(this.currentUser);
   }
 
@@ -103,7 +105,7 @@ export class HeaderNavComponent implements OnInit, OnDestroy {
     });
   }
 
-  public leadOrganizationLogoSrc(): string{
+  public leadOrganizationLogoSrc(): string {
     return 'assets/main/logos/nebula_logo.png';
   }
 }

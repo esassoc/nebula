@@ -3,7 +3,7 @@ declare let window: any;
 export class DynamicEnvironment {
   private _production: boolean;
 
-  constructor(_production: boolean){
+  constructor(_production: boolean) {
     this._production = _production
   }
 
@@ -29,20 +29,12 @@ export class DynamicEnvironment {
     return window.config.createAccountUrl;
   }
 
-  public get createAccountRedirectUrl() {
-    return window.config.createAccountRedirectUrl;
-  }
-
-  public get keystoneSupportBaseUrl() {
-    return window.config.keystoneSupportBaseUrl;
-  }
-
   public get geoserverMapServiceUrl() {
     return window.config.geoserverMapServiceUrl;
   }
 
-  public get keystoneAuthConfiguration() {
-    return window.config.keystoneAuthConfiguration;
+  public get auth0Configuration() {
+    return window.config.auth0Configuration;
   }
 
   public get lyraBaseURL() {

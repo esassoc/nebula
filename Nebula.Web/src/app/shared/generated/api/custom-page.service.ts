@@ -12,7 +12,9 @@
 /* tslint:disable:no-unused-variable member-ordering */
 
 import { Inject, Injectable, Optional }                      from '@angular/core';
-import { HttpClient, HttpHeaders, HttpResponse, HttpEvent }                           from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams,
+         HttpResponse, HttpEvent }                           from '@angular/common/http';
+import { CustomHttpUrlEncodingCodec }                        from '../encoder';
 
 import { Observable }                                        from 'rxjs';
 
@@ -21,7 +23,7 @@ import { CustomPageRoleSimpleDto } from '../model/custom-page-role-simple-dto';
 import { CustomPageUpsertDto } from '../model/custom-page-upsert-dto';
 import { CustomPageWithRolesDto } from '../model/custom-page-with-roles-dto';
 
-import { BASE_PATH }                     from '../variables';
+import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
 import { catchError } from 'rxjs/operators';
 import { ApiService } from '../../services';
@@ -32,77 +34,77 @@ import { ApiService } from '../../services';
 })
 export class CustomPageService {
 
-  protected basePath = 'http://localhost';
-  public defaultHeaders = new HttpHeaders();
-  public configuration = new Configuration();
+    protected basePath = 'http://localhost';
+    public defaultHeaders = new HttpHeaders();
+    public configuration = new Configuration();
 
-  constructor(protected httpClient: HttpClient, @Optional()@Inject(BASE_PATH) basePath: string, @Optional() configuration: Configuration
+    constructor(protected httpClient: HttpClient, @Optional()@Inject(BASE_PATH) basePath: string, @Optional() configuration: Configuration
     , private apiService: ApiService) {
-    if (basePath) {
-      this.basePath = basePath;
+        if (basePath) {
+            this.basePath = basePath;
+        }
+        if (configuration) {
+            this.configuration = configuration;
+            this.basePath = basePath || configuration.basePath || this.basePath;
+        }
     }
-    if (configuration) {
-      this.configuration = configuration;
-      this.basePath = basePath || configuration.basePath || this.basePath;
-    }
-  }
 
-  /**
+    /**
      * @param consumes string[] mime-types
      * @return true: consumes contains 'multipart/form-data', false: otherwise
      */
-  private canConsumeForm(consumes: string[]): boolean {
-    const form = 'multipart/form-data';
-    for (const consume of consumes) {
-      if (form === consume) {
-        return true;
-      }
+    private canConsumeForm(consumes: string[]): boolean {
+        const form = 'multipart/form-data';
+        for (const consume of consumes) {
+            if (form === consume) {
+                return true;
+            }
+        }
+        return false;
     }
-    return false;
-  }
 
 
-  /**
+    /**
      * 
      * 
      * @param customPageID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public customPagesCustomPageIDDelete(customPageID: number, observe?: 'body', reportProgress?: boolean): Observable<any>;
-  public customPagesCustomPageIDDelete(customPageID: number, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<any>>;
-  public customPagesCustomPageIDDelete(customPageID: number, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<any>>;
-  public customPagesCustomPageIDDelete(customPageID: number, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public customPagesCustomPageIDDelete(customPageID: number, observe?: 'body', reportProgress?: boolean): Observable<any>;
+    public customPagesCustomPageIDDelete(customPageID: number, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<any>>;
+    public customPagesCustomPageIDDelete(customPageID: number, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<any>>;
+    public customPagesCustomPageIDDelete(customPageID: number, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    if (customPageID === null || customPageID === undefined) {
-      throw new Error('Required parameter customPageID was null or undefined when calling customPagesCustomPageIDDelete.');
+        if (customPageID === null || customPageID === undefined) {
+            throw new Error('Required parameter customPageID was null or undefined when calling customPagesCustomPageIDDelete.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.delete<any>(`${this.basePath}/customPages/${encodeURIComponent(String(customPageID))}`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-    let headers = this.defaultHeaders;
-
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
-    }
-
-    // to determine the Content-Type header
-    const consumes: string[] = [
-    ];
-
-    return this.httpClient.delete<any>(`${this.basePath}/customPages/${encodeURIComponent(String(customPageID))}`,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param customPageID 
@@ -110,383 +112,383 @@ export class CustomPageService {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public customPagesCustomPageIDPut(customPageID: number, customPageUpsertDto?: CustomPageUpsertDto, observe?: 'body', reportProgress?: boolean): Observable<CustomPageDto>;
-  public customPagesCustomPageIDPut(customPageID: number, customPageUpsertDto?: CustomPageUpsertDto, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<CustomPageDto>>;
-  public customPagesCustomPageIDPut(customPageID: number, customPageUpsertDto?: CustomPageUpsertDto, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<CustomPageDto>>;
-  public customPagesCustomPageIDPut(customPageID: number, customPageUpsertDto?: CustomPageUpsertDto, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public customPagesCustomPageIDPut(customPageID: number, customPageUpsertDto?: CustomPageUpsertDto, observe?: 'body', reportProgress?: boolean): Observable<CustomPageDto>;
+    public customPagesCustomPageIDPut(customPageID: number, customPageUpsertDto?: CustomPageUpsertDto, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<CustomPageDto>>;
+    public customPagesCustomPageIDPut(customPageID: number, customPageUpsertDto?: CustomPageUpsertDto, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<CustomPageDto>>;
+    public customPagesCustomPageIDPut(customPageID: number, customPageUpsertDto?: CustomPageUpsertDto, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    if (customPageID === null || customPageID === undefined) {
-      throw new Error('Required parameter customPageID was null or undefined when calling customPagesCustomPageIDPut.');
+        if (customPageID === null || customPageID === undefined) {
+            throw new Error('Required parameter customPageID was null or undefined when calling customPagesCustomPageIDPut.');
+        }
+
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/_*+json',
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected != undefined) {
+            headers = headers.set('Content-Type', httpContentTypeSelected);
+        }
+
+        return this.httpClient.put<CustomPageDto>(`${this.basePath}/customPages/${encodeURIComponent(String(customPageID))}`,
+            customPageUpsertDto,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-
-    let headers = this.defaultHeaders;
-
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
-    }
-
-    // to determine the Content-Type header
-    const consumes: string[] = [
-      'application/json',
-      'text/json',
-      'application/_*+json',
-    ];
-    const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
-    if (httpContentTypeSelected != undefined) {
-      headers = headers.set('Content-Type', httpContentTypeSelected);
-    }
-
-    return this.httpClient.put<CustomPageDto>(`${this.basePath}/customPages/${encodeURIComponent(String(customPageID))}`,
-      customPageUpsertDto,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public customPagesGet(observe?: 'body', reportProgress?: boolean): Observable<Array<CustomPageDto>>;
-  public customPagesGet(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<CustomPageDto>>>;
-  public customPagesGet(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<CustomPageDto>>>;
-  public customPagesGet(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public customPagesGet(observe?: 'body', reportProgress?: boolean): Observable<Array<CustomPageDto>>;
+    public customPagesGet(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<CustomPageDto>>>;
+    public customPagesGet(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<CustomPageDto>>>;
+    public customPagesGet(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    let headers = this.defaultHeaders;
+        let headers = this.defaultHeaders;
 
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<Array<CustomPageDto>>(`${this.basePath}/customPages`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-    // to determine the Content-Type header
-    const consumes: string[] = [
-    ];
-
-    return this.httpClient.get<Array<CustomPageDto>>(`${this.basePath}/customPages`,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param customPageID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public customPagesGetByIDCustomPageIDGet(customPageID: number, observe?: 'body', reportProgress?: boolean): Observable<CustomPageDto>;
-  public customPagesGetByIDCustomPageIDGet(customPageID: number, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<CustomPageDto>>;
-  public customPagesGetByIDCustomPageIDGet(customPageID: number, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<CustomPageDto>>;
-  public customPagesGetByIDCustomPageIDGet(customPageID: number, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public customPagesGetByIDCustomPageIDGet(customPageID: number, observe?: 'body', reportProgress?: boolean): Observable<CustomPageDto>;
+    public customPagesGetByIDCustomPageIDGet(customPageID: number, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<CustomPageDto>>;
+    public customPagesGetByIDCustomPageIDGet(customPageID: number, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<CustomPageDto>>;
+    public customPagesGetByIDCustomPageIDGet(customPageID: number, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    if (customPageID === null || customPageID === undefined) {
-      throw new Error('Required parameter customPageID was null or undefined when calling customPagesGetByIDCustomPageIDGet.');
+        if (customPageID === null || customPageID === undefined) {
+            throw new Error('Required parameter customPageID was null or undefined when calling customPagesGetByIDCustomPageIDGet.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<CustomPageDto>(`${this.basePath}/customPages/getByID/${encodeURIComponent(String(customPageID))}`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-    let headers = this.defaultHeaders;
-
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
-    }
-
-    // to determine the Content-Type header
-    const consumes: string[] = [
-    ];
-
-    return this.httpClient.get<CustomPageDto>(`${this.basePath}/customPages/getByID/${encodeURIComponent(String(customPageID))}`,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param customPageID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public customPagesGetByIDCustomPageIDRolesGet(customPageID: number, observe?: 'body', reportProgress?: boolean): Observable<Array<CustomPageRoleSimpleDto>>;
-  public customPagesGetByIDCustomPageIDRolesGet(customPageID: number, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<CustomPageRoleSimpleDto>>>;
-  public customPagesGetByIDCustomPageIDRolesGet(customPageID: number, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<CustomPageRoleSimpleDto>>>;
-  public customPagesGetByIDCustomPageIDRolesGet(customPageID: number, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public customPagesGetByIDCustomPageIDRolesGet(customPageID: number, observe?: 'body', reportProgress?: boolean): Observable<Array<CustomPageRoleSimpleDto>>;
+    public customPagesGetByIDCustomPageIDRolesGet(customPageID: number, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<CustomPageRoleSimpleDto>>>;
+    public customPagesGetByIDCustomPageIDRolesGet(customPageID: number, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<CustomPageRoleSimpleDto>>>;
+    public customPagesGetByIDCustomPageIDRolesGet(customPageID: number, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    if (customPageID === null || customPageID === undefined) {
-      throw new Error('Required parameter customPageID was null or undefined when calling customPagesGetByIDCustomPageIDRolesGet.');
+        if (customPageID === null || customPageID === undefined) {
+            throw new Error('Required parameter customPageID was null or undefined when calling customPagesGetByIDCustomPageIDRolesGet.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<Array<CustomPageRoleSimpleDto>>(`${this.basePath}/customPages/getByID/${encodeURIComponent(String(customPageID))}/roles`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-    let headers = this.defaultHeaders;
-
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
-    }
-
-    // to determine the Content-Type header
-    const consumes: string[] = [
-    ];
-
-    return this.httpClient.get<Array<CustomPageRoleSimpleDto>>(`${this.basePath}/customPages/getByID/${encodeURIComponent(String(customPageID))}/roles`,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param customPageVanityURL 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public customPagesGetByURLCustomPageVanityURLGet(customPageVanityURL: string, observe?: 'body', reportProgress?: boolean): Observable<CustomPageDto>;
-  public customPagesGetByURLCustomPageVanityURLGet(customPageVanityURL: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<CustomPageDto>>;
-  public customPagesGetByURLCustomPageVanityURLGet(customPageVanityURL: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<CustomPageDto>>;
-  public customPagesGetByURLCustomPageVanityURLGet(customPageVanityURL: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public customPagesGetByURLCustomPageVanityURLGet(customPageVanityURL: string, observe?: 'body', reportProgress?: boolean): Observable<CustomPageDto>;
+    public customPagesGetByURLCustomPageVanityURLGet(customPageVanityURL: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<CustomPageDto>>;
+    public customPagesGetByURLCustomPageVanityURLGet(customPageVanityURL: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<CustomPageDto>>;
+    public customPagesGetByURLCustomPageVanityURLGet(customPageVanityURL: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    if (customPageVanityURL === null || customPageVanityURL === undefined) {
-      throw new Error('Required parameter customPageVanityURL was null or undefined when calling customPagesGetByURLCustomPageVanityURLGet.');
+        if (customPageVanityURL === null || customPageVanityURL === undefined) {
+            throw new Error('Required parameter customPageVanityURL was null or undefined when calling customPagesGetByURLCustomPageVanityURLGet.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<CustomPageDto>(`${this.basePath}/customPages/getByURL/${encodeURIComponent(String(customPageVanityURL))}`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-    let headers = this.defaultHeaders;
-
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
-    }
-
-    // to determine the Content-Type header
-    const consumes: string[] = [
-    ];
-
-    return this.httpClient.get<CustomPageDto>(`${this.basePath}/customPages/getByURL/${encodeURIComponent(String(customPageVanityURL))}`,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param customPageVanityURL 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public customPagesGetByURLCustomPageVanityURLRolesGet(customPageVanityURL: string, observe?: 'body', reportProgress?: boolean): Observable<Array<CustomPageRoleSimpleDto>>;
-  public customPagesGetByURLCustomPageVanityURLRolesGet(customPageVanityURL: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<CustomPageRoleSimpleDto>>>;
-  public customPagesGetByURLCustomPageVanityURLRolesGet(customPageVanityURL: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<CustomPageRoleSimpleDto>>>;
-  public customPagesGetByURLCustomPageVanityURLRolesGet(customPageVanityURL: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public customPagesGetByURLCustomPageVanityURLRolesGet(customPageVanityURL: string, observe?: 'body', reportProgress?: boolean): Observable<Array<CustomPageRoleSimpleDto>>;
+    public customPagesGetByURLCustomPageVanityURLRolesGet(customPageVanityURL: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<CustomPageRoleSimpleDto>>>;
+    public customPagesGetByURLCustomPageVanityURLRolesGet(customPageVanityURL: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<CustomPageRoleSimpleDto>>>;
+    public customPagesGetByURLCustomPageVanityURLRolesGet(customPageVanityURL: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    if (customPageVanityURL === null || customPageVanityURL === undefined) {
-      throw new Error('Required parameter customPageVanityURL was null or undefined when calling customPagesGetByURLCustomPageVanityURLRolesGet.');
+        if (customPageVanityURL === null || customPageVanityURL === undefined) {
+            throw new Error('Required parameter customPageVanityURL was null or undefined when calling customPagesGetByURLCustomPageVanityURLRolesGet.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<Array<CustomPageRoleSimpleDto>>(`${this.basePath}/customPages/getByURL/${encodeURIComponent(String(customPageVanityURL))}/roles`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-    let headers = this.defaultHeaders;
-
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
-    }
-
-    // to determine the Content-Type header
-    const consumes: string[] = [
-    ];
-
-    return this.httpClient.get<Array<CustomPageRoleSimpleDto>>(`${this.basePath}/customPages/getByURL/${encodeURIComponent(String(customPageVanityURL))}/roles`,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param customPageUpsertDto 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public customPagesPost(customPageUpsertDto?: CustomPageUpsertDto, observe?: 'body', reportProgress?: boolean): Observable<CustomPageDto>;
-  public customPagesPost(customPageUpsertDto?: CustomPageUpsertDto, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<CustomPageDto>>;
-  public customPagesPost(customPageUpsertDto?: CustomPageUpsertDto, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<CustomPageDto>>;
-  public customPagesPost(customPageUpsertDto?: CustomPageUpsertDto, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public customPagesPost(customPageUpsertDto?: CustomPageUpsertDto, observe?: 'body', reportProgress?: boolean): Observable<CustomPageDto>;
+    public customPagesPost(customPageUpsertDto?: CustomPageUpsertDto, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<CustomPageDto>>;
+    public customPagesPost(customPageUpsertDto?: CustomPageUpsertDto, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<CustomPageDto>>;
+    public customPagesPost(customPageUpsertDto?: CustomPageUpsertDto, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
 
-    let headers = this.defaultHeaders;
+        let headers = this.defaultHeaders;
 
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/_*+json',
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected != undefined) {
+            headers = headers.set('Content-Type', httpContentTypeSelected);
+        }
+
+        return this.httpClient.post<CustomPageDto>(`${this.basePath}/customPages`,
+            customPageUpsertDto,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-    // to determine the Content-Type header
-    const consumes: string[] = [
-      'application/json',
-      'text/json',
-      'application/_*+json',
-    ];
-    const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
-    if (httpContentTypeSelected != undefined) {
-      headers = headers.set('Content-Type', httpContentTypeSelected);
-    }
-
-    return this.httpClient.post<CustomPageDto>(`${this.basePath}/customPages`,
-      customPageUpsertDto,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public customPagesRolesGet(observe?: 'body', reportProgress?: boolean): Observable<Array<CustomPageRoleSimpleDto>>;
-  public customPagesRolesGet(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<CustomPageRoleSimpleDto>>>;
-  public customPagesRolesGet(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<CustomPageRoleSimpleDto>>>;
-  public customPagesRolesGet(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public customPagesRolesGet(observe?: 'body', reportProgress?: boolean): Observable<Array<CustomPageRoleSimpleDto>>;
+    public customPagesRolesGet(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<CustomPageRoleSimpleDto>>>;
+    public customPagesRolesGet(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<CustomPageRoleSimpleDto>>>;
+    public customPagesRolesGet(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    let headers = this.defaultHeaders;
+        let headers = this.defaultHeaders;
 
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<Array<CustomPageRoleSimpleDto>>(`${this.basePath}/customPages/roles`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-    // to determine the Content-Type header
-    const consumes: string[] = [
-    ];
-
-    return this.httpClient.get<Array<CustomPageRoleSimpleDto>>(`${this.basePath}/customPages/roles`,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public customPagesWithRolesGet(observe?: 'body', reportProgress?: boolean): Observable<Array<CustomPageWithRolesDto>>;
-  public customPagesWithRolesGet(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<CustomPageWithRolesDto>>>;
-  public customPagesWithRolesGet(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<CustomPageWithRolesDto>>>;
-  public customPagesWithRolesGet(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public customPagesWithRolesGet(observe?: 'body', reportProgress?: boolean): Observable<Array<CustomPageWithRolesDto>>;
+    public customPagesWithRolesGet(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<CustomPageWithRolesDto>>>;
+    public customPagesWithRolesGet(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<CustomPageWithRolesDto>>>;
+    public customPagesWithRolesGet(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    let headers = this.defaultHeaders;
+        let headers = this.defaultHeaders;
 
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<Array<CustomPageWithRolesDto>>(`${this.basePath}/customPages/withRoles`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
-
-    // to determine the Content-Type header
-    const consumes: string[] = [
-    ];
-
-    return this.httpClient.get<Array<CustomPageWithRolesDto>>(`${this.basePath}/customPages/withRoles`,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
 
 }

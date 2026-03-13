@@ -12,14 +12,16 @@
 /* tslint:disable:no-unused-variable member-ordering */
 
 import { Inject, Injectable, Optional }                      from '@angular/core';
-import { HttpClient, HttpHeaders, HttpResponse, HttpEvent }                           from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams,
+         HttpResponse, HttpEvent }                           from '@angular/common/http';
+import { CustomHttpUrlEncodingCodec }                        from '../encoder';
 
 import { Observable }                                        from 'rxjs';
 
 import { WatershedDto } from '../model/watershed-dto';
 import { WatershedIDListDto } from '../model/watershed-id-list-dto';
 
-import { BASE_PATH }                     from '../variables';
+import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
 import { catchError } from 'rxjs/operators';
 import { ApiService } from '../../services';
@@ -30,206 +32,206 @@ import { ApiService } from '../../services';
 })
 export class WatershedService {
 
-  protected basePath = 'http://localhost';
-  public defaultHeaders = new HttpHeaders();
-  public configuration = new Configuration();
+    protected basePath = 'http://localhost';
+    public defaultHeaders = new HttpHeaders();
+    public configuration = new Configuration();
 
-  constructor(protected httpClient: HttpClient, @Optional()@Inject(BASE_PATH) basePath: string, @Optional() configuration: Configuration
+    constructor(protected httpClient: HttpClient, @Optional()@Inject(BASE_PATH) basePath: string, @Optional() configuration: Configuration
     , private apiService: ApiService) {
-    if (basePath) {
-      this.basePath = basePath;
+        if (basePath) {
+            this.basePath = basePath;
+        }
+        if (configuration) {
+            this.configuration = configuration;
+            this.basePath = basePath || configuration.basePath || this.basePath;
+        }
     }
-    if (configuration) {
-      this.configuration = configuration;
-      this.basePath = basePath || configuration.basePath || this.basePath;
-    }
-  }
 
-  /**
+    /**
      * @param consumes string[] mime-types
      * @return true: consumes contains 'multipart/form-data', false: otherwise
      */
-  private canConsumeForm(consumes: string[]): boolean {
-    const form = 'multipart/form-data';
-    for (const consume of consumes) {
-      if (form === consume) {
-        return true;
-      }
+    private canConsumeForm(consumes: string[]): boolean {
+        const form = 'multipart/form-data';
+        for (const consume of consumes) {
+            if (form === consume) {
+                return true;
+            }
+        }
+        return false;
     }
-    return false;
-  }
 
 
-  /**
+    /**
      * 
      * 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public watershedsGet(observe?: 'body', reportProgress?: boolean): Observable<Array<WatershedDto>>;
-  public watershedsGet(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<WatershedDto>>>;
-  public watershedsGet(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<WatershedDto>>>;
-  public watershedsGet(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public watershedsGet(observe?: 'body', reportProgress?: boolean): Observable<Array<WatershedDto>>;
+    public watershedsGet(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<WatershedDto>>>;
+    public watershedsGet(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<WatershedDto>>>;
+    public watershedsGet(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    let headers = this.defaultHeaders;
+        let headers = this.defaultHeaders;
 
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<Array<WatershedDto>>(`${this.basePath}/watersheds`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-    // to determine the Content-Type header
-    const consumes: string[] = [
-    ];
-
-    return this.httpClient.get<Array<WatershedDto>>(`${this.basePath}/watersheds`,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param watershedIDListDto 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public watershedsGetBoundingBoxPost(watershedIDListDto?: WatershedIDListDto, observe?: 'body', reportProgress?: boolean): Observable<object>;
-  public watershedsGetBoundingBoxPost(watershedIDListDto?: WatershedIDListDto, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<object>>;
-  public watershedsGetBoundingBoxPost(watershedIDListDto?: WatershedIDListDto, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<object>>;
-  public watershedsGetBoundingBoxPost(watershedIDListDto?: WatershedIDListDto, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public watershedsGetBoundingBoxPost(watershedIDListDto?: WatershedIDListDto, observe?: 'body', reportProgress?: boolean): Observable<object>;
+    public watershedsGetBoundingBoxPost(watershedIDListDto?: WatershedIDListDto, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<object>>;
+    public watershedsGetBoundingBoxPost(watershedIDListDto?: WatershedIDListDto, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<object>>;
+    public watershedsGetBoundingBoxPost(watershedIDListDto?: WatershedIDListDto, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
 
-    let headers = this.defaultHeaders;
+        let headers = this.defaultHeaders;
 
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/_*+json',
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected != undefined) {
+            headers = headers.set('Content-Type', httpContentTypeSelected);
+        }
+
+        return this.httpClient.post<object>(`${this.basePath}/watersheds/getBoundingBox`,
+            watershedIDListDto,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-    // to determine the Content-Type header
-    const consumes: string[] = [
-      'application/json',
-      'text/json',
-      'application/_*+json',
-    ];
-    const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
-    if (httpContentTypeSelected != undefined) {
-      headers = headers.set('Content-Type', httpContentTypeSelected);
-    }
-
-    return this.httpClient.post<object>(`${this.basePath}/watersheds/getBoundingBox`,
-      watershedIDListDto,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param watershedID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public watershedsWatershedIDGet(watershedID: number, observe?: 'body', reportProgress?: boolean): Observable<WatershedDto>;
-  public watershedsWatershedIDGet(watershedID: number, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<WatershedDto>>;
-  public watershedsWatershedIDGet(watershedID: number, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<WatershedDto>>;
-  public watershedsWatershedIDGet(watershedID: number, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public watershedsWatershedIDGet(watershedID: number, observe?: 'body', reportProgress?: boolean): Observable<WatershedDto>;
+    public watershedsWatershedIDGet(watershedID: number, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<WatershedDto>>;
+    public watershedsWatershedIDGet(watershedID: number, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<WatershedDto>>;
+    public watershedsWatershedIDGet(watershedID: number, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    if (watershedID === null || watershedID === undefined) {
-      throw new Error('Required parameter watershedID was null or undefined when calling watershedsWatershedIDGet.');
+        if (watershedID === null || watershedID === undefined) {
+            throw new Error('Required parameter watershedID was null or undefined when calling watershedsWatershedIDGet.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<WatershedDto>(`${this.basePath}/watersheds/${encodeURIComponent(String(watershedID))}`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-    let headers = this.defaultHeaders;
-
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
-    }
-
-    // to determine the Content-Type header
-    const consumes: string[] = [
-    ];
-
-    return this.httpClient.get<WatershedDto>(`${this.basePath}/watersheds/${encodeURIComponent(String(watershedID))}`,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param watershedName 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public watershedsWatershedNameGetWatershedMaskGet(watershedName: string, observe?: 'body', reportProgress?: boolean): Observable<string>;
-  public watershedsWatershedNameGetWatershedMaskGet(watershedName: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<string>>;
-  public watershedsWatershedNameGetWatershedMaskGet(watershedName: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<string>>;
-  public watershedsWatershedNameGetWatershedMaskGet(watershedName: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public watershedsWatershedNameGetWatershedMaskGet(watershedName: string, observe?: 'body', reportProgress?: boolean): Observable<string>;
+    public watershedsWatershedNameGetWatershedMaskGet(watershedName: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<string>>;
+    public watershedsWatershedNameGetWatershedMaskGet(watershedName: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<string>>;
+    public watershedsWatershedNameGetWatershedMaskGet(watershedName: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    if (watershedName === null || watershedName === undefined) {
-      throw new Error('Required parameter watershedName was null or undefined when calling watershedsWatershedNameGetWatershedMaskGet.');
+        if (watershedName === null || watershedName === undefined) {
+            throw new Error('Required parameter watershedName was null or undefined when calling watershedsWatershedNameGetWatershedMaskGet.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<string>(`${this.basePath}/watersheds/${encodeURIComponent(String(watershedName))}/get-watershed-mask`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
-
-    let headers = this.defaultHeaders;
-
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
-    }
-
-    // to determine the Content-Type header
-    const consumes: string[] = [
-    ];
-
-    return this.httpClient.get<string>(`${this.basePath}/watersheds/${encodeURIComponent(String(watershedName))}/get-watershed-mask`,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
 
 }

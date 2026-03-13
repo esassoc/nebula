@@ -91,9 +91,8 @@ namespace Nebula.Web
             Staging = bool.Parse(configuration["Staging"]);
             Dev = bool.Parse(configuration["Dev"]);
             MainAppApiUrl = configuration["MainAppApiUrl"];
-            CreateAccountRedirectUrl = configuration["CreateAccountRedirectUrl"];
             GeoserverMapServiceUrl = configuration["GeoserverMapServiceUrl"];
-            KeystoneAuthConfiguration = new KeystoneAuthConfigurationDto(configuration);
+            Auth0Configuration = new Auth0ConfigurationDto(configuration);
             LyraBaseURL = configuration["LyraBaseURL"];
         }
 
@@ -105,51 +104,28 @@ namespace Nebula.Web
         public bool Dev { get; set; }
         [JsonPropertyName("mainAppApiUrl")]
         public string MainAppApiUrl { get; set; }
-        [JsonPropertyName("createAccountRedirectUrl")]
-        public string CreateAccountRedirectUrl { get; set; }
         [JsonPropertyName("geoserverMapServiceUrl")]
         public string GeoserverMapServiceUrl { get; set; }
-        [JsonPropertyName("keystoneAuthConfiguration")]
-        public KeystoneAuthConfigurationDto KeystoneAuthConfiguration { get; set; }
+        [JsonPropertyName("auth0Configuration")]
+        public Auth0ConfigurationDto Auth0Configuration { get; set; }
         [JsonPropertyName("lyraBaseURL")]
         public string LyraBaseURL {get; set;}
     }
 
-    public class KeystoneAuthConfigurationDto
+    public class Auth0ConfigurationDto
     {
-        public KeystoneAuthConfigurationDto(IConfiguration configuration)
+        public Auth0ConfigurationDto(IConfiguration configuration)
         {
-            ClientID = configuration["Keystone_ClientID"];
-            Issuer = configuration["Keystone_Issuer"];
-            RedirectUriRelative = configuration["Keystone_RedirectUriRelative"];
-            Scope = configuration["Keystone_Scope"];
-            SessionChecksEnabled = bool.Parse(configuration["Keystone_SessionCheckEnabled"]);
-            LogoutUrl = configuration["Keystone_LogoutUrl"];
-            PostLogoutRedirectUri = configuration["Keystone_PostLogoutRedirectUri"];
-            WaitForTokenInMsec = int.Parse(configuration["Keystone_WaitForTokenInMsec"]);
-            ResponseType = configuration["Keystone_ResponseType"];
-            DisablePKCE = bool.Parse(configuration["Keystone_DisablePKCE"]);
+            Domain = configuration["Auth0_Domain"];
+            ClientID = configuration["Auth0_ClientID"];
+            Audience = configuration["Auth0_Audience"];
         }
 
+        [JsonPropertyName("domain")]
+        public string Domain { get; set; }
         [JsonPropertyName("clientId")]
         public string ClientID { get; set; }
-        [JsonPropertyName("issuer")]
-        public string Issuer { get; set; }
-        [JsonPropertyName("redirectUriRelative")]
-        public string RedirectUriRelative { get; set; }
-        [JsonPropertyName("scope")]
-        public string Scope { get; set; }
-        [JsonPropertyName("sessionChecksEnabled")]
-        public bool SessionChecksEnabled { get; set; }
-        [JsonPropertyName("logoutUrl")]
-        public string LogoutUrl { get; set; }
-        [JsonPropertyName("postLogoutRedirectUri")]
-        public string PostLogoutRedirectUri { get; set; }
-        [JsonPropertyName("waitForTokenInMsec")]
-        public int WaitForTokenInMsec { get; set; }
-        [JsonPropertyName("responseType")]
-        public string ResponseType {get; set;}
-        [JsonPropertyName("disablePKCE")]
-        public bool DisablePKCE {get; set;}
+        [JsonPropertyName("audience")]
+        public string Audience { get; set; }
     }
 }

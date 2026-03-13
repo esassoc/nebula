@@ -1,6 +1,7 @@
 CREATE TABLE [dbo].[User] (
 	[UserID] [int] IDENTITY(1,1) NOT NULL,
-	[UserGuid] [uniqueidentifier] NULL,
+	[LegacyUserGuid] [uniqueidentifier] NULL,
+	[GlobalUserID] VARCHAR (254) NULL,
 	[FirstName] [varchar](100) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	[LastName] [varchar](100) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	[Email] [varchar](255) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
@@ -17,4 +18,11 @@ CREATE TABLE [dbo].[User] (
 	CONSTRAINT [PK_User_UserID] PRIMARY KEY CLUSTERED ([UserID] ASC),
 	CONSTRAINT [AK_User_Email] UNIQUE NONCLUSTERED ([Email] ASC),
 	CONSTRAINT [FK_User_Role_RoleID] FOREIGN KEY ([RoleID]) REFERENCES [dbo].[Role] ([RoleID])
-)
+);
+GO
+
+CREATE UNIQUE NONCLUSTERED INDEX [IX_User_LegacyUserGuid] ON [dbo].[User]([LegacyUserGuid] ASC) WHERE LegacyUserGuid IS NOT NULL;
+GO
+
+CREATE UNIQUE NONCLUSTERED INDEX [IX_User_GlobalUserID] ON [dbo].[User]([GlobalUserID] ASC) WHERE GlobalUserID IS NOT NULL;
+GO

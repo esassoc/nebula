@@ -11,10 +11,10 @@
  */
 
 export class FieldDefinitionTypeDto { 
-  FieldDefinitionTypeID?: number;
-  FieldDefinitionTypeName?: string;
-  FieldDefinitionTypeDisplayName?: string;
-  constructor(obj?: any) {
-    Object.assign(this, obj);
-  }
+    FieldDefinitionTypeID?: number;
+    FieldDefinitionTypeName?: string;
+    FieldDefinitionTypeDisplayName?: string;
+    constructor(obj?: any) {
+        Object.assign(this, obj);
+    }
 }

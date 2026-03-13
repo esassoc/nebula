@@ -1,9 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Nebula.Models.DataTransferObjects;
 using Nebula.Models.DataTransferObjects.User;
+using Nebula.Models.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 
 namespace Nebula.EFModels.Entities
 {
@@ -18,20 +20,18 @@ namespace Nebula.EFModels.Entities
             {
                 FirstName = userCreateDto.FirstName,
                 LastName = userCreateDto.LastName,
-                OrganizationName = userCreateDto.OrganizationName,
                 Email = userCreateDto.Email,
-                PhoneNumber = userCreateDto.PhoneNumber,
                 RoleID = (int)RoleEnum.Unassigned,  // don't allow non-admin user to set their role to something other than Unassigned
                 ReceiveSupportEmails = false  // don't allow non-admin users to hijack support emails
             };
-            return CreateNewUser(dbContext, userUpsertDto, userCreateDto.LoginName, userCreateDto.UserGuid);
+            return CreateNewUser(dbContext, userUpsertDto, userCreateDto.GlobalUserID);
         }
 
         public static List<ErrorMessage> ValidateCreateUnassignedUser(NebulaDbContext dbContext, UserCreateDto userCreateDto)
         {
             var result = new List<ErrorMessage>();
 
-            var userByGuidDto = GetByUserGuid(dbContext, userCreateDto.UserGuid);  // A duplicate Guid not only leads to 500s, it allows someone to hijack another user's account
+            var userByGuidDto = GetByGlobalUserID(dbContext, userCreateDto.GlobalUserID);  // A duplicate Guid not only leads to 500s, it allows someone to hijack another user's account
             if (userByGuidDto != null)
             {
                 result.Add(new ErrorMessage() { Type = "User Creation", Message = "Invalid user information." });  // purposely vague; we don't want a naughty person realizing they figured out someone else's Guid
@@ -46,7 +46,7 @@ namespace Nebula.EFModels.Entities
             return result;
         }
 
-        public static UserDto CreateNewUser(NebulaDbContext dbContext, UserUpsertDto userToCreate, string loginName, Guid userGuid)
+        public static UserDto CreateNewUser(NebulaDbContext dbContext, UserUpsertDto userToCreate, string globalID = null)
         {
             if (!userToCreate.RoleID.HasValue)
             {
@@ -55,8 +55,8 @@ namespace Nebula.EFModels.Entities
 
             var user = new User
             {
-                UserGuid = userGuid,
-                LoginName = loginName,
+                GlobalUserID = globalID,
+                LoginName = userToCreate.Email,
                 Email = userToCreate.Email,
                 FirstName = userToCreate.FirstName,
                 LastName = userToCreate.LastName,
@@ -113,10 +113,10 @@ namespace Nebula.EFModels.Entities
             
         }
 
-        public static UserDto GetByUserGuid(NebulaDbContext dbContext, Guid userGuid)
+        public static UserDto GetByGlobalUserID(NebulaDbContext dbContext, string globalID)
         {
             var user = GetUserImpl(dbContext)
-                .SingleOrDefault(x => x.UserGuid == userGuid);
+                .SingleOrDefault(x => x.GlobalUserID == globalID);
 
             return user?.AsDto();
         }
@@ -168,12 +168,38 @@ namespace Nebula.EFModels.Entities
             var user = dbContext.Users
                 .Single(x => x.UserID == userID);
 
-            user.UserGuid = userGuid;
+            user.LegacyUserGuid = userGuid;
             user.UpdateDate = DateTime.UtcNow;
 
             dbContext.SaveChanges();
             dbContext.Entry(user).Reload();
             return GetByUserID(dbContext, userID);
+        }
+
+        public static UserDto UpdateClaims(NebulaDbContext dbContext, int userID, ClaimsPrincipal claims, string globalID)
+        {
+            var user = dbContext.Users
+                .Single(x => x.UserID == userID);
+
+            user.GlobalUserID = globalID;
+            user.LoginName = claims.Claims.Single(c => c.Type == "nickname").Value;
+            user.Email = claims.Claims.Single(c => c.Type == ClaimTypes.Email).Value;
+            user.LastActivityDate = DateTime.UtcNow;
+
+            var firstName = claims?.Claims.SingleOrDefault(c => c.Type == ClaimsConstants.GivenName)?.Value;
+            var lastName = claims?.Claims.SingleOrDefault(c => c.Type == ClaimsConstants.FamilyName)?.Value;
+            if (!string.IsNullOrWhiteSpace(firstName))
+            {
+                user.FirstName = firstName;
+            }
+            if (!string.IsNullOrWhiteSpace(lastName))
+            {
+                user.LastName = lastName;
+            }
+
+            dbContext.SaveChanges();
+            dbContext.Entry(user).Reload();
+            return User.GetByUserID(dbContext, userID);
         }
 
         public static List<ErrorMessage> ValidateUpdate(NebulaDbContext dbContext, UserUpsertDto userEditDto, int userID)

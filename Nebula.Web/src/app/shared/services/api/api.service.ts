@@ -4,7 +4,6 @@ import { Observable, throwError as _throw } from 'rxjs';
 import { BusyService } from '../busy/busy.service';
 import { AlertService } from '../alert.service';
 import { Alert } from 'src/app/shared/models/alert';
-import { OAuthService } from 'angular-oauth2-oidc';
 
 
 @Injectable({
@@ -14,9 +13,8 @@ export class ApiService {
 
   constructor(
     private busyService: BusyService,
-    private alertService: AlertService, 
-    private oauthService: OAuthService, 
-    private router: Router, ) {
+    private alertService: AlertService,
+    private router: Router,) {
   }
 
   public handleResponse(response: any): Observable<any> {
@@ -32,7 +30,6 @@ export class ApiService {
     if (!supressErrorMessage) {
       if (error && (error.status === 401)) {
         this.alertService.pushAlert(new Alert('Access token expired...'));
-        this.oauthService.initCodeFlow();
       } else if (error && (error.status === 403)) {
         this.alertService.pushNotFoundUnauthorizedAlert();
         this.router.navigate(['/']);

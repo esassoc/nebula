@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Nebula.Models.DataTransferObjects.User
 {
@@ -14,8 +13,6 @@ namespace Nebula.Models.DataTransferObjects.User
         [Required]
         public string LoginName { get; set; }
         [Required]
-        public Guid UserGuid { get; set; }
-        public string OrganizationName { get; set; }
-        public string PhoneNumber { get; set; }
+        public string GlobalUserID { get; set; }
     }
 }

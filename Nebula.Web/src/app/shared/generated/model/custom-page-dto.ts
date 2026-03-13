@@ -12,14 +12,14 @@
 import { MenuItemDto } from '././menu-item-dto';
 
 export class CustomPageDto { 
-  readonly IsEmptyContent?: boolean;
-  CustomPageID?: number;
-  CustomPageDisplayName?: string;
-  CustomPageVanityUrl?: string;
-  CustomPageContent?: string;
-  MenuItem?: MenuItemDto;
-  SortOrder?: number;
-  constructor(obj?: any) {
-    Object.assign(this, obj);
-  }
+    readonly IsEmptyContent?: boolean;
+    CustomPageID?: number;
+    CustomPageDisplayName?: string;
+    CustomPageVanityUrl?: string;
+    CustomPageContent?: string;
+    MenuItem?: MenuItemDto;
+    SortOrder?: number;
+    constructor(obj?: any) {
+        Object.assign(this, obj);
+    }
 }

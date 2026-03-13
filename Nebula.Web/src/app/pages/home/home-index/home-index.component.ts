@@ -7,10 +7,10 @@ import { RoleEnum } from 'src/app/shared/generated/enum/role-enum';
 import { UserDto } from 'src/app/shared/generated';
 
 @Component({
-    selector: 'app-home-index',
-    templateUrl: './home-index.component.html',
-    styleUrls: ['./home-index.component.scss'],
-    standalone: false
+  selector: 'app-home-index',
+  templateUrl: './home-index.component.html',
+  styleUrls: ['./home-index.component.scss'],
+  standalone: false
 })
 export class HomeIndexComponent implements OnInit, OnDestroy {
   public watchUserChangeSubscription: any;
@@ -19,35 +19,13 @@ export class HomeIndexComponent implements OnInit, OnDestroy {
   public richTextTypeID: number = CustomRichTextTypeEnum.Homepage;
 
   constructor(private authenticationService: AuthenticationService,
-              private router: Router,
-              private route: ActivatedRoute) {
+    private router: Router,
+    private route: ActivatedRoute) {
   }
 
   public ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      //We're logging in
-      if (params.hasOwnProperty('code')) {
-        this.router.navigate(['/signin-oidc'], { queryParams : params });
-        return;
-      }
-
-      if (localStorage.getItem('loginOnReturn')) {
-        localStorage.removeItem('loginOnReturn');
-        this.authenticationService.login();
-      }
-    
-      //We were forced to logout or were sent a link and just finished logging in
-      if (this.authenticationService.getAuthRedirectUrl()) {
-        this.router.navigateByUrl(this.authenticationService.getAuthRedirectUrl())
-          .then(() => {
-            this.authenticationService.clearAuthRedirectUrl();
-          });
-      }
-    
-      this.authenticationService.getCurrentUser().subscribe(currentUser => {
-        this.currentUser = currentUser;
-      });
-
+    this.authenticationService.getCurrentUser().subscribe(currentUser => {
+      this.currentUser = currentUser;
     });
   }
 
@@ -81,17 +59,5 @@ export class HomeIndexComponent implements OnInit, OnDestroy {
 
   public createAccount(): void {
     this.authenticationService.createAccount();
-  }
-
-  public forgotPasswordUrl(): string {
-    return `${environment.keystoneAuthConfiguration.issuer}/Account/ForgotPassword?${this.authenticationService.getClientIDAndRedirectUrlForKeystone()}`;
-  }
-
-  public forgotUsernameUrl(): string {
-    return `${environment.keystoneAuthConfiguration.issuer}/Account/ForgotUsername?${this.authenticationService.getClientIDAndRedirectUrlForKeystone()}`;
-  }
-
-  public keystoneSupportUrl(): string {
-    return `${environment.keystoneAuthConfiguration.issuer}/Account/Support/20?${this.authenticationService.getClientIDAndRedirectUrlForKeystone()}`;
   }
 }

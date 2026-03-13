@@ -1,5 +1,4 @@
 ﻿using Nebula.Models.DataTransferObjects;
-using Nebula.Models.DataTransferObjects.User;
 
 namespace Nebula.EFModels.Entities
 {

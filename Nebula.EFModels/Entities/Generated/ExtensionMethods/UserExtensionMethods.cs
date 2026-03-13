@@ -14,7 +14,8 @@ namespace Nebula.EFModels.Entities
             var userDto = new UserDto()
             {
                 UserID = user.UserID,
-                UserGuid = user.UserGuid,
+                LegacyUserGuid = user.LegacyUserGuid,
+                GlobalUserID = user.GlobalUserID,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
@@ -40,7 +41,8 @@ namespace Nebula.EFModels.Entities
             var userSimpleDto = new UserSimpleDto()
             {
                 UserID = user.UserID,
-                UserGuid = user.UserGuid,
+                LegacyUserGuid = user.LegacyUserGuid,
+                GlobalUserID = user.GlobalUserID,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,

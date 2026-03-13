@@ -11,8 +11,8 @@
  */
 
 export class WatershedIDListDto { 
-  WatershedIDs?: Array<number>;
-  constructor(obj?: any) {
-    Object.assign(this, obj);
-  }
+    WatershedIDs?: Array<number>;
+    constructor(obj?: any) {
+        Object.assign(this, obj);
+    }
 }
