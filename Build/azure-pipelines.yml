@@ -520,6 +520,8 @@ stages:
                 global.env.sqlGeoserverUsername=$(sqlGeoserverUsername)
                 global.env.auth0Authority="$(auth0Authority)"
                 global.env.auth0Audience="$(auth0Audience)"
+                global.env.auth0Domain="$(auth0Domain)"
+                global.env.auth0ClientId="$(auth0ClientId)"
                 global.secrets.apiSqlPassword=$(SQL_API_PASSWORD)
                 global.secrets.sendGridApiKey="$(kv-sendGridApiKey)"
                 api.image.tag="$(Build.BuildNumber)-$(environment)"

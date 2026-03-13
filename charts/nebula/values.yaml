@@ -7,6 +7,8 @@ global:
     sqlGeoserverUsername: "NebulaGeo"
     auth0Authority: ""
     auth0Audience: ""
+    auth0Domain: ""
+    auth0ClientId: ""
   domains:
     api: "internalapi-nebula.aks-qa.sitkatech.com"
     web: "nebula.aks-qa.sitkatech.com"
