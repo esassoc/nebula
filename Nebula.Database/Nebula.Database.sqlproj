@@ -105,9 +105,14 @@
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="Scripts\Script.PostDeployment.sql" />
+    <None Include="Scripts\ReleaseScripts\0008 - Update Users.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\Script.PreDeployment.sql" />
+    <None Include="Scripts\PreReleaseScripts\0009 - Delete Duplicate User.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <RefactorLog Include="Nebula.Database.refactorlog" />
   </ItemGroup>
   <UsingTask TaskName="ScriptDeploymentGenerator" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
     <ParameterGroup>

@@ -17,7 +17,7 @@ namespace Nebula.API.Controllers
             return Ok(menuItemsDto);
         }
 
-        public MenuItemController(NebulaDbContext dbContext, ILogger<MenuItemController> logger, KeystoneService keystoneService, IOptions<NebulaConfiguration> nebulaConfiguration) : base(dbContext, logger, keystoneService, nebulaConfiguration)
+        public MenuItemController(NebulaDbContext dbContext, ILogger<MenuItemController> logger, IOptions<NebulaConfiguration> nebulaConfiguration) : base(dbContext, logger, nebulaConfiguration)
         {
         }
     }

@@ -7,9 +7,10 @@ interface MyParams extends IHeaderParams {
 }
 
 @Component({
-  selector: 'nebula-field-definition-grid-header',
-  templateUrl: './field-definition-grid-header.component.html',
-  styleUrls: ['./field-definition-grid-header.component.scss']
+    selector: 'nebula-field-definition-grid-header',
+    templateUrl: './field-definition-grid-header.component.html',
+    styleUrls: ['./field-definition-grid-header.component.scss'],
+    standalone: false
 })
 export class FieldDefinitionGridHeaderComponent implements OnDestroy, IHeaderAngularComp  {
   @ViewChild ('header') header: ElementRef;

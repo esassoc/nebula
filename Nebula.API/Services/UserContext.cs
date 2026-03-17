@@ -1,21 +1,13 @@
-﻿using System;
-using System.Linq;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Nebula.EFModels.Entities;
 using Nebula.Models.DataTransferObjects;
-using Nebula.Models.DataTransferObjects.User;
+using Nebula.Models.Helpers;
+using System.Linq;
 
 namespace Nebula.API.Services
 {
     public class UserContext
     {
-        public UserDto User { get; set; }
-
-        private UserContext(UserDto user)
-        {
-            User = user;
-        }
-
         public static UserDto GetUserFromHttpContext(NebulaDbContext dbContext, HttpContext httpContext)
         {
 
@@ -25,9 +17,9 @@ namespace Nebula.API.Services
                 return null;
             }
 
-            var userGuid = Guid.Parse(claimsPrincipal.Claims.Single(c => c.Type == "sub").Value);
-            var keystoneUser = Nebula.EFModels.Entities.User.GetByUserGuid(dbContext, userGuid);
-            return keystoneUser;
+            var globalID = claimsPrincipal.Claims.Single(c => c.Type == ClaimsConstants.Sub).Value;
+            var user = User.GetByGlobalUserID(dbContext, globalID);
+            return user;
         }
     }
 }

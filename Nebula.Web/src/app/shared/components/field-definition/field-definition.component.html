@@ -53,6 +53,7 @@
         <div *ngIf="isEditing">
             <editor
                 #tinyMceEditor
+                licenseKey="gpl"
                 [init]="tinyMceEditor | tinyMceConfig"
                 [(ngModel)]="editedContent"
             ></editor>
@@ -93,6 +94,7 @@
                     [popoverTitle]="popTitle"
                     triggers="manual"
                     [autoClose]="false"
+                    [animation]="false"
                     [placement]="['bottom', 'right', 'left', 'auto']"
                     popoverClass="popover-override"
                     container="body"
@@ -116,6 +118,7 @@
                         .FieldDefinitionTypeDisplayName
                 "
                 triggers="mouseenter:mouseleave"
+                [animation]="false"
                 container="body"
             >
             </i>

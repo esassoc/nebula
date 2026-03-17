@@ -12,11 +12,11 @@
 import { CustomRichTextTypeDto } from '././custom-rich-text-type-dto';
 
 export class CustomRichTextDto { 
-  IsEmptyContent?: boolean;
-  CustomRichTextID?: number;
-  CustomRichTextType?: CustomRichTextTypeDto;
-  CustomRichTextContent?: string;
-  constructor(obj?: any) {
-    Object.assign(this, obj);
-  }
+    IsEmptyContent?: boolean;
+    CustomRichTextID?: number;
+    CustomRichTextType?: CustomRichTextTypeDto;
+    CustomRichTextContent?: string;
+    constructor(obj?: any) {
+        Object.assign(this, obj);
+    }
 }

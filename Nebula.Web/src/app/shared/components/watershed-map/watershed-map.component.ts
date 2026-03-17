@@ -24,10 +24,11 @@ import { BoundingBoxDto } from '../../models/bounding-box-dto';
 declare let $: any
 
 @Component({
-  selector: 'watershed-map',
-  templateUrl: './watershed-map.component.html',
-  styleUrls: ['./watershed-map.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'watershed-map',
+    templateUrl: './watershed-map.component.html',
+    styleUrls: ['./watershed-map.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class WatershedMapComponent implements OnInit, AfterViewInit {
   @Input()

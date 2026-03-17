@@ -16,9 +16,10 @@ import { WatershedService } from '../../generated';
 declare let $: any;
 
 @Component({
-  selector: 'station-select-card',
-  templateUrl: './station-select-card.component.html',
-  styleUrls: ['./station-select-card.component.scss']
+    selector: 'station-select-card',
+    templateUrl: './station-select-card.component.html',
+    styleUrls: ['./station-select-card.component.scss'],
+    standalone: false
 })
 export class StationSelectCardComponent implements OnInit {
   @ViewChild('mapDiv') mapElement: ElementRef;

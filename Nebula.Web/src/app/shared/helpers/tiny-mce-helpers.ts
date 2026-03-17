@@ -8,8 +8,9 @@ export default class TinyMCEHelpers {
      * @returns 
      */
   public static DefaultInitConfig(editorComponent : EditorComponent = null, overrideConfig : object = null) : object {
-    const config = { 
-      plugins: 'lists link image media table code help wordcount', 
+    const config = {
+      license_key: 'gpl',
+      plugins: 'lists link image media table code help wordcount',
       menubar: false,
       toolbar: 'undo redo | styleselect | bold italic | bullist numlist | alignleft aligncenter alignright alignjustify | outdent indent | blockquote table | image media link unlink | styles | code',
       selector: 'textarea',

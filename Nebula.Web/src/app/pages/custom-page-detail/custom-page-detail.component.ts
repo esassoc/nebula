@@ -10,9 +10,10 @@ import { EditorComponent } from '@tinymce/tinymce-angular';
 import TinyMCEHelpers from 'src/app/shared/helpers/tiny-mce-helpers';
 
 @Component({
-  selector: 'nebula-custom-page-detail',
-  templateUrl: './custom-page-detail.component.html',
-  styleUrls: ['./custom-page-detail.component.scss']
+    selector: 'nebula-custom-page-detail',
+    templateUrl: './custom-page-detail.component.html',
+    styleUrls: ['./custom-page-detail.component.scss'],
+    standalone: false
 })
 export class CustomPageDetailComponent implements OnInit, AfterViewChecked {
   @ViewChild('tinyMceEditor') tinyMceEditor: EditorComponent;

@@ -17,7 +17,7 @@ namespace Nebula.API.Controllers
     [ApiController]
     public class WatershedController : SitkaController<WatershedController>
     {
-        public WatershedController(NebulaDbContext dbContext, ILogger<WatershedController> logger, KeystoneService keystoneService, IOptions<NebulaConfiguration> nebulaConfiguration) : base(dbContext, logger, keystoneService, nebulaConfiguration)
+        public WatershedController(NebulaDbContext dbContext, ILogger<WatershedController> logger, IOptions<NebulaConfiguration> nebulaConfiguration) : base(dbContext, logger, nebulaConfiguration)
         {
         }
 

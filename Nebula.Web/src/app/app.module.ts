@@ -1,13 +1,11 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NgModule, APP_INITIALIZER, ErrorHandler } from '@angular/core';
+import { NgModule, APP_INITIALIZER, ErrorHandler, importProvidersFrom } from '@angular/core';
+import { provideHttpClient, withInterceptors } from "@angular/common/http";
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SharedModule } from './shared/shared.module';
-import { OAuthModule, OAuthStorage } from 'angular-oauth2-oidc';
 import { CookieService } from 'ngx-cookie-service';
-import { HTTP_INTERCEPTORS } from '@angular/common/http';
-import { AuthInterceptor } from './shared/interceptors/auth-interceptor';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { HomeIndexComponent } from './pages/home/home-index/home-index.component';
 import { UserListComponent } from './pages/user-list/user-list.component';
@@ -18,15 +16,11 @@ import { UserEditComponent } from './pages/user-edit/user-edit.component';
 import { WatershedDetailComponent } from './pages/watershed-detail/watershed-detail.component';
 import { AgGridModule } from 'ag-grid-angular';
 import { DecimalPipe, CurrencyPipe, DatePipe } from '@angular/common';
-
-
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { LoginCallbackComponent } from './pages/login-callback/login-callback.component';
 import { HelpComponent } from './pages/help/help.component';
 import { SelectDropDownModule } from 'ngx-select-dropdown'
-import { CreateUserCallbackComponent } from './pages/create-user-callback/create-user-callback.component';
 import { DisclaimerComponent } from './pages/disclaimer/disclaimer.component';
-import { AppInitService } from './app.init';
 import { FieldDefinitionListComponent } from './pages/field-definition-list/field-definition-list.component';
 import { FieldDefinitionEditComponent } from './pages/field-definition-edit/field-definition-edit.component';
 import { TimeSeriesAnalysisComponent } from './pages/time-series-analysis/time-series-analysis.component';
@@ -35,17 +29,23 @@ import { GlobalErrorHandlerService } from './shared/services/global-error-handle
 import { PairedRegressionAnalysisComponent } from './pages/paired-regression-analysis/paired-regression-analysis.component';
 import { DiversionScenarioComponent } from './pages/diversion-scenario/diversion-scenario.component';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { CookieStorageService } from './shared/services/cookies/cookie-storage.service';
 import { CustomPageListComponent } from './pages/custom-page-list/custom-page-list.component';
 import { CustomPageDetailComponent } from './pages/custom-page-detail/custom-page-detail.component';
 import { CustomPageCreateComponent } from './pages/custom-page-create/custom-page-create.component';
 import { CustomPageEditPropertiesComponent } from './pages/custom-page-edit-properties/custom-page-edit-properties.component';
 import { ApiModule, Configuration } from './shared/generated';
+import { providePrimeNG } from 'primeng/config';
+import Lara from '@primeuix/themes/lara';
+import { ModuleRegistry } from 'ag-grid-community';
+import { AllCommunityModule } from 'ag-grid-community';
+import { AuthClientConfig, authHttpInterceptorFn, AuthModule, provideAuth0 } from "@auth0/auth0-angular";
+import { getAuthConfig } from './auth-config';
 
-
-export function init_app(appLoadService: AppInitService) {
-  return () => appLoadService.init().then(() => {
-  });
+export function init_app(authClientConfig: AuthClientConfig) {
+  return () => {
+    authClientConfig.set(getAuthConfig());
+    ModuleRegistry.registerModules([AllCommunityModule]);
+  };
 }
 
 @NgModule({
@@ -59,7 +59,6 @@ export function init_app(appLoadService: AppInitService) {
     WatershedDetailComponent,
     LoginCallbackComponent,
     HelpComponent,
-    CreateUserCallbackComponent,
     DisclaimerComponent,
     FieldDefinitionListComponent,
     FieldDefinitionEditComponent,
@@ -77,7 +76,6 @@ export function init_app(appLoadService: AppInitService) {
     BrowserAnimationsModule,
     NgbModule,
     RouterModule,
-    OAuthModule.forRoot(),
     SharedModule.forRoot(),
     FormsModule,
     ReactiveFormsModule,
@@ -93,18 +91,18 @@ export function init_app(appLoadService: AppInitService) {
   ],
   providers: [
     CookieService,
-    AppInitService,
-    { provide: APP_INITIALIZER, useFactory: init_app, deps: [AppInitService], multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    { provide: APP_INITIALIZER, useFactory: init_app, deps: [AuthClientConfig], multi: true },
     {
       provide: ErrorHandler,
       useClass: GlobalErrorHandlerService
     },
     DecimalPipe, CurrencyPipe, DatePipe,
-    {
-      provide: OAuthStorage,
-      useClass: CookieStorageService
-    }
+    providePrimeNG({
+      theme: { preset: Lara }
+    }),
+    importProvidersFrom(AuthModule.forRoot()),
+    provideAuth0(),
+    provideHttpClient(withInterceptors([authHttpInterceptorFn]))
   ],
   bootstrap: [AppComponent]
 })

@@ -1,10 +1,8 @@
 import { NgModule, ModuleWithProviders } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
 import { NotFoundComponent } from './pages';
 import { HeaderNavComponent } from './components';
-import { UnauthenticatedComponent } from './pages/unauthenticated/unauthenticated.component';
 import { SubscriptionInsufficientComponent } from './pages/subscription-insufficient/subscription-insufficient.component';
 import { RouterModule } from '@angular/router';
 import { WatershedDetailPopupComponent } from './components/watershed-detail-popup/watershed-detail-popup.component';
@@ -35,7 +33,6 @@ import { TinyMceConfigPipe } from './pipes/tiny-mce-config.pipe';
     AlertDisplayComponent,
     HeaderNavComponent,
     NotFoundComponent,
-    UnauthenticatedComponent,
     SubscriptionInsufficientComponent,
     WatershedMapComponent,
     WatershedDetailPopupComponent,
@@ -53,18 +50,6 @@ import { TinyMceConfigPipe } from './pipes/tiny-mce-config.pipe';
     CsvDownloadButtonComponent,
     ClearGridFiltersButtonComponent,
     TinyMceConfigPipe
-  ],
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    HttpClientModule,
-    RouterModule,
-    SelectDropDownModule,
-    EditorModule,
-    NgbModule,
-    NgSelectModule,
-    AutoCompleteModule
   ],
   exports: [
     AlertDisplayComponent,
@@ -84,10 +69,17 @@ import { TinyMceConfigPipe } from './pipes/tiny-mce-config.pipe';
     ClearGridFiltersButtonComponent,
     EditorModule,
     TinyMceConfigPipe
-  ],
-  providers:[
-    { provide: TINYMCE_SCRIPT_SRC, useValue: 'assets/tinymce/tinymce.min.js' }
-  ]
+  ], imports: [CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    SelectDropDownModule,
+    EditorModule,
+    NgbModule,
+    NgSelectModule,
+    AutoCompleteModule], providers: [
+      { provide: TINYMCE_SCRIPT_SRC, useValue: 'assets/tinymce/tinymce.min.js' },
+    ]
 })
 export class SharedModule {
   static forRoot(): ModuleWithProviders<SharedModule> {

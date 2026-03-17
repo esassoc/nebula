@@ -12,14 +12,15 @@
 /* tslint:disable:no-unused-variable member-ordering */
 
 import { Inject, Injectable, Optional }                      from '@angular/core';
-import { HttpClient, HttpHeaders,
-  HttpResponse, HttpEvent }                           from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams,
+         HttpResponse, HttpEvent }                           from '@angular/common/http';
+import { CustomHttpUrlEncodingCodec }                        from '../encoder';
 
 import { Observable }                                        from 'rxjs';
 
 import { FieldDefinitionDto } from '../model/field-definition-dto';
 
-import { BASE_PATH }                     from '../variables';
+import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
 import { catchError } from 'rxjs/operators';
 import { ApiService } from '../../services';
@@ -30,80 +31,80 @@ import { ApiService } from '../../services';
 })
 export class FieldDefinitionService {
 
-  protected basePath = 'http://localhost';
-  public defaultHeaders = new HttpHeaders();
-  public configuration = new Configuration();
+    protected basePath = 'http://localhost';
+    public defaultHeaders = new HttpHeaders();
+    public configuration = new Configuration();
 
-  constructor(protected httpClient: HttpClient, @Optional()@Inject(BASE_PATH) basePath: string, @Optional() configuration: Configuration
+    constructor(protected httpClient: HttpClient, @Optional()@Inject(BASE_PATH) basePath: string, @Optional() configuration: Configuration
     , private apiService: ApiService) {
-    if (basePath) {
-      this.basePath = basePath;
+        if (basePath) {
+            this.basePath = basePath;
+        }
+        if (configuration) {
+            this.configuration = configuration;
+            this.basePath = basePath || configuration.basePath || this.basePath;
+        }
     }
-    if (configuration) {
-      this.configuration = configuration;
-      this.basePath = basePath || configuration.basePath || this.basePath;
-    }
-  }
 
-  /**
+    /**
      * @param consumes string[] mime-types
      * @return true: consumes contains 'multipart/form-data', false: otherwise
      */
-  private canConsumeForm(consumes: string[]): boolean {
-    const form = 'multipart/form-data';
-    for (const consume of consumes) {
-      if (form === consume) {
-        return true;
-      }
+    private canConsumeForm(consumes: string[]): boolean {
+        const form = 'multipart/form-data';
+        for (const consume of consumes) {
+            if (form === consume) {
+                return true;
+            }
+        }
+        return false;
     }
-    return false;
-  }
 
 
-  /**
+    /**
      * 
      * 
      * @param fieldDefinitionTypeID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public fieldDefinitionsFieldDefinitionTypeIDGet(fieldDefinitionTypeID: number, observe?: 'body', reportProgress?: boolean): Observable<FieldDefinitionDto>;
-  public fieldDefinitionsFieldDefinitionTypeIDGet(fieldDefinitionTypeID: number, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<FieldDefinitionDto>>;
-  public fieldDefinitionsFieldDefinitionTypeIDGet(fieldDefinitionTypeID: number, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<FieldDefinitionDto>>;
-  public fieldDefinitionsFieldDefinitionTypeIDGet(fieldDefinitionTypeID: number, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public fieldDefinitionsFieldDefinitionTypeIDGet(fieldDefinitionTypeID: number, observe?: 'body', reportProgress?: boolean): Observable<FieldDefinitionDto>;
+    public fieldDefinitionsFieldDefinitionTypeIDGet(fieldDefinitionTypeID: number, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<FieldDefinitionDto>>;
+    public fieldDefinitionsFieldDefinitionTypeIDGet(fieldDefinitionTypeID: number, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<FieldDefinitionDto>>;
+    public fieldDefinitionsFieldDefinitionTypeIDGet(fieldDefinitionTypeID: number, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    if (fieldDefinitionTypeID === null || fieldDefinitionTypeID === undefined) {
-      throw new Error('Required parameter fieldDefinitionTypeID was null or undefined when calling fieldDefinitionsFieldDefinitionTypeIDGet.');
+        if (fieldDefinitionTypeID === null || fieldDefinitionTypeID === undefined) {
+            throw new Error('Required parameter fieldDefinitionTypeID was null or undefined when calling fieldDefinitionsFieldDefinitionTypeIDGet.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<FieldDefinitionDto>(`${this.basePath}/fieldDefinitions/${encodeURIComponent(String(fieldDefinitionTypeID))}`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-    let headers = this.defaultHeaders;
-
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
-    }
-
-    // to determine the Content-Type header
-    const consumes: string[] = [
-    ];
-
-    return this.httpClient.get<FieldDefinitionDto>(`${this.basePath}/fieldDefinitions/${encodeURIComponent(String(fieldDefinitionTypeID))}`,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param fieldDefinitionTypeID 
@@ -111,87 +112,87 @@ export class FieldDefinitionService {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public fieldDefinitionsFieldDefinitionTypeIDPut(fieldDefinitionTypeID: number, fieldDefinitionDto?: FieldDefinitionDto, observe?: 'body', reportProgress?: boolean): Observable<FieldDefinitionDto>;
-  public fieldDefinitionsFieldDefinitionTypeIDPut(fieldDefinitionTypeID: number, fieldDefinitionDto?: FieldDefinitionDto, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<FieldDefinitionDto>>;
-  public fieldDefinitionsFieldDefinitionTypeIDPut(fieldDefinitionTypeID: number, fieldDefinitionDto?: FieldDefinitionDto, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<FieldDefinitionDto>>;
-  public fieldDefinitionsFieldDefinitionTypeIDPut(fieldDefinitionTypeID: number, fieldDefinitionDto?: FieldDefinitionDto, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public fieldDefinitionsFieldDefinitionTypeIDPut(fieldDefinitionTypeID: number, fieldDefinitionDto?: FieldDefinitionDto, observe?: 'body', reportProgress?: boolean): Observable<FieldDefinitionDto>;
+    public fieldDefinitionsFieldDefinitionTypeIDPut(fieldDefinitionTypeID: number, fieldDefinitionDto?: FieldDefinitionDto, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<FieldDefinitionDto>>;
+    public fieldDefinitionsFieldDefinitionTypeIDPut(fieldDefinitionTypeID: number, fieldDefinitionDto?: FieldDefinitionDto, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<FieldDefinitionDto>>;
+    public fieldDefinitionsFieldDefinitionTypeIDPut(fieldDefinitionTypeID: number, fieldDefinitionDto?: FieldDefinitionDto, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    if (fieldDefinitionTypeID === null || fieldDefinitionTypeID === undefined) {
-      throw new Error('Required parameter fieldDefinitionTypeID was null or undefined when calling fieldDefinitionsFieldDefinitionTypeIDPut.');
+        if (fieldDefinitionTypeID === null || fieldDefinitionTypeID === undefined) {
+            throw new Error('Required parameter fieldDefinitionTypeID was null or undefined when calling fieldDefinitionsFieldDefinitionTypeIDPut.');
+        }
+
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/_*+json',
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected != undefined) {
+            headers = headers.set('Content-Type', httpContentTypeSelected);
+        }
+
+        return this.httpClient.put<FieldDefinitionDto>(`${this.basePath}/fieldDefinitions/${encodeURIComponent(String(fieldDefinitionTypeID))}`,
+            fieldDefinitionDto,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-
-    let headers = this.defaultHeaders;
-
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
-    }
-
-    // to determine the Content-Type header
-    const consumes: string[] = [
-      'application/json',
-      'text/json',
-      'application/_*+json',
-    ];
-    const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
-    if (httpContentTypeSelected != undefined) {
-      headers = headers.set('Content-Type', httpContentTypeSelected);
-    }
-
-    return this.httpClient.put<FieldDefinitionDto>(`${this.basePath}/fieldDefinitions/${encodeURIComponent(String(fieldDefinitionTypeID))}`,
-      fieldDefinitionDto,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public fieldDefinitionsGet(observe?: 'body', reportProgress?: boolean): Observable<Array<FieldDefinitionDto>>;
-  public fieldDefinitionsGet(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<FieldDefinitionDto>>>;
-  public fieldDefinitionsGet(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<FieldDefinitionDto>>>;
-  public fieldDefinitionsGet(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public fieldDefinitionsGet(observe?: 'body', reportProgress?: boolean): Observable<Array<FieldDefinitionDto>>;
+    public fieldDefinitionsGet(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<FieldDefinitionDto>>>;
+    public fieldDefinitionsGet(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<FieldDefinitionDto>>>;
+    public fieldDefinitionsGet(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    let headers = this.defaultHeaders;
+        let headers = this.defaultHeaders;
 
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<Array<FieldDefinitionDto>>(`${this.basePath}/fieldDefinitions`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
-
-    // to determine the Content-Type header
-    const consumes: string[] = [
-    ];
-
-    return this.httpClient.get<Array<FieldDefinitionDto>>(`${this.basePath}/fieldDefinitions`,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
 
 }

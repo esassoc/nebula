@@ -12,18 +12,18 @@
 /* tslint:disable:no-unused-variable member-ordering */
 
 import { Inject, Injectable, Optional }                      from '@angular/core';
-import { HttpClient, HttpHeaders,
-  HttpResponse, HttpEvent }                           from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams,
+         HttpResponse, HttpEvent }                           from '@angular/common/http';
+import { CustomHttpUrlEncodingCodec }                        from '../encoder';
 
 import { Observable }                                        from 'rxjs';
 
 import { UnassignedUserReportDto } from '../model/unassigned-user-report-dto';
-import { UserCreateDto } from '../model/user-create-dto';
 import { UserDto } from '../model/user-dto';
 import { UserInviteDto } from '../model/user-invite-dto';
 import { UserUpsertDto } from '../model/user-upsert-dto';
 
-import { BASE_PATH }                     from '../variables';
+import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
 import { catchError } from 'rxjs/operators';
 import { ApiService } from '../../services';
@@ -34,340 +34,331 @@ import { ApiService } from '../../services';
 })
 export class UserService {
 
-  protected basePath = 'http://localhost';
-  public defaultHeaders = new HttpHeaders();
-  public configuration = new Configuration();
+    protected basePath = 'http://localhost';
+    public defaultHeaders = new HttpHeaders();
+    public configuration = new Configuration();
 
-  constructor(protected httpClient: HttpClient, @Optional()@Inject(BASE_PATH) basePath: string, @Optional() configuration: Configuration
+    constructor(protected httpClient: HttpClient, @Optional()@Inject(BASE_PATH) basePath: string, @Optional() configuration: Configuration
     , private apiService: ApiService) {
-    if (basePath) {
-      this.basePath = basePath;
+        if (basePath) {
+            this.basePath = basePath;
+        }
+        if (configuration) {
+            this.configuration = configuration;
+            this.basePath = basePath || configuration.basePath || this.basePath;
+        }
     }
-    if (configuration) {
-      this.configuration = configuration;
-      this.basePath = basePath || configuration.basePath || this.basePath;
-    }
-  }
 
-  /**
+    /**
      * @param consumes string[] mime-types
      * @return true: consumes contains 'multipart/form-data', false: otherwise
      */
-  private canConsumeForm(consumes: string[]): boolean {
-    const form = 'multipart/form-data';
-    for (const consume of consumes) {
-      if (form === consume) {
-        return true;
-      }
+    private canConsumeForm(consumes: string[]): boolean {
+        const form = 'multipart/form-data';
+        for (const consume of consumes) {
+            if (form === consume) {
+                return true;
+            }
+        }
+        return false;
     }
-    return false;
-  }
 
 
-  /**
+    /**
      * 
      * 
      * @param globalID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public userClaimsGlobalIDGet(globalID: string, observe?: 'body', reportProgress?: boolean): Observable<UserDto>;
-  public userClaimsGlobalIDGet(globalID: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<UserDto>>;
-  public userClaimsGlobalIDGet(globalID: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<UserDto>>;
-  public userClaimsGlobalIDGet(globalID: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public userClaimsGlobalIDGet(globalID: string, observe?: 'body', reportProgress?: boolean): Observable<UserDto>;
+    public userClaimsGlobalIDGet(globalID: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<UserDto>>;
+    public userClaimsGlobalIDGet(globalID: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<UserDto>>;
+    public userClaimsGlobalIDGet(globalID: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    if (globalID === null || globalID === undefined) {
-      throw new Error('Required parameter globalID was null or undefined when calling userClaimsGlobalIDGet.');
+        if (globalID === null || globalID === undefined) {
+            throw new Error('Required parameter globalID was null or undefined when calling userClaimsGlobalIDGet.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<UserDto>(`${this.basePath}/user-claims/${encodeURIComponent(String(globalID))}`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-    let headers = this.defaultHeaders;
-
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
-    }
-
-    // to determine the Content-Type header
-    const consumes: string[] = [
-    ];
-
-    return this.httpClient.get<UserDto>(`${this.basePath}/user-claims/${encodeURIComponent(String(globalID))}`,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public usersGet(observe?: 'body', reportProgress?: boolean): Observable<Array<UserDto>>;
-  public usersGet(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<UserDto>>>;
-  public usersGet(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<UserDto>>>;
-  public usersGet(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public userClaimsPost(observe?: 'body', reportProgress?: boolean): Observable<UserDto>;
+    public userClaimsPost(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<UserDto>>;
+    public userClaimsPost(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<UserDto>>;
+    public userClaimsPost(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    let headers = this.defaultHeaders;
+        let headers = this.defaultHeaders;
 
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.post<UserDto>(`${this.basePath}/user-claims`,
+            null,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-    // to determine the Content-Type header
-    const consumes: string[] = [
-    ];
+    /**
+     * 
+     * 
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public usersGet(observe?: 'body', reportProgress?: boolean): Observable<Array<UserDto>>;
+    public usersGet(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<UserDto>>>;
+    public usersGet(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<UserDto>>>;
+    public usersGet(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    return this.httpClient.get<Array<UserDto>>(`${this.basePath}/users`,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
+        let headers = this.defaultHeaders;
 
-  /**
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<Array<UserDto>>(`${this.basePath}/users`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
+    }
+
+    /**
      * 
      * 
      * @param userInviteDto 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public usersInvitePost(userInviteDto?: UserInviteDto, observe?: 'body', reportProgress?: boolean): Observable<any>;
-  public usersInvitePost(userInviteDto?: UserInviteDto, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<any>>;
-  public usersInvitePost(userInviteDto?: UserInviteDto, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<any>>;
-  public usersInvitePost(userInviteDto?: UserInviteDto, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public usersInvitePost(userInviteDto?: UserInviteDto, observe?: 'body', reportProgress?: boolean): Observable<any>;
+    public usersInvitePost(userInviteDto?: UserInviteDto, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<any>>;
+    public usersInvitePost(userInviteDto?: UserInviteDto, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<any>>;
+    public usersInvitePost(userInviteDto?: UserInviteDto, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
 
-    let headers = this.defaultHeaders;
+        let headers = this.defaultHeaders;
 
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/_*+json',
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected != undefined) {
+            headers = headers.set('Content-Type', httpContentTypeSelected);
+        }
+
+        return this.httpClient.post<any>(`${this.basePath}/users/invite`,
+            userInviteDto,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-    // to determine the Content-Type header
-    const consumes: string[] = [
-      'application/json',
-      'text/json',
-      'application/_*+json',
-    ];
-    const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
-    if (httpContentTypeSelected != undefined) {
-      headers = headers.set('Content-Type', httpContentTypeSelected);
-    }
-
-    return this.httpClient.post<any>(`${this.basePath}/users/invite`,
-      userInviteDto,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
-     * 
-     * 
-     * @param userCreateDto 
-     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-     * @param reportProgress flag to report request and response progress.
-     */
-  public usersPost(userCreateDto?: UserCreateDto, observe?: 'body', reportProgress?: boolean): Observable<UserDto>;
-  public usersPost(userCreateDto?: UserCreateDto, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<UserDto>>;
-  public usersPost(userCreateDto?: UserCreateDto, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<UserDto>>;
-  public usersPost(userCreateDto?: UserCreateDto, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
-
-
-    let headers = this.defaultHeaders;
-
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
-    }
-
-    // to determine the Content-Type header
-    const consumes: string[] = [
-      'application/json',
-      'text/json',
-      'application/_*+json',
-    ];
-    const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
-    if (httpContentTypeSelected != undefined) {
-      headers = headers.set('Content-Type', httpContentTypeSelected);
-    }
-
-    return this.httpClient.post<UserDto>(`${this.basePath}/users`,
-      userCreateDto,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param body 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public usersSetDisclaimerAcknowledgedDatePut(body?: number, observe?: 'body', reportProgress?: boolean): Observable<UserDto>;
-  public usersSetDisclaimerAcknowledgedDatePut(body?: number, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<UserDto>>;
-  public usersSetDisclaimerAcknowledgedDatePut(body?: number, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<UserDto>>;
-  public usersSetDisclaimerAcknowledgedDatePut(body?: number, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public usersSetDisclaimerAcknowledgedDatePut(body?: number, observe?: 'body', reportProgress?: boolean): Observable<UserDto>;
+    public usersSetDisclaimerAcknowledgedDatePut(body?: number, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<UserDto>>;
+    public usersSetDisclaimerAcknowledgedDatePut(body?: number, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<UserDto>>;
+    public usersSetDisclaimerAcknowledgedDatePut(body?: number, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
 
-    let headers = this.defaultHeaders;
+        let headers = this.defaultHeaders;
 
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/_*+json',
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected != undefined) {
+            headers = headers.set('Content-Type', httpContentTypeSelected);
+        }
+
+        return this.httpClient.put<UserDto>(`${this.basePath}/users/set-disclaimer-acknowledged-date`,
+            body,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-    // to determine the Content-Type header
-    const consumes: string[] = [
-      'application/json',
-      'text/json',
-      'application/_*+json',
-    ];
-    const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
-    if (httpContentTypeSelected != undefined) {
-      headers = headers.set('Content-Type', httpContentTypeSelected);
-    }
-
-    return this.httpClient.put<UserDto>(`${this.basePath}/users/set-disclaimer-acknowledged-date`,
-      body,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public usersUnassignedReportGet(observe?: 'body', reportProgress?: boolean): Observable<UnassignedUserReportDto>;
-  public usersUnassignedReportGet(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<UnassignedUserReportDto>>;
-  public usersUnassignedReportGet(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<UnassignedUserReportDto>>;
-  public usersUnassignedReportGet(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public usersUnassignedReportGet(observe?: 'body', reportProgress?: boolean): Observable<UnassignedUserReportDto>;
+    public usersUnassignedReportGet(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<UnassignedUserReportDto>>;
+    public usersUnassignedReportGet(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<UnassignedUserReportDto>>;
+    public usersUnassignedReportGet(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    let headers = this.defaultHeaders;
+        let headers = this.defaultHeaders;
 
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<UnassignedUserReportDto>(`${this.basePath}/users/unassigned-report`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-    // to determine the Content-Type header
-    const consumes: string[] = [
-    ];
-
-    return this.httpClient.get<UnassignedUserReportDto>(`${this.basePath}/users/unassigned-report`,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param userID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public usersUserIDGet(userID: number, observe?: 'body', reportProgress?: boolean): Observable<UserDto>;
-  public usersUserIDGet(userID: number, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<UserDto>>;
-  public usersUserIDGet(userID: number, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<UserDto>>;
-  public usersUserIDGet(userID: number, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public usersUserIDGet(userID: number, observe?: 'body', reportProgress?: boolean): Observable<UserDto>;
+    public usersUserIDGet(userID: number, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<UserDto>>;
+    public usersUserIDGet(userID: number, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<UserDto>>;
+    public usersUserIDGet(userID: number, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    if (userID === null || userID === undefined) {
-      throw new Error('Required parameter userID was null or undefined when calling usersUserIDGet.');
+        if (userID === null || userID === undefined) {
+            throw new Error('Required parameter userID was null or undefined when calling usersUserIDGet.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<UserDto>(`${this.basePath}/users/${encodeURIComponent(String(userID))}`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
 
-    let headers = this.defaultHeaders;
-
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
-    }
-
-    // to determine the Content-Type header
-    const consumes: string[] = [
-    ];
-
-    return this.httpClient.get<UserDto>(`${this.basePath}/users/${encodeURIComponent(String(userID))}`,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
-
-  /**
+    /**
      * 
      * 
      * @param userID 
@@ -375,49 +366,49 @@ export class UserService {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-  public usersUserIDPut(userID: number, userUpsertDto?: UserUpsertDto, observe?: 'body', reportProgress?: boolean): Observable<UserDto>;
-  public usersUserIDPut(userID: number, userUpsertDto?: UserUpsertDto, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<UserDto>>;
-  public usersUserIDPut(userID: number, userUpsertDto?: UserUpsertDto, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<UserDto>>;
-  public usersUserIDPut(userID: number, userUpsertDto?: UserUpsertDto, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public usersUserIDPut(userID: number, userUpsertDto?: UserUpsertDto, observe?: 'body', reportProgress?: boolean): Observable<UserDto>;
+    public usersUserIDPut(userID: number, userUpsertDto?: UserUpsertDto, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<UserDto>>;
+    public usersUserIDPut(userID: number, userUpsertDto?: UserUpsertDto, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<UserDto>>;
+    public usersUserIDPut(userID: number, userUpsertDto?: UserUpsertDto, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-    if (userID === null || userID === undefined) {
-      throw new Error('Required parameter userID was null or undefined when calling usersUserIDPut.');
+        if (userID === null || userID === undefined) {
+            throw new Error('Required parameter userID was null or undefined when calling usersUserIDPut.');
+        }
+
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json',
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/_*+json',
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected != undefined) {
+            headers = headers.set('Content-Type', httpContentTypeSelected);
+        }
+
+        return this.httpClient.put<UserDto>(`${this.basePath}/users/${encodeURIComponent(String(userID))}`,
+            userUpsertDto,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
     }
-
-
-    let headers = this.defaultHeaders;
-
-    // to determine the Accept header
-    const httpHeaderAccepts: string[] = [
-      'text/plain',
-      'application/json',
-      'text/json',
-    ];
-    const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    if (httpHeaderAcceptSelected != undefined) {
-      headers = headers.set('Accept', httpHeaderAcceptSelected);
-    }
-
-    // to determine the Content-Type header
-    const consumes: string[] = [
-      'application/json',
-      'text/json',
-      'application/_*+json',
-    ];
-    const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
-    if (httpContentTypeSelected != undefined) {
-      headers = headers.set('Content-Type', httpContentTypeSelected);
-    }
-
-    return this.httpClient.put<UserDto>(`${this.basePath}/users/${encodeURIComponent(String(userID))}`,
-      userUpsertDto,
-      {
-        withCredentials: this.configuration.withCredentials,
-        headers: headers,
-        observe: observe,
-        reportProgress: reportProgress
-      }
-    ).pipe(catchError((error: any) => { return this.apiService.handleError(error)}));
-  }
 
 }

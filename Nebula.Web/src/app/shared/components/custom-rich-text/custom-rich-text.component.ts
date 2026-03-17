@@ -9,12 +9,13 @@ import { EditorComponent } from '@tinymce/tinymce-angular';
 @Component({
   selector: 'custom-rich-text',
   templateUrl: './custom-rich-text.component.html',
-  styleUrls: ['./custom-rich-text.component.scss']
+  styleUrls: ['./custom-rich-text.component.scss'],
+  standalone: false
 })
 export class CustomRichTextComponent implements OnInit {
-  @ViewChild('tinyMceEditor') tinyMceEditor : EditorComponent;
+  @ViewChild('tinyMceEditor') tinyMceEditor: EditorComponent;
   public tinyMceConfig: object;
-  
+
   @Input() customRichTextTypeID: number;
   public customRichTextContent: string;
   public isLoading: boolean = true;
@@ -27,7 +28,7 @@ export class CustomRichTextComponent implements OnInit {
 
   currentUser: UserDto;
 
-  constructor (
+  constructor(
     private customRichTextService: CustomRichTextService,
     private authenticationService: AuthenticationService,
     private alertService: AlertService
@@ -39,7 +40,7 @@ export class CustomRichTextComponent implements OnInit {
       this.canEdit = this.authenticationService.isUserAnAdministrator(currentUser);
     });
 
-    this.customRichTextService.customRichTextCustomRichTextTypeIDGet(this.customRichTextTypeID).subscribe(x => {
+    this.customRichTextService.publicCustomRichTextCustomRichTextTypeIDGet(this.customRichTextTypeID).subscribe(x => {
       this.customRichTextContent = x.CustomRichTextContent;
       this.isEmptyContent = x.IsEmptyContent;
       this.isLoading = false;

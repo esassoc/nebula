@@ -14,9 +14,10 @@ import { RoleDto, RoleService, UserDto, UserInviteDto, UserService } from 'src/a
   templateUrl: './user-invite.component.html',
   styleUrls: ['./user-invite.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class UserInviteComponent implements OnInit, OnDestroy {
-    
+
   private currentUser: UserDto;
 
   public roles: Array<RoleDto>;
@@ -24,12 +25,12 @@ export class UserInviteComponent implements OnInit, OnDestroy {
   public isLoadingSubmit: boolean = false;
 
   constructor(
-    private cdr: ChangeDetectorRef, 
+    private cdr: ChangeDetectorRef,
     private route: ActivatedRoute,
-    private router: Router, 
-    private userService: UserService, 
-    private roleService: RoleService, 
-    private authenticationService: AuthenticationService, 
+    private router: Router,
+    private userService: UserService,
+    private roleService: RoleService,
+    private authenticationService: AuthenticationService,
     private alertService: AlertService
   ) { }
 
@@ -48,8 +49,7 @@ export class UserInviteComponent implements OnInit, OnDestroy {
         forkJoin([
           this.userService.usersUserIDGet(userID)
         ]).subscribe(([user]) => {
-          if(user.UserGuid === null)
-          {
+          if (user.GlobalUserID === null) {
             const userToInvite = user instanceof Array
               ? null
               : user as UserDto;
@@ -83,11 +83,11 @@ export class UserInviteComponent implements OnInit, OnDestroy {
           this.alertService.pushAlert(new Alert('The user invite was successful.', AlertContext.Success));
         });
       }
-      ,
-      error => {
-        this.isLoadingSubmit = false;
-        this.cdr.detectChanges();
-      }
+        ,
+        error => {
+          this.isLoadingSubmit = false;
+          this.cdr.detectChanges();
+        }
       );
   }
 

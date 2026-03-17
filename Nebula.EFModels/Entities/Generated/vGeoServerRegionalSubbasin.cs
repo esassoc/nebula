@@ -5,22 +5,27 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 
-namespace Nebula.EFModels.Entities
+namespace Nebula.EFModels.Entities;
+
+[Keyless]
+public partial class vGeoServerRegionalSubbasin
 {
-    [Keyless]
-    public partial class vGeoServerRegionalSubbasin
-    {
-        public int RegionalSubbasinID { get; set; }
-        public int OCSurveyCatchmentID { get; set; }
-        public int? OCSurveyDownstreamCatchmentID { get; set; }
-        [StringLength(10)]
-        [Unicode(false)]
-        public string DrainID { get; set; }
-        [StringLength(100)]
-        [Unicode(false)]
-        public string Watershed { get; set; }
-        [Column(TypeName = "geometry")]
-        public Geometry CatchmentGeometry { get; set; }
-        public double? Area { get; set; }
-    }
+    public int RegionalSubbasinID { get; set; }
+
+    public int OCSurveyCatchmentID { get; set; }
+
+    public int? OCSurveyDownstreamCatchmentID { get; set; }
+
+    [StringLength(10)]
+    [Unicode(false)]
+    public string DrainID { get; set; }
+
+    [StringLength(100)]
+    [Unicode(false)]
+    public string Watershed { get; set; }
+
+    [Column(TypeName = "geometry")]
+    public Geometry CatchmentGeometry { get; set; }
+
+    public double? Area { get; set; }
 }

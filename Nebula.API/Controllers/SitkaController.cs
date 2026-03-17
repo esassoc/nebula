@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nebula.API.Services;
@@ -11,14 +10,12 @@ namespace Nebula.API.Controllers
     {
         protected readonly NebulaDbContext _dbContext;
         protected readonly ILogger<T> _logger;
-        protected readonly KeystoneService _keystoneService;
         protected readonly NebulaConfiguration _nebulaConfiguration;
 
-        protected SitkaController(NebulaDbContext dbContext, ILogger<T> logger, KeystoneService keystoneService, IOptions<NebulaConfiguration> nebulaConfiguration)
+        protected SitkaController(NebulaDbContext dbContext, ILogger<T> logger, IOptions<NebulaConfiguration> nebulaConfiguration)
         {
             _dbContext = dbContext;
             _logger = logger;
-            _keystoneService = keystoneService;
             _nebulaConfiguration = nebulaConfiguration.Value;
         }
 

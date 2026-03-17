@@ -5,10 +5,11 @@ import { forkJoin } from 'rxjs';
 import { UserDto, UserService } from 'src/app/shared/generated';
 
 @Component({
-  selector: 'template-user-detail',
-  templateUrl: './user-detail.component.html',
-  styleUrls: ['./user-detail.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'template-user-detail',
+    templateUrl: './user-detail.component.html',
+    styleUrls: ['./user-detail.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class UserDetailComponent implements OnInit, OnDestroy {
     

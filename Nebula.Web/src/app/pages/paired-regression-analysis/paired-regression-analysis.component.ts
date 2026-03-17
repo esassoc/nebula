@@ -18,9 +18,10 @@ import { UserDto } from 'src/app/shared/generated';
 declare let vegaEmbed: any;
 
 @Component({
-  selector: 'nebula-paired-regression-analysis',
-  templateUrl: './paired-regression-analysis.component.html',
-  styleUrls: ['./paired-regression-analysis.component.scss']
+    selector: 'nebula-paired-regression-analysis',
+    templateUrl: './paired-regression-analysis.component.html',
+    styleUrls: ['./paired-regression-analysis.component.scss'],
+    standalone: false
 })
 export class PairedRegressionAnalysisComponent implements OnInit {
   

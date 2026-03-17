@@ -12,24 +12,25 @@
 import { RoleDto } from '././role-dto';
 
 export class UserDto { 
-  UserID?: number;
-  UserGuid?: string;
-  FirstName?: string;
-  LastName?: string;
-  Email?: string;
-  Phone?: string;
-  Role?: RoleDto;
-  CreateDate?: string;
-  UpdateDate?: string;
-  LastActivityDate?: string;
-  DisclaimerAcknowledgedDate?: string;
-  IsActive?: boolean;
-  ReceiveSupportEmails?: boolean;
-  LoginName?: string;
-  Company?: string;
-  FullName?: string;
-  FullNameLastFirst?: string;
-  constructor(obj?: any) {
-    Object.assign(this, obj);
-  }
+    UserID?: number;
+    LegacyUserGuid?: string;
+    GlobalUserID?: string;
+    FirstName?: string;
+    LastName?: string;
+    Email?: string;
+    Phone?: string;
+    Role?: RoleDto;
+    CreateDate?: string;
+    UpdateDate?: string;
+    LastActivityDate?: string;
+    DisclaimerAcknowledgedDate?: string;
+    IsActive?: boolean;
+    ReceiveSupportEmails?: boolean;
+    LoginName?: string;
+    Company?: string;
+    FullName?: string;
+    FullNameLastFirst?: string;
+    constructor(obj?: any) {
+        Object.assign(this, obj);
+    }
 }

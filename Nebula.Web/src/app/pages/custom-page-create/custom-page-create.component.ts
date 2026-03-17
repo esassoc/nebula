@@ -9,10 +9,11 @@ import { AlertContext } from 'src/app/shared/models/enums/alert-context.enum';
 import { AlertService } from 'src/app/shared/services/alert.service';
 
 @Component({
-  selector: 'nebula-custom-page-create',
-  templateUrl: './custom-page-create.component.html',
-  styleUrls: ['./custom-page-create.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'nebula-custom-page-create',
+    templateUrl: './custom-page-create.component.html',
+    styleUrls: ['./custom-page-create.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 
 export class CustomPageCreateComponent implements OnInit, OnDestroy {

@@ -5,15 +5,16 @@ import { AuthenticationService } from 'src/app/services/authentication.service';
 @Component({
   selector: 'nebula-login-callback',
   templateUrl: './login-callback.component.html',
-  styleUrls: ['./login-callback.component.scss']
+  styleUrls: ['./login-callback.component.scss'],
+  standalone: false
 })
 export class LoginCallbackComponent implements OnInit, OnDestroy {
-  
+
 
   constructor(private router: Router, private authenticationService: AuthenticationService) { }
 
   ngOnInit() {
-    this.authenticationService.getCurrentUserID().subscribe(currentUser => {
+    this.authenticationService.getCurrentUser().subscribe(currentUser => {
       const redirect = this.authenticationService.getAuthRedirectUrl();
       if (redirect) {
         this.authenticationService.clearAuthRedirectUrl();
@@ -26,6 +27,6 @@ export class LoginCallbackComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    
+
   }
 }

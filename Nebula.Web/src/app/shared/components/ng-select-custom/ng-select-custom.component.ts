@@ -2,17 +2,18 @@ import { Component, forwardRef,ViewEncapsulation,Input } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
 @Component({
-  selector: 'ng-select-custom',
-  templateUrl: './ng-select-custom.component.html',
-  styleUrls: ['./ng-select-custom.component.scss'],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => NgSelectCustomComponent),
-      multi: true
-    }
-  ],
-  encapsulation:ViewEncapsulation.None,
+    selector: 'ng-select-custom',
+    templateUrl: './ng-select-custom.component.html',
+    styleUrls: ['./ng-select-custom.component.scss'],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => NgSelectCustomComponent),
+            multi: true
+        }
+    ],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class NgSelectCustomComponent {
 

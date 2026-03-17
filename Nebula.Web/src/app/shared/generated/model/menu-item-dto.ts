@@ -11,10 +11,10 @@
  */
 
 export class MenuItemDto { 
-  MenuItemID?: number;
-  MenuItemName?: string;
-  MenuItemDisplayName?: string;
-  constructor(obj?: any) {
-    Object.assign(this, obj);
-  }
+    MenuItemID?: number;
+    MenuItemName?: string;
+    MenuItemDisplayName?: string;
+    constructor(obj?: any) {
+        Object.assign(this, obj);
+    }
 }
