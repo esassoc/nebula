@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { forkJoin } from 'rxjs';
@@ -8,7 +8,6 @@ import { UserDto, WatershedDto, WatershedService } from 'src/app/shared/generate
     selector: 'template-watershed-detail',
     templateUrl: './watershed-detail.component.html',
     styleUrls: ['./watershed-detail.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class WatershedDetailComponent implements OnInit, OnDestroy {

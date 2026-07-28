@@ -1,4 +1,4 @@
-import { ApplicationRef, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { ApplicationRef, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { SiteFilterEnum } from '../../models/enums/site-filter.enum';
 import { SiteVariable } from '../../models/site-variable';
 import * as L from 'leaflet';
@@ -21,7 +21,6 @@ declare let $: any;
     selector: 'station-select-card',
     templateUrl: './station-select-card.component.html',
     styleUrls: ['./station-select-card.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class StationSelectCardComponent implements OnInit {

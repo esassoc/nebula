@@ -1,11 +1,10 @@
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
 
 @Component({
     selector: 'nebula-clear-grid-filters-button',
     templateUrl: './clear-grid-filters-button.component.html',
     styleUrls: ['./clear-grid-filters-button.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ClearGridFiltersButtonComponent {

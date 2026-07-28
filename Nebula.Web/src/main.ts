@@ -1,4 +1,4 @@
-import { enableProdMode, provideZoneChangeDetection } from '@angular/core';
+import { enableProdMode, provideZonelessChangeDetection } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
@@ -21,6 +21,6 @@ fetch("/assets/config.json", { credentials: "include" })
   .then(() => {
     // Bootstrap AFTER config is loaded
     platformBrowserDynamic()
-      .bootstrapModule(AppModule, { applicationProviders: [provideZoneChangeDetection()], })
+      .bootstrapModule(AppModule, { applicationProviders: [provideZonelessChangeDetection()], })
       .catch((err) => console.error(err));
   });

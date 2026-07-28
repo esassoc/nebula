@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectorRef, Component, Input, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { AfterViewChecked, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { SafeHtml, DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthenticationService } from 'src/app/services/authentication.service';
@@ -13,7 +13,6 @@ import TinyMCEHelpers from 'src/app/shared/helpers/tiny-mce-helpers';
     selector: 'nebula-custom-page-detail',
     templateUrl: './custom-page-detail.component.html',
     styleUrls: ['./custom-page-detail.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class CustomPageDetailComponent implements OnInit, AfterViewChecked {

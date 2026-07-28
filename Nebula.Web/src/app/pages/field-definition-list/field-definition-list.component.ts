@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { LinkRendererComponent } from 'src/app/shared/components/ag-grid/link-renderer/link-renderer.component';
 import { ColDef } from 'ag-grid-community';
@@ -10,7 +10,6 @@ import { FieldDefinitionDto, FieldDefinitionService, UserDto } from 'src/app/sha
     selector: 'nebula-field-definition-list',
     templateUrl: './field-definition-list.component.html',
     styleUrls: ['./field-definition-list.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class FieldDefinitionListComponent implements OnInit {

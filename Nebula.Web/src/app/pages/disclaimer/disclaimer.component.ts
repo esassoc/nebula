@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthenticationService } from 'src/app/services/authentication.service'
 import { UserDto, UserService } from 'src/app/shared/generated';
@@ -8,7 +8,6 @@ import { CustomRichTextTypeEnum } from 'src/app/shared/generated/enum/custom-ric
     selector: 'nebula-disclaimer',
     templateUrl: './disclaimer.component.html',
     styleUrls: ['./disclaimer.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class DisclaimerComponent implements OnInit {

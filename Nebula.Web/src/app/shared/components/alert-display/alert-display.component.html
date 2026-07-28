@@ -1,6 +1,6 @@
-@if (alerts.length > 0) {
+@if (alerts().length > 0) {
   <div class="mt-2">
-    @for (alert of alerts; track alert) {
+    @for (alert of alerts(); track alert) {
       <ngb-alert
         [type]="alert.context"
         [dismissible]="alert.dismissable"

@@ -1,36 +1,22 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit, ChangeDetectionStrategy} from '@angular/core';
-import {AlertService} from '../../services/alert.service';
-import {Alert} from '../../models/alert';
-import { Subscription } from 'rxjs';
+import { Component, OnDestroy, inject } from '@angular/core';
+import { AlertService } from '../../services/alert.service';
+import { Alert } from '../../models/alert';
 
 @Component({
     selector: 'app-alert-display',
     templateUrl: './alert-display.component.html',
     styleUrls: ['./alert-display.component.css'],
-    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class AlertDisplayComponent implements OnInit, OnDestroy {
+export class AlertDisplayComponent implements OnDestroy {
 
-  private alertSubscription: Subscription;
-  public alerts: Alert[] = [];
+  private alertService = inject(AlertService);
 
-  constructor(
-    private alertService: AlertService,
-    private cdr: ChangeDetectorRef
-  ) {
-  }
-
-  public ngOnInit(): void {
-    this.alertSubscription = this.alertService.alertSubject.asObservable().subscribe(alerts=>{
-      this.alerts = alerts;
-      this.cdr.detectChanges();
-    })
-  }
+  // Read straight off the service signal: no subscription to manage and no
+  // manual detectChanges(), which is what the zone-based version needed.
+  public alerts = this.alertService.alerts;
 
   public ngOnDestroy(): void {
-    this.alerts = null;
-    this.alertSubscription.unsubscribe();
     this.alertService.clearAlerts();
   }
 

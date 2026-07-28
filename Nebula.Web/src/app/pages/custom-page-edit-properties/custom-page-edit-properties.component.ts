@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { CustomPageDto, CustomPageService, CustomPageUpsertDto, MenuItemDto, MenuItemService, RoleDto, RoleService, UserDto } from 'src/app/shared/generated';
@@ -11,7 +11,6 @@ import { AlertService } from 'src/app/shared/services/alert.service';
     selector: 'nebula-custom-page-edit-properties',
     templateUrl: './custom-page-edit-properties.component.html',
     styleUrls: ['./custom-page-edit-properties.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class CustomPageEditPropertiesComponent implements OnInit, OnDestroy {

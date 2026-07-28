@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { environment } from 'src/environments/environment';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -10,7 +10,6 @@ import { UserDto } from 'src/app/shared/generated';
   selector: 'app-home-index',
   templateUrl: './home-index.component.html',
   styleUrls: ['./home-index.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class HomeIndexComponent implements OnInit, OnDestroy {

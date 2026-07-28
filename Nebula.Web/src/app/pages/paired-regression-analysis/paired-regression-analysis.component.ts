@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl, Validators, UntypedFormArray, UntypedFormBuilder } from '@angular/forms';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { LyraService } from 'src/app/services/lyra.service';
@@ -21,7 +21,6 @@ declare let vegaEmbed: any;
     selector: 'nebula-paired-regression-analysis',
     templateUrl: './paired-regression-analysis.component.html',
     styleUrls: ['./paired-regression-analysis.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class PairedRegressionAnalysisComponent implements OnInit {

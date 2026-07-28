@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -17,7 +17,6 @@ import { AlertService } from 'src/app/shared/services/alert.service';
     selector: 'nebula-custom-page-list',
     templateUrl: './custom-page-list.component.html',
     styleUrls: ['./custom-page-list.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class CustomPageListComponent implements OnInit, OnDestroy {

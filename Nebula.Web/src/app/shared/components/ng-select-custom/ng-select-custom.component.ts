@@ -1,4 +1,4 @@
-import { Component, forwardRef, ViewEncapsulation, Input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, forwardRef, ViewEncapsulation, Input } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
 @Component({
@@ -13,7 +13,6 @@ import { NG_VALUE_ACCESSOR } from '@angular/forms';
         }
     ],
     encapsulation: ViewEncapsulation.None,
-    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class NgSelectCustomComponent {

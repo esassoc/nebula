@@ -1,4 +1,4 @@
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { UtilityFunctionsService } from 'src/app/services/utility-functions.service';
 
@@ -6,7 +6,6 @@ import { UtilityFunctionsService } from 'src/app/services/utility-functions.serv
   selector: 'nebula-csv-download-button',
   templateUrl: './csv-download-button.component.html',
   styleUrls: ['./csv-download-button.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class CsvDownloadButtonComponent {

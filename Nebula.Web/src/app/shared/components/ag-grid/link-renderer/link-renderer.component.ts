@@ -1,11 +1,10 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component } from '@angular/core';
 import { AgRendererComponent } from 'ag-grid-angular';
 
 @Component({
     selector: 'nebula-link-renderer',
     templateUrl: './link-renderer.component.html',
     styleUrls: ['./link-renderer.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 
