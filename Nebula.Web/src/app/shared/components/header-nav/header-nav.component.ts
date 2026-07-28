@@ -23,7 +23,7 @@ export class HeaderNavComponent implements OnInit, OnDestroy {
   public learnMorePages: CustomPageWithRolesDto[] = [];
   watchUserChangeSubscription: any;
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener('window:resize')
   resize() {
     this.windowWidth = window.innerWidth;
   }

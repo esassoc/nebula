@@ -1,56 +1,66 @@
-<div *ngIf="isLoading" class="text-center">
+@if (isLoading) {
+  <div class="text-center">
     <span class="fa fa-spinner loading-spinner"></span>
-</div>
+  </div>
+}
 
-<div *ngIf="!isLoading">
-    <ng-container *ngIf="!isEditing">
+@if (!isLoading) {
+  <div>
+    @if (!isEditing) {
+      @if (canEdit) {
         <div
-            *ngIf="canEdit"
-            class="customRichTextContent"
-            style="position: relative; min-height: 60px"
-        >
-            <div class="hoverEditButton">
-                <div style="margin-top: 10px">
-                    <button
-                        type="button"
-                        class="btn btn-nebula"
-                        (click)="enterEdit()"
-                    >
-                        Edit
-                    </button>
-                </div>
+          class="customRichTextContent"
+          style="position: relative; min-height: 60px"
+          >
+          <div class="hoverEditButton">
+            <div style="margin-top: 10px">
+              <button
+                type="button"
+                class="btn btn-nebula"
+                (click)="enterEdit()"
+                >
+                Edit
+              </button>
             </div>
+          </div>
+          @if (!emptyContent) {
             <div
-                *ngIf="!emptyContent"
-                [innerHtml]="customRichTextContent"
+              [innerHtml]="customRichTextContent"
             ></div>
-
-            <div *ngIf="emptyContent" class="hoverEmptySpace"></div>
+          }
+          @if (emptyContent) {
+            <div class="hoverEmptySpace"></div>
+          }
         </div>
-        <div *ngIf="!canEdit" [innerHtml]="customRichTextContent"></div>
-    </ng-container>
-
-    <div *ngIf="isEditing">
+      }
+      @if (!canEdit) {
+        <div [innerHtml]="customRichTextContent"></div>
+      }
+    }
+    @if (isEditing) {
+      <div>
         <editor
-            #tinyMceEditor
-            licenseKey="gpl"
-            [init]="tinyMceEditor | tinyMceConfig"
-            [(ngModel)]="editedContent"
-        >
+          #tinyMceEditor
+          licenseKey="gpl"
+          [init]="tinyMceEditor | tinyMceConfig"
+          [(ngModel)]="editedContent"
+          >
         </editor>
         <button
-            type="button"
-            class="btn btn-primary mt-1 me-1"
-            (click)="saveEdit()"
-        >
-            Save
+          type="button"
+          class="btn btn-primary mt-1 me-1"
+          (click)="saveEdit()"
+          >
+          Save
         </button>
         <button
-            type="button"
-            class="btn btn-secondary mt-1"
-            (click)="cancelEdit()"
-        >
-            Cancel
+          type="button"
+          class="btn btn-secondary mt-1"
+          (click)="cancelEdit()"
+          >
+          Cancel
         </button>
-    </div>
-</div>
+      </div>
+    }
+  </div>
+}

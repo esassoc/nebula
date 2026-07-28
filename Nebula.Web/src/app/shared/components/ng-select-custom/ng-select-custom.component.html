@@ -1,49 +1,51 @@
 <ng-select
-    #ngSelectControl
-    placeholder="{{ placeholder }}"
-    bindLabel="{{ bindLabel }}"
-    bindValue="{{ bindValue }}"
-    labelForId="{{ labelForId }}"
-    [multiple]="multiple"
-    [items]="items"
-    appendTo="body"
-    [closeOnSelect]="false"
-    [searchable]="false"
-    [clearable]="false"
-    [formControl]="control"
->
-    <ng-template ng-header-tmp>
-        <div class="mb-1">
-            <input
-                type="text"
-                appAutofocus
-                class="form-control input-sm ng-select-search-box"
-                placeholder="Filter"
-                (input)="ngSelectControl.filter($event.target.value)"
-            />
-        </div>
-        <div class="btn-group btn-group-sm btn-block">
-            <button class="btn btn-sm btn-light" (click)="selectAll()">
-                Select All
-            </button>
-            <button class="btn btn-sm btn-light" (click)="clearAll()">
-                Clear All
-            </button>
-        </div>
-    </ng-template>
-    <ng-template ng-multi-label-tmp let-items="items" let-clear="clear">
-        <div
-            class="ng-value"
-            *ngFor="let item of items | slice: 0 : numSelectedItemsToShow"
+  #ngSelectControl
+  placeholder="{{ placeholder }}"
+  bindLabel="{{ bindLabel }}"
+  bindValue="{{ bindValue }}"
+  labelForId="{{ labelForId }}"
+  [multiple]="multiple"
+  [items]="items"
+  appendTo="body"
+  [closeOnSelect]="false"
+  [searchable]="false"
+  [clearable]="false"
+  [formControl]="control"
+  >
+  <ng-template ng-header-tmp>
+    <div class="mb-1">
+      <input
+        type="text"
+        appAutofocus
+        class="form-control input-sm ng-select-search-box"
+        placeholder="Filter"
+        (input)="ngSelectControl.filter($event.target.value)"
+        />
+    </div>
+    <div class="btn-group btn-group-sm btn-block">
+      <button class="btn btn-sm btn-light" (click)="selectAll()">
+        Select All
+      </button>
+      <button class="btn btn-sm btn-light" (click)="clearAll()">
+        Clear All
+      </button>
+    </div>
+  </ng-template>
+  <ng-template ng-multi-label-tmp let-items="items" let-clear="clear">
+    @for (item of items | slice: 0 : numSelectedItemsToShow; track item) {
+      <div
+        class="ng-value"
         >
-            <span class="ng-value-label">{{ item.display }}</span>
-            <span class="ng-value-icon right" (click)="clear(item)">×</span>
-        </div>
-        <span
-            class="ng-value"
-            style="background-color: transparent; margin-right: 0"
-            *ngIf="items.length > numSelectedItemsToShow"
-            >+{{ items.length - numSelectedItemsToShow }} more</span
+        <span class="ng-value-label">{{ item.display }}</span>
+        <span class="ng-value-icon right" (click)="clear(item)">×</span>
+      </div>
+    }
+    @if (items.length > numSelectedItemsToShow) {
+      <span
+        class="ng-value"
+        style="background-color: transparent; margin-right: 0"
+        >+{{ items.length - numSelectedItemsToShow }} more</span
         >
+      }
     </ng-template>
-</ng-select>
+  </ng-select>
