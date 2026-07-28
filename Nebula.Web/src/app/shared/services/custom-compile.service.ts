@@ -1,4 +1,4 @@
-import { Injectable, ApplicationRef, Injector, ComponentFactoryResolver } from '@angular/core';
+import { Injectable, ApplicationRef, EnvironmentInjector, createComponent } from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
@@ -8,8 +8,7 @@ export class CustomCompileService {
   private appRef: ApplicationRef;
 
   constructor(
-    private injector: Injector,
-    private resolver: ComponentFactoryResolver
+    private environmentInjector: EnvironmentInjector
   ) { }
 
   configure(appRef) {
@@ -17,8 +16,15 @@ export class CustomCompileService {
   }
 
   compile(component, onAttach) {
-    const compFactory = this.resolver.resolveComponentFactory(component);
-    const compRef = compFactory.create(this.injector);
+    // Angular 22 removed ComponentFactoryResolver/resolveComponentFactory.
+    // createComponent() is the supported equivalent: with no hostElement it
+    // creates a detached host element, which is what the old
+    // compFactory.create(injector) produced. Behaviour is unchanged -- the
+    // component is attached to the ApplicationRef so it takes part in change
+    // detection, then its DOM node is handed back for Leaflet to put in a popup.
+    const compRef = createComponent(component, {
+      environmentInjector: this.environmentInjector
+    });
 
     if (onAttach) {
       onAttach(compRef);

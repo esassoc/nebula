@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, Input, ChangeDetectorRef, ViewChild, ElementRef, ChangeDetectionStrategy } from '@angular/core';
 import { Alert } from '../../models/alert';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { AlertService } from '../../services/alert.service';
@@ -13,6 +13,7 @@ declare let $: any
   selector: 'field-definition',
   templateUrl: './field-definition.component.html',
   styleUrls: ['./field-definition.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class FieldDefinitionComponent implements OnInit {

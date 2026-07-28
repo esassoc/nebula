@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { ColDef } from 'ag-grid-community';
 import { LinkRendererComponent } from 'src/app/shared/components/ag-grid/link-renderer/link-renderer.component';
@@ -14,6 +14,7 @@ declare let $: any;
   selector: 'nebula-user-list',
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class UserListComponent implements OnInit, OnDestroy {

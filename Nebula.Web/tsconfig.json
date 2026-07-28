@@ -1,8 +1,16 @@
 {
     "compileOnSave": false,
     "compilerOptions": {
+        // TypeScript 6 flipped the default of "strict" from false to true.
+        // This project has never compiled under strict mode (hundreds of
+        // uninitialised properties and implicit anys), so pin it explicitly
+        // rather than let a compiler upgrade silently change type checking.
+        // Turning it on is worthwhile but is its own piece of work.
+        "strict": false,
+        // baseUrl is deprecated in TS 6 (TS5101) but still required here:
+        // the app imports via non-relative paths like 'src/app/...'.
         "baseUrl": "./",
-        "downlevelIteration": true,
+        "ignoreDeprecations": "6.0",
         "outDir": "./dist/out-tsc",
         "sourceMap": true,
         "declaration": false,

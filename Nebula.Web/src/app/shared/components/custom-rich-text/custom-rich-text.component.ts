@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { AlertService } from '../../services/alert.service';
 import { Alert } from '../../models/alert';
@@ -10,6 +10,7 @@ import { EditorComponent } from '@tinymce/tinymce-angular';
   selector: 'custom-rich-text',
   templateUrl: './custom-rich-text.component.html',
   styleUrls: ['./custom-rich-text.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class CustomRichTextComponent implements OnInit {

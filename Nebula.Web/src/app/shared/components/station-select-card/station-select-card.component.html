@@ -18,20 +18,20 @@
         </div>
         <div class="d-inline-block float-lg-right ms-4">
           <label class="col-form-label"> Station Search: </label>
-          <p-autoComplete #stationMapSearch id="stationMapSearch" styleClass="custom"
-            class="d-inline-block ms-1" appendTo="body" placeholder="Station Name, ID, or Description"
-            emptyMessage="No Results" [(ngModel)]="searchText" [suggestions]="searchSuggestions"
-            (completeMethod)="search($event)" (onFocus)="reFocus(stationMapSearch)"
-            (onSelect)="select($event)" type="search">
-            <ng-template let-result pTemplate="item">
-              <div style="border-bottom: 1px solid #d5d5d5;background-color: white;width: 100%;">
-                <div class="objectType">
-                  {{ result.StationProperty }}
-                </div>
-                {{ result.StationPropertyValue }}
+          <input id="stationMapSearch" type="search" class="form-control custom-station-search d-inline-block ms-1"
+            placeholder="Station Name, ID, or Description" autocomplete="off"
+            [(ngModel)]="searchText" [ngbTypeahead]="search"
+            [resultTemplate]="stationSearchResult" [inputFormatter]="searchResultFormatter"
+            [container]="'body'" (selectItem)="onSearchSelect($event)"
+            (focus)="searchFocus$.next(searchText ?? '')" />
+          <ng-template #stationSearchResult let-result="result">
+            <div class="station-search-result">
+              <div class="objectType">
+                {{ result.StationProperty }}
               </div>
-            </ng-template>
-          </p-autoComplete>
+              {{ result.StationPropertyValue }}
+            </div>
+          </ng-template>
         </div>
       </div>
     </div>

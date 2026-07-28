@@ -1,4 +1,4 @@
-import { Component, Inject, DOCUMENT } from '@angular/core';
+import { Component, Inject, DOCUMENT, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouteConfigLoadStart, RouteConfigLoadEnd, NavigationEnd } from '@angular/router';
 import { BusyService } from './shared/services';
 import { Title } from '@angular/platform-browser';
@@ -7,6 +7,7 @@ import { Title } from '@angular/platform-browser';
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class AppComponent {

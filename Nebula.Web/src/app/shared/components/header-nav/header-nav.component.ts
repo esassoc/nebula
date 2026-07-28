@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, HostListener, ChangeDetectorRef, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { AlertService } from '../../services/alert.service';
 import { Alert } from '../../models/alert';
@@ -11,6 +11,7 @@ import { CustomPageService, CustomPageWithRolesDto, UserDto, UserService } from 
   selector: 'header-nav',
   templateUrl: './header-nav.component.html',
   styleUrls: ['./header-nav.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 

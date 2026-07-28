@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Alert } from 'src/app/shared/models/alert';
@@ -11,6 +11,7 @@ import { Observable } from 'rxjs';
     selector: 'nebula-field-definition-edit',
     templateUrl: './field-definition-edit.component.html',
     styleUrls: ['./field-definition-edit.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class FieldDefinitionEditComponent implements OnInit {

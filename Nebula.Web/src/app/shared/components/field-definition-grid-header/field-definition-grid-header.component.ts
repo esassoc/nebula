@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnDestroy, ViewChild} from '@angular/core';
+import {Component, ElementRef, OnDestroy, ViewChild, ChangeDetectionStrategy} from '@angular/core';
 import {IHeaderParams} from 'ag-grid-community';
 import {IHeaderAngularComp} from 'ag-grid-angular';
 
@@ -10,6 +10,7 @@ interface MyParams extends IHeaderParams {
     selector: 'nebula-field-definition-grid-header',
     templateUrl: './field-definition-grid-header.component.html',
     styleUrls: ['./field-definition-grid-header.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class FieldDefinitionGridHeaderComponent implements OnDestroy, IHeaderAngularComp  {

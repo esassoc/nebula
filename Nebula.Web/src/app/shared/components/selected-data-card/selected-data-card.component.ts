@@ -1,10 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { SiteVariable } from '../../models/site-variable';
 
 @Component({
     selector: 'selected-data-card',
     templateUrl: './selected-data-card.component.html',
     styleUrls: ['./selected-data-card.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class SelectedDataCardComponent implements OnInit {

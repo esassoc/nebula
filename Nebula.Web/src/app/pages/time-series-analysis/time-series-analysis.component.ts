@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { LyraService } from 'src/app/services/lyra.service';
 import { UntypedFormGroup, UntypedFormControl, Validators, UntypedFormArray, UntypedFormBuilder } from '@angular/forms';
 import { SiteVariable } from 'src/app/shared/models/site-variable';
@@ -21,6 +21,7 @@ declare let vegaEmbed: any;
     selector: 'nebula-time-series-analysis',
     templateUrl: './time-series-analysis.component.html',
     styleUrls: ['./time-series-analysis.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class TimeSeriesAnalysisComponent implements OnInit {

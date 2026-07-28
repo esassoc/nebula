@@ -1,4 +1,4 @@
-import { ApplicationRef, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { ApplicationRef, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { SiteFilterEnum } from '../../models/enums/site-filter.enum';
 import { SiteVariable } from '../../models/site-variable';
 import * as L from 'leaflet';
@@ -8,7 +8,9 @@ import 'leaflet.snogylop';
 import 'leaflet-loading';
 import { CustomCompileService } from 'src/app/shared/services/custom-compile.service';
 import { environment } from 'src/environments/environment';
-import { forkJoin } from 'rxjs';
+import { forkJoin, merge, Observable, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
+import { NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
 import { LyraService } from 'src/app/services/lyra.service';
 import './leaflet.topojson.js'
 import { WatershedService } from '../../generated';
@@ -19,6 +21,7 @@ declare let $: any;
     selector: 'station-select-card',
     templateUrl: './station-select-card.component.html',
     styleUrls: ['./station-select-card.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class StationSelectCardComponent implements OnInit {
@@ -108,8 +111,8 @@ export class StationSelectCardComponent implements OnInit {
   public selectedStationFilter: StationFilterSelect;
 
   public searchText: string;
-  public searchSuggestions: any[];
-  public isSearching: boolean;
+  // Pushed on input focus so the typeahead re-opens with the current term.
+  public searchFocus$ = new Subject<string>();
   public availableSitesToSearchFrom: any;
 
   constructor(
@@ -624,10 +627,17 @@ export class StationSelectCardComponent implements OnInit {
   }
   //#endregion
 
-  public select(event) {
-    this.searchText = event.StationPropertyValue;
-    this.selectStationByStation(event.value.StationID);
+  public onSearchSelect(event: NgbTypeaheadSelectItemEvent<StationSearchResult>) {
+    // Without preventDefault, ngModel would be assigned the result object;
+    // searchText stays a plain string so the input keeps showing the label.
+    event.preventDefault();
+    this.searchText = event.item.StationPropertyValue;
+    this.selectStationByStation(event.item.StationID);
   }
+
+  // Renders each dropdown row's label; the two-line layout lives in the
+  // resultTemplate in the template file.
+  public searchResultFormatter = (result: StationSearchResult) => result.StationPropertyValue;
 
   public selectStationByStation(station: string) {
     const selectedFeature = this.availableSitesToSearchFrom.find(x => x.properties.station === station);
@@ -635,68 +645,52 @@ export class StationSelectCardComponent implements OnInit {
     this.map.setView(this.currentlySelectedLayer.getBounds().getCenter());
   }
 
-  public search(event) {
-    this.isSearching = true;
-    this.searchSuggestions = [];
+  // NgbTypeahead drives the dropdown from this operator rather than a
+  // (completeMethod) callback writing into a suggestions array. Merging
+  // searchFocus$ reopens the list when the input regains focus, which is what
+  // the old reFocus()/show() pair did imperatively.
+  public search = (text$: Observable<string>): Observable<StationSearchResult[]> =>
+    merge(
+      text$.pipe(debounceTime(200), distinctUntilChanged()),
+      this.searchFocus$
+    ).pipe(map(term => this.matchStations(term)));
 
-    let searchText = event.query.trim();
-    if (searchText == null || searchText == undefined) {
-      this.isSearching = false;
-      return;
+  private matchStations(term: string): StationSearchResult[] {
+    const searchText = term?.trim().toLowerCase();
+    if (!searchText) {
+      return [];
     }
 
-    searchText = searchText.toLowerCase();
+    // One station can match on several properties, and each match is its own
+    // row so the user can see which field matched.
+    const matchableProperties: { property: string; label: string }[] = [
+      { property: 'station', label: 'StationID' },
+      { property: 'shortname', label: 'Short Name' },
+      { property: 'stname', label: 'Description' }
+    ];
 
-    this.availableSitesToSearchFrom.forEach(x => {
-      if (x.properties.station != null && x.properties.station != undefined && x.properties.station.toLowerCase().includes(searchText)) {
-        const obj = {
-          StationProperty: 'StationID',
-          StationPropertyValue: x.properties.station,
-          StationID: x.properties.station
+    const results: StationSearchResult[] = [];
+    this.availableSitesToSearchFrom.forEach(site => {
+      matchableProperties.forEach(({ property, label }) => {
+        const value = site.properties[property];
+        if (value != null && value.toLowerCase().includes(searchText)) {
+          results.push({
+            StationProperty: label,
+            StationPropertyValue: value,
+            StationID: site.properties.station
+          });
         }
-        this.searchSuggestions.push(obj);
-      }
-
-      if (x.properties.shortname != null && x.properties.shortname != undefined && x.properties.shortname.toLowerCase().includes(searchText)) {
-        const obj = {
-          StationProperty: 'Short Name',
-          StationPropertyValue: x.properties.shortname,
-          StationID: x.properties.station
-        }
-        this.searchSuggestions.push(obj);
-      }
-
-      if (x.properties.stname != null && x.properties.stname != undefined && x.properties.stname.toLowerCase().includes(searchText)) {
-        const obj = {
-          StationProperty: 'Description',
-          StationPropertyValue: x.properties.stname,
-          StationID: x.properties.station
-        }
-        this.searchSuggestions.push(obj);
-      }
+      });
     });
 
-    if (this.searchSuggestions && this.searchSuggestions.length > 0) {
-      this.searchSuggestions.sort((a, b) => {
-        if (a.StationPropertyValue > b.StationPropertyValue) {
-          return 1;
-        }
-
-        if (a.StationPropertyValue < b.StationPropertyValue) {
-          return -1;
-        }
-
-        return 0;
-      })
-    }
+    return results.sort((a, b) => a.StationPropertyValue.localeCompare(b.StationPropertyValue));
   }
+}
 
-  //The dropdown closes when we remove focus, so if we go back in and still have text we should show the search suggestions
-  reFocus(stationMapSearch) {
-    if (this.searchText != undefined && this.searchText != '') {
-      stationMapSearch.show();
-    }
-  }
+export interface StationSearchResult {
+  StationProperty: string;
+  StationPropertyValue: string;
+  StationID: string;
 }
 
 export class StationFilterSelect {

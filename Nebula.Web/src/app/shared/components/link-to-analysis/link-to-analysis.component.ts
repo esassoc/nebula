@@ -1,10 +1,11 @@
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { NgbPopover } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
     selector: 'link-to-analysis',
     templateUrl: './link-to-analysis.component.html',
     styleUrls: ['./link-to-analysis.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class LinkToAnalysisComponent implements OnInit {
