@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,8 @@ using NetTopologySuite.IO.Converters;
 using SendGrid;
 using Serilog;
 using System;
+using System.IO.Compression;
+using System.Linq;
 using System.Text.Json.Serialization;
 using ILogger = Serilog.ILogger;
 
@@ -49,6 +52,16 @@ namespace Nebula.API
                 opt.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
                 opt.JsonSerializerOptions.WriteIndented = true;
             });
+
+            services.AddResponseCompression(options =>
+            {
+                options.EnableForHttps = true;
+                options.Providers.Add<BrotliCompressionProvider>();
+                options.Providers.Add<GzipCompressionProvider>();
+                options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/json" });
+            });
+            services.Configure<BrotliCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
+            services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
 
             services.Configure<NebulaConfiguration>(Configuration);
 
@@ -115,6 +128,7 @@ namespace Nebula.API
             }
 
             app.UseHttpsRedirection();
+            app.UseResponseCompression();
             app.UseRouting();
             app.UseCors(policy =>
             {
