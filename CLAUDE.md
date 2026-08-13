@@ -12,7 +12,7 @@ A water resources management platform built with an ASP.NET Core 8 API backend a
 | Database       | Azure SQL Server (SQL Server Database Project / DACPAC)       |
 | ORM            | Entity Framework Core 8                                       |
 | Auth           | Auth0 (JWT Bearer tokens)                                     |
-| Maps           | Leaflet + Esri Leaflet + GeoServer (kartoza/geoserver:2.27.1) |
+| Maps           | Leaflet + Esri Leaflet + GeoServer (kartoza/geoserver:2.28.0) |
 | UI             | PrimeNG 20, ng-bootstrap 19, ag-grid 34, Bootstrap 5         |
 | Rich Text      | TinyMCE 8                                                     |
 | Charts         | Vega / Vega-Lite                                              |
