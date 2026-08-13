@@ -7,9 +7,9 @@
           Filter Sites By:
         </label>
         <div class="d-inline-block ms-2 ms-lg-1">
-          <select [(ngModel)]="selectedStationFilter" id="filter" class="form-select"
+          <select [ngModel]="selectedStationFilter()" (ngModelChange)="selectedStationFilter.set($event)" id="filter" class="form-select"
             (change)="updateMarkerDisplay()">
-            @for (type of stationFilterTypes; track type) {
+            @for (type of stationFilterTypes(); track type) {
               <option [ngValue]="type">
                 {{ type.Display }}
               </option>
@@ -41,39 +41,39 @@
         <div id="{{ mapID }}" class="location-card" style="height: 100%" [style.min-height]="mapHeight"></div>
       </div>
       <div class="col-md-5 col-xl-4" [style.max-height]="mapHeight" [style.overflow]="'auto'">
-        @if (!selectedSiteStation) {
+        @if (!selectedSiteStation()) {
           <p>Click a station on the map to get started!</p>
         }
-        @if (selectedSiteStation) {
+        @if (selectedSiteStation()) {
           <dl class="row g-0">
             <dt class="text-sm-left col-sm-6 col-xs-12">
               <field-definition [fieldDefinitionType]="'StationID'" class="d-inline-block">
               </field-definition>:
             </dt>
             <dd class="col-sm-6 col-xs-12">
-              {{ selectedSiteStation }}
+              {{ selectedSiteStation() }}
             </dd>
             <dt class="text-sm-left col-sm-6 col-xs-12">
               <field-definition [fieldDefinitionType]="'StationShortName'" class="d-inline-block">
               </field-definition>:
             </dt>
             <dd class="col-sm-6 col-xs-12">
-              {{ selectedSiteShortName }}
+              {{ selectedSiteShortName() }}
             </dd>
             <dt class="text-sm-left col-sm-6 col-xs-12">
               <field-definition [fieldDefinitionType]="'StationDescription'" class="d-inline-block">
               </field-definition>:
             </dt>
             <dd class="col-sm-6 col-xs-12">
-              {{ selectedSiteDescription }}
+              {{ selectedSiteDescription() }}
             </dd>
             <dd class="col-sm-6 offset-sm-6 col-md-12 offset-md-0 col-xs-12">
-              @if (!canViewTributaryArea) {
+              @if (!canViewTributaryArea()) {
                 <em>No Tributary Information Available</em>
               }
               @if (
-                canViewTributaryArea &&
-                !canZoomTributaryArea
+                canViewTributaryArea() &&
+                !canZoomTributaryArea()
                 ) {
                 <button (click)="viewTributaryArea()" class="btn btn-sm btn-nebula float-end">
                   <i class="fas fa-map-marker-alt"></i> View
@@ -81,7 +81,7 @@
                 </button>
               }
               @if (
-                canViewTributaryArea && canZoomTributaryArea
+                canViewTributaryArea() && canZoomTributaryArea()
                 ) {
                 <button (click)="zoomInOnTributaryArea()" class="btn btn-sm btn-nebula float-end">
                   <i class="fas fa-search-plus"></i> Zoom to
@@ -110,7 +110,7 @@
               }
               @if (siteSelectedAndVariablesFound()) {
                 @for (
-                  variable of selectedSiteAvailableVariables
+                  variable of selectedSiteAvailableVariables()
                   ; track
                   variable) {
                   <dt class="text-sm-left col-sm-11 offset-sm-1 col-xs-12 mb-1">

@@ -1,4 +1,4 @@
-import { ApplicationRef, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { ApplicationRef, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, signal } from '@angular/core';
 import { SiteFilterEnum } from '../../models/enums/site-filter.enum';
 import { SiteVariable } from '../../models/site-variable';
 import * as L from 'leaflet';
@@ -69,13 +69,13 @@ export class StationSelectCardComponent implements OnInit {
   @Output()
   public mapAndStationsLoadedEvent = new EventEmitter();
 
-  public selectedSiteProperties: any;
-  public selectedSiteAvailableVariables: SiteVariable[] = [];
-  public selectedSiteStation: string = null;
-  public selectedSiteDescription: string = null;
-  public selectedSiteShortName: string = null;
-  public canViewTributaryArea: boolean = false;
-  public canZoomTributaryArea: boolean = false;
+  public selectedSiteProperties = signal<any>(null);
+  public selectedSiteAvailableVariables = signal<SiteVariable[]>([]);
+  public selectedSiteStation = signal<string>(null);
+  public selectedSiteDescription = signal<string>(null);
+  public selectedSiteShortName = signal<string>(null);
+  public canViewTributaryArea = signal(false);
+  public canZoomTributaryArea = signal(false);
 
   public map: L.Map;
   public featureLayer: any;
@@ -106,8 +106,8 @@ export class StationSelectCardComponent implements OnInit {
 
   public allStations: any;
 
-  public stationFilterTypes: StationFilterSelect[] = [];
-  public selectedStationFilter: StationFilterSelect;
+  public stationFilterTypes = signal<StationFilterSelect[]>([]);
+  public selectedStationFilter = signal<StationFilterSelect>(null);
 
   public searchText: string;
   // Pushed on input focus so the typeahead re-opens with the current term.
@@ -192,11 +192,11 @@ export class StationSelectCardComponent implements OnInit {
   }
 
   public updateSelectedStation(selectedStationProperties: any) {
-    this.selectedSiteAvailableVariables = this.getAvailableVariables(selectedStationProperties);
-    this.canViewTributaryArea = selectedStationProperties.upstream;
-    this.selectedSiteDescription = selectedStationProperties.stname;
-    this.selectedSiteShortName = selectedStationProperties.shortname;
-    this.selectedSiteStation = selectedStationProperties.station;
+    this.selectedSiteAvailableVariables.set(this.getAvailableVariables(selectedStationProperties));
+    this.canViewTributaryArea.set(selectedStationProperties.upstream);
+    this.selectedSiteDescription.set(selectedStationProperties.stname);
+    this.selectedSiteShortName.set(selectedStationProperties.shortname);
+    this.selectedSiteStation.set(selectedStationProperties.station);
     this.cdr.detectChanges();
     this.map.invalidateSize();
   }
@@ -251,7 +251,7 @@ export class StationSelectCardComponent implements OnInit {
   }
 
   public siteSelectedAndVariablesFound(): boolean {
-    return this.selectedSiteDescription && this.selectedSiteAvailableVariables != null && this.selectedSiteAvailableVariables.length > 0
+    return this.selectedSiteDescription() && this.selectedSiteAvailableVariables() != null && this.selectedSiteAvailableVariables().length > 0
   }
 
   public variableNameCanBeAddedToSelection(variableName: string): boolean {
@@ -368,7 +368,7 @@ export class StationSelectCardComponent implements OnInit {
       });
       this.setupStationFilterAndLayers();
 
-      this.selectedStationFilter = this.stationFilterTypes.filter(x => x.SiteFilterEnum == this.defaultSelectedMapFilter)[0];
+      this.selectedStationFilter.set(this.stationFilterTypes().filter(x => x.SiteFilterEnum == this.defaultSelectedMapFilter)[0]);
       this.updateMarkerDisplay();
       this.mapAndStationsLoadedEvent.emit();
     });
@@ -425,7 +425,7 @@ export class StationSelectCardComponent implements OnInit {
 
     const conductivityOption = new StationFilterSelect({ Display: 'Has Conductivity Data', SiteFilterEnum: SiteFilterEnum.HasConductivity, Layer: this.hasConductivityLayer, Stations: conductivityOptions });
 
-    this.stationFilterTypes = [allSitesOption, rainfallOption, dischargeOption, conductivityOption];
+    this.stationFilterTypes.set([allSitesOption, rainfallOption, dischargeOption, conductivityOption]);
   }
 
   public initializePanes(): void {
@@ -522,8 +522,8 @@ export class StationSelectCardComponent implements OnInit {
 
   public viewTributaryArea() {
     if (!this.selectedStationProperties || !this.selectedStationProperties.upstream) {
-      this.canZoomTributaryArea = false;
-      this.canViewTributaryArea = false;
+      this.canZoomTributaryArea.set(false);
+      this.canViewTributaryArea.set(false);
       return;
     }
 
@@ -550,12 +550,12 @@ export class StationSelectCardComponent implements OnInit {
 
     this.selectedStationTributaryAreaLayer.addTo(this.map);
     this.selectedStationTributaryAreaLayer.bringToFront();
-    this.canZoomTributaryArea = true;
+    this.canZoomTributaryArea.set(true);
   }
 
   public zoomInOnTributaryArea() {
     if (!this.selectedStationTributaryAreaLayer) {
-      this.canZoomTributaryArea = false;
+      this.canZoomTributaryArea.set(false);
       return;
     }
 
@@ -563,7 +563,7 @@ export class StationSelectCardComponent implements OnInit {
   }
 
   public updateMarkerDisplay() {
-    if (!this.stationFilterTypes) {
+    if (!this.stationFilterTypes()) {
       return;
     }
 
@@ -578,7 +578,7 @@ export class StationSelectCardComponent implements OnInit {
 
     this.clearTributaryAreaLayer();
 
-    this.siteLocationLayer = this.selectedStationFilter.Layer;
+    this.siteLocationLayer = this.selectedStationFilter().Layer;
     this.siteLocationLayer.on('click', (event: L.LeafletEvent) => {
       this.selectFeature(event.propagatedFrom.feature);
     })
@@ -588,7 +588,7 @@ export class StationSelectCardComponent implements OnInit {
       this.map.removeLayer(this.selectedDataStationsLayer);
       this.selectedDataStationsLayer.addTo(this.map);
     }
-    this.availableSitesToSearchFrom = this.selectedStationFilter.Stations;
+    this.availableSitesToSearchFrom = this.selectedStationFilter().Stations;
   }
 
   clearTributaryAreaLayer() {
@@ -597,8 +597,8 @@ export class StationSelectCardComponent implements OnInit {
     }
     this.map.removeLayer(this.selectedStationTributaryAreaLayer);
     this.selectedStationTributaryAreaLayer = null;
-    this.canZoomTributaryArea = false;
-    this.canViewTributaryArea = false;
+    this.canZoomTributaryArea.set(false);
+    this.canViewTributaryArea.set(false);
   }
 
   public updateSelectedDataStationsLayer() {
