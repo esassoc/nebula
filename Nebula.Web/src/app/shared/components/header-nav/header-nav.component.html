@@ -50,12 +50,12 @@
             <a routerLink="/disclaimer/false" class="dropdown-item">
               Disclaimer
             </a>
-            @if (learnMorePages.length > 0) {
+            @if (learnMorePages().length > 0) {
               <div
                 class="dropdown-divider"
               ></div>
             }
-            @for (learnMorePage of learnMorePages; track learnMorePage) {
+            @for (learnMorePage of learnMorePages(); track learnMorePage) {
               <a
                             routerLink="/custom-pages/{{
                                 learnMorePage.CustomPageVanityUrl

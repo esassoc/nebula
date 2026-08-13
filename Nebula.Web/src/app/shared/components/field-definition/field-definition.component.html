@@ -1,22 +1,22 @@
-@if (isLoading) {
+@if (isLoading()) {
   <div class="text-center">
     <span class="fa fa-spinner loading-spinner"></span>
   </div>
 }
 
-@if (!isLoading) {
+@if (!isLoading()) {
   <div>
     <ng-template #popTitle>
       <div class="row">
         <div class="col-auto me-auto">
           <div class="mt-1">
             {{
-            fieldDefinition.FieldDefinitionType
+            fieldDefinition().FieldDefinitionType
             .FieldDefinitionTypeDisplayName
             }}
           </div>
         </div>
-        @if (!isEditing) {
+        @if (!isEditing()) {
           <div class="col-auto">
             <div class="row">
               <div class="col-sm-2 ps-0 pe-0">
@@ -28,7 +28,7 @@
                   <i
                     class="fa fa-pencil-square-o"
                                 attr.aria-label="Edit the definition for {{
-                                    fieldDefinition.FieldDefinitionType
+                                    fieldDefinition().FieldDefinitionType
                                         .FieldDefinitionTypeDisplayName
                                 }}"
                     >
@@ -41,26 +41,26 @@
       </div>
     </ng-template>
     <ng-template #popContent>
-      @if (!isEditing) {
-        @if (canEdit) {
+      @if (!isEditing()) {
+        @if (canEdit()) {
           <div style="position: relative; min-height: 30px">
-            @if (!emptyContent) {
+            @if (!emptyContent()) {
               <div
-                [innerHtml]="fieldDefinition.FieldDefinitionValue"
+                [innerHtml]="fieldDefinition().FieldDefinitionValue"
               ></div>
             }
-            @if (emptyContent) {
+            @if (emptyContent()) {
               <div class="hoverEmptySpace"></div>
             }
           </div>
         }
-        @if (!canEdit) {
+        @if (!canEdit()) {
           <div
-            [innerHtml]="fieldDefinition.FieldDefinitionValue"
+            [innerHtml]="fieldDefinition().FieldDefinitionValue"
           ></div>
         }
       }
-      @if (isEditing) {
+      @if (isEditing()) {
         <div>
           <editor
             #tinyMceEditor
@@ -87,7 +87,7 @@
         </div>
       }
     </ng-template>
-    @if (canEdit) {
+    @if (canEdit()) {
       <div
         class="d-inline-block"
         (mouseenter)="notEditingMouseEnter()"
@@ -95,7 +95,7 @@
         >
         <span style="overflow: hidden; text-overflow: ellipsis">
           {{
-          fieldDefinition.FieldDefinitionType
+          fieldDefinition().FieldDefinitionType
           .FieldDefinitionTypeDisplayName
           }}
           <i
@@ -115,10 +115,10 @@
         </span>
       </div>
     }
-    @if (!canEdit) {
+    @if (!canEdit()) {
       <span>
         {{
-        fieldDefinition.FieldDefinitionType
+        fieldDefinition().FieldDefinitionType
         .FieldDefinitionTypeDisplayName
         }}
         <i
@@ -126,7 +126,7 @@
           style="cursor: help"
           [ngbPopover]="popContent"
                 [popoverTitle]="
-                    fieldDefinition.FieldDefinitionType
+                    fieldDefinition().FieldDefinitionType
                         .FieldDefinitionTypeDisplayName
                 "
           triggers="mouseenter:mouseleave"

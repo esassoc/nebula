@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, HostListener, OnDestroy, signal, inject } from '@angular/core';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { AlertService } from '../../services/alert.service';
 import { Alert } from '../../models/alert';
@@ -16,11 +16,15 @@ import { CustomPageService, CustomPageWithRolesDto, UserDto, UserService } from 
 
 export class HeaderNavComponent implements OnInit, OnDestroy {
 
-  private currentUser: UserDto;
+  private authenticationService = inject(AuthenticationService);
+
+  // Read straight off the service signal so the nav re-renders on login and
+  // logout; the old subscribe-and-mirror would leave it stale under zoneless.
+  private currentUser = this.authenticationService.currentUser;
 
   windowWidth: number;
 
-  public learnMorePages: CustomPageWithRolesDto[] = [];
+  public learnMorePages = signal<CustomPageWithRolesDto[]>([]);
   watchUserChangeSubscription: any;
 
   @HostListener('window:resize')
@@ -29,19 +33,17 @@ export class HeaderNavComponent implements OnInit, OnDestroy {
   }
 
   constructor(
-    private authenticationService: AuthenticationService,
     private userService: UserService,
     private alertService: AlertService,
-    private cdr: ChangeDetectorRef,
     private customPageService: CustomPageService,
     private router: Router
   ) { }
 
 
   ngOnInit() {
-    // MP-AS 3-1-22 everywhere else fire and forget is fine, but if we need a refresh option, need to use currentUserSetObservable
+    // Still subscribed, but only to trigger the dependent fetches when the user
+    // resolves -- the user itself is read from the signal above.
     this.watchUserChangeSubscription = this.authenticationService.currentUser$.subscribe(currentUser => {
-      this.currentUser = currentUser;
       if (currentUser) {
         if (this.isAdministrator()) {
           this.userService.usersUnassignedReportGet().subscribe(report => {
@@ -52,8 +54,8 @@ export class HeaderNavComponent implements OnInit, OnDestroy {
         }
         this.customPageService.customPagesWithRolesGet().subscribe(customPagesWithRoles => {
           customPagesWithRoles = customPagesWithRoles
-            .filter(x => x.ViewableRoles.map(role => role.RoleID).includes(this.currentUser?.Role?.RoleID));
-          this.learnMorePages = customPagesWithRoles.filter(x => x.MenuItem.MenuItemName == 'LearnMore');
+            .filter(x => x.ViewableRoles.map(role => role.RoleID).includes(this.currentUser()?.Role?.RoleID));
+          this.learnMorePages.set(customPagesWithRoles.filter(x => x.MenuItem.MenuItemName == 'LearnMore'));
         });
       }
     });
@@ -61,7 +63,6 @@ export class HeaderNavComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.watchUserChangeSubscription.unsubscribe();
-    this.cdr.detach();
   }
 
   public isAuthenticated(): boolean {
@@ -73,23 +74,23 @@ export class HeaderNavComponent implements OnInit, OnDestroy {
   }
 
   public canSeeScenarioOptions(): boolean {
-    return this.isAuthenticated() && this.authenticationService.isUserInRole(this.currentUser, [RoleEnum.Admin, RoleEnum.DataExplorer]);
+    return this.isAuthenticated() && this.authenticationService.isUserInRole(this.currentUser(), [RoleEnum.Admin, RoleEnum.DataExplorer]);
   }
 
   public isAdministrator(): boolean {
-    return this.authenticationService.isUserAnAdministrator(this.currentUser);
+    return this.authenticationService.isUserAnAdministrator(this.currentUser());
   }
 
   public isUnassigned(): boolean {
-    return this.authenticationService.isUserUnassigned(this.currentUser);
+    return this.authenticationService.isUserUnassigned(this.currentUser());
   }
 
   public isUnassignedOrDisabled(): boolean {
-    return this.authenticationService.isUserUnassigned(this.currentUser) || this.authenticationService.isUserRoleDisabled(this.currentUser);
+    return this.authenticationService.isUserUnassigned(this.currentUser()) || this.authenticationService.isUserRoleDisabled(this.currentUser());
   }
 
   public getUserName() {
-    return this.currentUser ? this.currentUser.FullName
+    return this.currentUser() ? this.currentUser().FullName
       : null;
   }
 
@@ -98,11 +99,9 @@ export class HeaderNavComponent implements OnInit, OnDestroy {
   }
 
   public logout(): void {
+    // The deferred detectChanges() that used to follow is unnecessary: logout
+    // clears the currentUser signal, which schedules the re-render itself.
     this.authenticationService.logout();
-
-    setTimeout(() => {
-      this.cdr.detectChanges();
-    });
   }
 
   public leadOrganizationLogoSrc(): string {

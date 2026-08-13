@@ -1,13 +1,13 @@
-@if (isLoading) {
+@if (isLoading()) {
   <div class="text-center">
     <span class="fa fa-spinner loading-spinner"></span>
   </div>
 }
 
-@if (!isLoading) {
+@if (!isLoading()) {
   <div>
-    @if (!isEditing) {
-      @if (canEdit) {
+    @if (!isEditing()) {
+      @if (canEdit()) {
         <div
           class="customRichTextContent"
           style="position: relative; min-height: 60px"
@@ -23,21 +23,21 @@
               </button>
             </div>
           </div>
-          @if (!emptyContent) {
+          @if (!emptyContent()) {
             <div
-              [innerHtml]="customRichTextContent"
+              [innerHtml]="customRichTextContent()"
             ></div>
           }
-          @if (emptyContent) {
+          @if (emptyContent()) {
             <div class="hoverEmptySpace"></div>
           }
         </div>
       }
-      @if (!canEdit) {
-        <div [innerHtml]="customRichTextContent"></div>
+      @if (!canEdit()) {
+        <div [innerHtml]="customRichTextContent()"></div>
       }
     }
-    @if (isEditing) {
+    @if (isEditing()) {
       <div>
         <editor
           #tinyMceEditor
