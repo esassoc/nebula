@@ -48,7 +48,7 @@ export class DiversionScenarioComponent implements OnInit {
   public errorOccurred = signal(false);
   public errorMessage = signal<string>(null);
   public gettingTimeSeriesData = signal(false);
-  public rainfallStations: any = null;
+  public rainfallStations = signal<any>(null);
   public currentlyDisplayingRequestDto: any;
   public downloadingChartData = signal(false);
   public lyraMessages = signal<Alert[]>([]);
@@ -147,7 +147,7 @@ export class DiversionScenarioComponent implements OnInit {
     this.authenticationService.getCurrentUser().subscribe(currentUser => {
       this.currentUser = currentUser;
       this.lyraService.getSiteLocationGeoJson().subscribe(result => {
-        this.rainfallStations = result.features.filter(x => x.properties.has_rainfall).sort((x, y) => {
+        this.rainfallStations.set(result.features.filter(x => x.properties.has_rainfall).sort((x, y) => {
           if (x.properties.stname > y.properties.stname) {
             return 1;
           }
@@ -157,7 +157,7 @@ export class DiversionScenarioComponent implements OnInit {
           }
 
           return 0;
-        });
+        }));
 
         if (this.mapReady) {
           this.populateFormFromURL();
@@ -372,7 +372,7 @@ export class DiversionScenarioComponent implements OnInit {
 
   public setMapReadyToTrueAndCheckIfWeCanPopulateFormFromURL() {
     this.mapReady = true;
-    if (this.rainfallStations != null) {
+    if (this.rainfallStations() != null) {
       this.populateFormFromURL();
     }
   }
@@ -426,7 +426,7 @@ export class DiversionScenarioComponent implements OnInit {
       this.updateFormWithValueIfProvidedAndPresentPopulateErrorIfNot(queriedParams, 'rainfall_event_depth_threshold', (x => typeof x === 'number' && !isNaN(x)), errorMessagesToDisplay)        
       this.updateFormWithValueIfProvidedAndPresentPopulateErrorIfNot(queriedParams, 'event_seperation_hrs', (x => typeof x === 'number' && !isNaN(x)), errorMessagesToDisplay)        
       this.updateFormWithValueIfProvidedAndPresentPopulateErrorIfNot(queriedParams, 'after_rain_delay_hrs', (x => typeof x === 'number' && !isNaN(x)), errorMessagesToDisplay)        
-      this.updateFormWithValueIfProvidedAndPresentPopulateErrorIfNot(queriedParams, 'nearest_rainfall_station', (x => this.rainfallStations.some(y => x == y.properties.station)), errorMessagesToDisplay)        
+      this.updateFormWithValueIfProvidedAndPresentPopulateErrorIfNot(queriedParams, 'nearest_rainfall_station', (x => this.rainfallStations().some(y => x == y.properties.station)), errorMessagesToDisplay)        
       this.updateFormWithValueIfProvidedAndSomePresentPopulateErrorIfNot(queriedParams, 'diversion_months_active', this.monthData, ((x, y) => x.some(z => z.id == y)), errorMessagesToDisplay);
       this.updateFormWithValueIfProvidedAndSomePresentPopulateErrorIfNot(queriedParams, 'diversion_days_active', this.weekdayData, ((x, y) => x.some(z => z.id == y)), errorMessagesToDisplay);
       this.updateFormWithValueIfProvidedAndSomePresentPopulateErrorIfNot(queriedParams, 'diversion_hours_active', this.hourData, ((x, y) => x.some(z => z.id == y)), errorMessagesToDisplay);
