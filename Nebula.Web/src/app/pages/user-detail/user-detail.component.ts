@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, signal, inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { forkJoin } from 'rxjs';
@@ -11,50 +11,49 @@ import { UserDto, UserService } from 'src/app/shared/generated';
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: false
 })
-export class UserDetailComponent implements OnInit, OnDestroy {
-    
-  private currentUser: UserDto;
-  public user: UserDto;
+export class UserDetailComponent implements OnInit {
+
+  // inject() rather than a constructor param so this field initializer cannot
+  // depend on parameter-property assignment order.
+  private authenticationService = inject(AuthenticationService);
+
+  // Read straight off the service signal instead of mirroring it into a field
+  // via subscribe: signal reads inside a method called from the template are
+  // tracked, so the view refreshes when the current user changes.
+  private currentUser = this.authenticationService.currentUser;
+  public user = signal<UserDto>(null);
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private userService: UserService,
-    private authenticationService: AuthenticationService,
-    private cdr: ChangeDetectorRef
+    private userService: UserService
   ) {
     // force route reload whenever params change;
     this.router.routeReuseStrategy.shouldReuseRoute = () => false;
   }
 
   ngOnInit() {
-    this.authenticationService.getCurrentUser().subscribe(currentUser => {
-      this.currentUser = currentUser;
+    // Still sequenced off the user stream: the detail fetch must wait until
+    // authentication has resolved.
+    this.authenticationService.getCurrentUser().subscribe(() => {
       const id = parseInt(this.route.snapshot.paramMap.get('id'));
       if (id) {
         forkJoin(
           this.userService.usersUserIDGet(id),
         ).subscribe(([user]) => {
-          this.user = user instanceof Array
+          this.user.set(user instanceof Array
             ? null
-            : user as UserDto;
-          this.cdr.detectChanges();
+            : user as UserDto);
         });
       }
     });
   }
 
-  ngOnDestroy() {
-        
-        
-    this.cdr.detach();
-  }
-
   public currentUserIsAdmin(): boolean {
-    return this.authenticationService.isUserAnAdministrator(this.currentUser);
+    return this.authenticationService.isUserAnAdministrator(this.currentUser());
   }
 
   public userIsAdministrator(): boolean{
-    return this.authenticationService.isUserAnAdministrator(this.user);
+    return this.authenticationService.isUserAnAdministrator(this.user());
   }
 }

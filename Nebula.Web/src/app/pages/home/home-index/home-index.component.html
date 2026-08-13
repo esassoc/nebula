@@ -8,7 +8,7 @@
   @if (userIsUnassigned()) {
     <ngb-alert [type]="'info'" [dismissible]="false">
       <span>
-        Welcome {{ currentUser.FullName }}. You have successfully logged in
+        Welcome {{ currentUser().FullName }}. You have successfully logged in
         to the Smart Watershed Network Platform, but your account is not yet
         configured. You will receive an email from ESA Administrators when
         your account is ready to use. You may
@@ -34,14 +34,14 @@
     <div class="col-md-4 order-md-5 order-1 col-sm-12">
       <div class="card">
         <div class="card-header">
-          @if (!currentUser) {
+          @if (!currentUser()) {
             Access
           }
-          @if (currentUser) {
+          @if (currentUser()) {
             Quick actions
           }
         </div>
-        @if (!currentUser) {
+        @if (!currentUser()) {
           <div class="card-body">
             <div class="row">
               <div class="col">
@@ -70,7 +70,7 @@
             </div>
           </div>
         }
-        @if (currentUser) {
+        @if (currentUser()) {
           <div class="card-body">
             <a class="btn btn-nebula" routerLink="/help">Request Support</a>
           </div>

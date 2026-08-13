@@ -1,6 +1,6 @@
 <div class="breadcrumb-container">
   <div class="container">
-    @if (user) {
+    @if (user()) {
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item" aria-current="page">
@@ -13,9 +13,9 @@
           </li>
           <li class="breadcrumb-item active" aria-current="page">
             {{
-            user?.FullName ||
-            (user?.FirstName || user?.LastName
-            ? user?.FirstName + " " + user?.LastName
+            user()?.FullName ||
+            (user()?.FirstName || user()?.LastName
+            ? user()?.FirstName + " " + user()?.LastName
             : null)
             }}
           </li>
@@ -24,18 +24,18 @@
     }
   </div>
 </div>
-@if (user) {
+@if (user()) {
   <div class="container mt-sm-4">
-    @if (user.GlobalUserID === null) {
+    @if (user().GlobalUserID === null) {
       <div style="margin: 1rem 0 1rem 0">
-        <a class="float-end btn btn-nebula btn-sm me-3" routerLink="/invite-user/{{ user.UserID }}">Invite User</a>
+        <a class="float-end btn btn-nebula btn-sm me-3" routerLink="/invite-user/{{ user().UserID }}">Invite User</a>
       </div>
     }
     <h2 class="d-inline-block">
       {{
-      user?.FullName ||
-      (user?.FirstName || user?.LastName
-      ? user?.FirstName + " " + user?.LastName
+      user()?.FullName ||
+      (user()?.FirstName || user()?.LastName
+      ? user()?.FirstName + " " + user()?.LastName
       : null)
       }}
     </h2>
@@ -46,7 +46,7 @@
           <div class="card-header">
             @if (currentUserIsAdmin()) {
               <a class="btn btn-nebula btn-sm float-end"
-                routerLink="/users/{{ user?.UserID }}/edit">
+                routerLink="/users/{{ user()?.UserID }}/edit">
                 <span class="fas fa-edit"></span> Edit
               </a>
             }
@@ -58,8 +58,8 @@
                 Username
               </dt>
               <dd class="col-sm-7 col-xs-12">
-                {{ user?.LoginName }}
-                @if (!user?.LoginName) {
+                {{ user()?.LoginName }}
+                @if (!user()?.LoginName) {
                   <em class="text-muted">Not Available</em>
                 }
               </dd>
@@ -67,8 +67,8 @@
                 First Name
               </dt>
               <dd class="col-sm-7 col-xs-12">
-                {{ user?.FirstName }}
-                @if (!user?.FirstName) {
+                {{ user()?.FirstName }}
+                @if (!user()?.FirstName) {
                   <em class="text-muted">Not Available</em>
                 }
               </dd>
@@ -76,8 +76,8 @@
                 Last Name
               </dt>
               <dd class="col-sm-7 col-xs-12">
-                {{ user?.LastName }}
-                @if (!user?.LastName) {
+                {{ user()?.LastName }}
+                @if (!user()?.LastName) {
                   <em class="text-muted">Not Available</em>
                 }
               </dd>
@@ -85,45 +85,45 @@
                 Full Name
               </dt>
               <dd class="col-sm-7 col-xs-12">
-                {{ user?.FullName }}
-                @if (!user?.FullName) {
+                {{ user()?.FullName }}
+                @if (!user()?.FullName) {
                   <em class="text-muted">Not Available</em>
                 }
               </dd>
               <dt class="text-sm-right col-sm-5 col-xs-12">Phone</dt>
               <dd class="col-sm-7 col-xs-12">
-                {{ user?.Phone }}
-                @if (!user?.Phone) {
+                {{ user()?.Phone }}
+                @if (!user()?.Phone) {
                   <em class="text-muted">Not Available</em>
                 }
               </dd>
               <dt class="text-sm-right col-sm-5 col-xs-12">Email</dt>
               <dd class="col-sm-7 col-xs-12">
-                {{ user?.Email }}
-                @if (!user?.Email) {
+                {{ user()?.Email }}
+                @if (!user()?.Email) {
                   <em class="text-muted">Not Available</em>
                 }
               </dd>
               <dt class="text-sm-right col-sm-5 col-xs-12">Role</dt>
               <dd class="col-sm-7 col-xs-12">
-                {{ user?.Role?.RoleDisplayName }}
-                @if (!user?.Role?.RoleDisplayName) {
+                {{ user()?.Role?.RoleDisplayName }}
+                @if (!user()?.Role?.RoleDisplayName) {
                   <em class="text-muted">Not Available</em>
                 }
               </dd>
-              @if (user.Role.RoleID === 1) {
+              @if (user().Role.RoleID === 1) {
                 <dt class="text-sm-right col-sm-5 col-xs-12">
                   Receives System Communications
                 </dt>
               }
-              @if (user.Role.RoleID === 1) {
+              @if (user().Role.RoleID === 1) {
                 <dd class="col-sm-7 col-xs-12">
                   {{
-                  user?.ReceiveSupportEmails == true
+                  user()?.ReceiveSupportEmails == true
                   ? "Yes"
                   : "No"
                   }}
-                  @if (!user) {
+                  @if (!user()) {
                     <em class="text-muted">Not Available</em>
                   }
                 </dd>

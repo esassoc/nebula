@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, signal } from '@angular/core';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { ColDef } from 'ag-grid-community';
 import { LinkRendererComponent } from 'src/app/shared/components/ag-grid/link-renderer/link-renderer.component';
@@ -16,20 +16,21 @@ declare let $: any;
   styleUrls: ['./user-list.component.scss'],
   standalone: false
 })
-export class UserListComponent implements OnInit, OnDestroy {
+export class UserListComponent implements OnInit {
   @ViewChild('usersGrid') usersGrid: AgGridAngular;
   @ViewChild('unassignedUsersGrid') unassignedUsersGrid: AgGridAngular;
 
   private currentUser: UserDto;
 
-  public rowData = [];
-  columnDefs: ColDef[];
-  columnDefsUnassigned: ColDef[];
-  users: UserDto[];
-  unassignedUsers: UserDto[];
+  // Signals rather than plain fields: these are assigned from HTTP callbacks,
+  // which under zoneless change detection no longer schedule a re-render on
+  // their own. Reading them in the template is what marks the view dirty.
+  public rowData = signal<UserDto[]>([]);
+  public columnDefs = signal<ColDef[]>([]);
+  public users = signal<UserDto[]>(null);
+  public unassignedUsers = signal<UserDto[]>([]);
 
   constructor(
-    private cdr: ChangeDetectorRef,
     private authenticationService: AuthenticationService,
     private utilityFunctionsService: UtilityFunctionsService,
     private userService: UserService,
@@ -41,15 +42,13 @@ export class UserListComponent implements OnInit, OnDestroy {
       this.currentUser = currentUser;
       this.usersGrid?.api.showLoadingOverlay();
       this.userService.usersGet().subscribe(users => {
-        this.rowData = users;
-        this.users = users;
-        this.unassignedUsers = users.filter(u => { return u.Role.RoleID === RoleEnum.Unassigned });
-
-        this.cdr.detectChanges();
+        this.rowData.set(users);
+        this.users.set(users);
+        this.unassignedUsers.set(users.filter(u => { return u.Role.RoleID === RoleEnum.Unassigned }));
       });
       const _decimalPipe = this.decimalPipe;
 
-      this.columnDefs = [
+      const columnDefs: ColDef[] = [
         {
           headerName: 'Name', valueGetter: function (params: any) {
             return { LinkValue: params.data.UserID, LinkDisplay: params.data.FullName };
@@ -76,17 +75,11 @@ export class UserListComponent implements OnInit, OnDestroy {
         { headerName: 'Receives System Communications?', field: 'ReceiveSupportEmails', valueGetter: function (params) { return params.data.ReceiveSupportEmails ? 'Yes' : 'No'; }, sortable: true, filter: true, width: 250 },
       ];
 
-      this.columnDefs.forEach(x => {
+      columnDefs.forEach(x => {
         x.resizable = true;
       });
+      this.columnDefs.set(columnDefs);
     });
-  }
-
-
-  ngOnDestroy() {
-
-
-    this.cdr.detach();
   }
 
   public exportToCsv() {

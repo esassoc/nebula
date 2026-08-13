@@ -12,7 +12,7 @@
 <div class="container">
   <app-alert-display></app-alert-display>
   <h2 class="d-inline-block">Unassigned Users</h2>
-  @if (users && unassignedUsers.length) {
+  @if (users() && unassignedUsers().length) {
     <p class="lead">
       This is a list of all users who are awaiting account configuration.
       Assign the user a role and billing account(s). If the account was
@@ -20,17 +20,17 @@
       list.
     </p>
   }
-  @if (users && !unassignedUsers.length) {
+  @if (users() && !unassignedUsers().length) {
     <p class="lead">
       Congratulations! All users have been assigned a role.
     </p>
   }
 </div>
-@if (users && unassignedUsers.length) {
+@if (users() && unassignedUsers().length) {
   <div class="container mt-sm-4">
     <div class="table-responsive">
       <ag-grid-angular #unassignedUsersGrid style="width: 100%; height: 300px" class="ag-theme-balham" theme="legacy"
-        [rowData]="unassignedUsers" [columnDefs]="columnDefs" [pagination]="true" [paginationPageSize]="100">
+        [rowData]="unassignedUsers()" [columnDefs]="columnDefs()" [pagination]="true" [paginationPageSize]="100">
       </ag-grid-angular>
     </div>
   </div>
@@ -47,7 +47,7 @@
   <div class="container mt-sm-4">
     <div class="table-responsive">
       <ag-grid-angular #usersGrid style="width: 100%; height: 800px" class="ag-theme-balham" theme="legacy"
-        [rowData]="rowData" [columnDefs]="columnDefs" [pagination]="true" [paginationPageSize]="100">
+        [rowData]="rowData()" [columnDefs]="columnDefs()" [pagination]="true" [paginationPageSize]="100">
       </ag-grid-angular>
     </div>
   </div>
