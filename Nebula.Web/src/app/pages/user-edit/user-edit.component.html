@@ -6,10 +6,10 @@
           <a routerLink="/users">Users</a>
         </li>
         <li class="breadcrumb-item">
-          <a routerLink="/users/{{ user?.UserID }}">
+          <a routerLink="/users/{{ user()?.UserID }}">
             {{
-            user?.FullName ||
-            user?.FirstName + " " + user?.LastName
+            user()?.FullName ||
+            user()?.FirstName + " " + user()?.LastName
             }}
           </a>
         </li>
@@ -24,9 +24,9 @@
   <div class="container mt-sm-4">
     <h2 class="d-inline-block">
       {{
-      user?.FullName ||
-      (user?.FirstName || user?.LastName
-      ? user?.FirstName + " " + user?.LastName
+      user()?.FullName ||
+      (user()?.FirstName || user()?.LastName
+      ? user()?.FirstName + " " + user()?.LastName
       : null)
       }}
     </h2>
@@ -46,7 +46,7 @@
               required
               >
               <option value=""></option>
-              @for (role of roles; track role) {
+              @for (role of roles(); track role) {
                 <option
                   [ngValue]="role.RoleID"
                   >
@@ -95,9 +95,9 @@
               <button
                 type="submit"
                 class="btn btn-nebula"
-                [disabled]="!editUserForm.form.valid || isLoadingSubmit"
+                [disabled]="!editUserForm.form.valid || isLoadingSubmit()"
                 >
-                @if (isLoadingSubmit) {
+                @if (isLoadingSubmit()) {
                   <span
                     class="fa fa-spinner loading-spinner"
                   ></span>
@@ -106,7 +106,7 @@
               </button>
               <a
                 class="btn btn-secondary ms-1"
-                routerLink="/users/{{ user?.UserID }}"
+                routerLink="/users/{{ user()?.UserID }}"
                 >Cancel</a
                 >
               </div>

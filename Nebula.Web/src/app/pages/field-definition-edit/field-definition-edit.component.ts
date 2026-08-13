@@ -1,11 +1,10 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Alert } from 'src/app/shared/models/alert';
 import { AlertContext } from 'src/app/shared/models/enums/alert-context.enum';
 import { AlertService } from 'src/app/shared/services/alert.service';
-import { FieldDefinitionDto, FieldDefinitionService, UserDto } from 'src/app/shared/generated';
-import { Observable } from 'rxjs';
+import { FieldDefinitionDto, FieldDefinitionService } from 'src/app/shared/generated';
 
 @Component({
     selector: 'nebula-field-definition-edit',
@@ -15,54 +14,46 @@ import { Observable } from 'rxjs';
 })
 export class FieldDefinitionEditComponent implements OnInit {
   
-  private currentUser: UserDto;
-  public currentUser$: Observable<UserDto>;
+  private authenticationService = inject(AuthenticationService);
+  private currentUser = this.authenticationService.currentUser;
 
-  public fieldDefinition: FieldDefinitionDto;
+  public fieldDefinition = signal<FieldDefinitionDto>(null);
 
-  public isLoadingSubmit: boolean;
+  public isLoadingSubmit = signal(false);
 
   constructor (
     private route: ActivatedRoute,
     private router: Router,
     private alertService: AlertService,
-    private fieldDefinitionService: FieldDefinitionService,
-    private authenticationService: AuthenticationService,
-    private cdr: ChangeDetectorRef
+    private fieldDefinitionService: FieldDefinitionService
   ) {}
 
   ngOnInit() {
-    this.authenticationService.getCurrentUser().subscribe(currentUser => {
-      this.currentUser = currentUser;
+    this.authenticationService.getCurrentUser().subscribe(() => {
       const id = parseInt(this.route.snapshot.paramMap.get('id'));
       if (id) {
         this.fieldDefinitionService.fieldDefinitionsFieldDefinitionTypeIDGet(id).subscribe(fieldDefinition => {
-          this.fieldDefinition = fieldDefinition;
+          this.fieldDefinition.set(fieldDefinition);
         })
       }
     });
   }
 
-  ngOnDestroy() {
-    this.cdr.detach();
-  }
-  
   public currentUserIsAdmin(): boolean {
-    return this.authenticationService.isUserAnAdministrator(this.currentUser);
+    return this.authenticationService.isUserAnAdministrator(this.currentUser());
   }
 
   saveDefinition(): void {
-    this.isLoadingSubmit = true;
+    this.isLoadingSubmit.set(true);
 
-    this.fieldDefinitionService.fieldDefinitionsFieldDefinitionTypeIDPut(this.fieldDefinition.FieldDefinitionID, this.fieldDefinition)
+    this.fieldDefinitionService.fieldDefinitionsFieldDefinitionTypeIDPut(this.fieldDefinition().FieldDefinitionID, this.fieldDefinition())
       .subscribe(response => {
-        this.isLoadingSubmit = false;
+        this.isLoadingSubmit.set(false);
         this.router.navigateByUrl('/labels-and-definitions').then(x => {
-          this.alertService.pushAlert(new Alert(`The definition for ${this.fieldDefinition.FieldDefinitionType.FieldDefinitionTypeDisplayName} was successfully updated.`, AlertContext.Success));
+          this.alertService.pushAlert(new Alert(`The definition for ${this.fieldDefinition().FieldDefinitionType.FieldDefinitionTypeDisplayName} was successfully updated.`, AlertContext.Success));
         });
       }, error => {
-        this.isLoadingSubmit = false;
-        this.cdr.detectChanges();
+        this.isLoadingSubmit.set(false);
       }
       );
   }

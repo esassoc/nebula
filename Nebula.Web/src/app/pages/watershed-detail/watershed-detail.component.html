@@ -1,23 +1,23 @@
 <div class="breadcrumb-container">
   <div class="container">
-    @if (watershed) {
+    @if (watershed()) {
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item" aria-current="page">
             <a routerLink="/watersheds">Watersheds</a>
           </li>
           <li class="breadcrumb-item active" aria-current="page">
-            {{ watershed.WatershedName }}
+            {{ watershed().WatershedName }}
           </li>
         </ol>
       </nav>
     }
   </div>
 </div>
-@if (watershed) {
+@if (watershed()) {
   <div class="container mt-sm-4">
     <h2 class="d-inline-block">
-      {{ watershed.WatershedName }}
+      {{ watershed().WatershedName }}
     </h2>
     <app-alert-display></app-alert-display>
     <div class="row mt-4">
@@ -32,7 +32,7 @@
                 ></field-definition>
               </dt>
               <dd class="col-sm-6 col-xs-12">
-                {{ watershed.WatershedName }}
+                {{ watershed().WatershedName }}
               </dd>
             </dl>
           </div>
@@ -43,7 +43,7 @@
           <div class="card-header">Location</div>
           <div class="card-body">
             <div class="row">
-              @if (watershed) {
+              @if (watershed()) {
                 <div class="col-sm-12">
                   <watershed-map
                     mapID="watershedsMapForWatershed"

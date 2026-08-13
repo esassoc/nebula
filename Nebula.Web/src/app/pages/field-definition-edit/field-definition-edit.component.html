@@ -15,13 +15,13 @@
                 >
               }
             </li>
-            @if (fieldDefinition) {
+            @if (fieldDefinition()) {
               <li
                 class="breadcrumb-item active"
                 aria-current="page"
                 >
                 {{
-                fieldDefinition.FieldDefinitionType
+                fieldDefinition().FieldDefinitionType
                 .FieldDefinitionTypeDisplayName
                 }}
               </li>
@@ -30,12 +30,12 @@
         </nav>
       </div>
     </div>
-    @if (fieldDefinition) {
+    @if (fieldDefinition()) {
       <div class="container mt-sm-4">
         <app-alert-display></app-alert-display>
         <h2 class="d-inline-block">
           Edit Definition for Label:
-          {{ fieldDefinition.FieldDefinitionType.FieldDefinitionTypeDisplayName }}
+          {{ fieldDefinition().FieldDefinitionType.FieldDefinitionTypeDisplayName }}
         </h2>
         <div class="row mt-4">
           <div class="col-12">
@@ -43,14 +43,14 @@
               #tinyMceEditor
               licenseKey="gpl"
               [init]="tinyMceEditor | tinyMceConfig"
-              [(ngModel)]="fieldDefinition.FieldDefinitionValue"
+              [(ngModel)]="fieldDefinition().FieldDefinitionValue"
             ></editor>
             <div style="float: right">
               <button
                 type="button"
                 class="btn btn-nebula mt-1 me-1 mb-1"
                 (click)="saveDefinition()"
-                [disabled]="isLoadingSubmit"
+                [disabled]="isLoadingSubmit()"
                 >
                 Save
               </button>
