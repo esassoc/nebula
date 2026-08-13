@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy, signal, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { forkJoin } from 'rxjs';
@@ -12,6 +13,7 @@ import { UserDto, UserService } from 'src/app/shared/generated';
     standalone: false
 })
 export class UserDetailComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
 
   // inject() rather than a constructor param so this field initializer cannot
   // depend on parameter-property assignment order.
@@ -35,7 +37,7 @@ export class UserDetailComponent implements OnInit {
   ngOnInit() {
     // Still sequenced off the user stream: the detail fetch must wait until
     // authentication has resolved.
-    this.authenticationService.getCurrentUser().subscribe(() => {
+    this.authenticationService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       const id = parseInt(this.route.snapshot.paramMap.get('id'));
       if (id) {
         forkJoin(

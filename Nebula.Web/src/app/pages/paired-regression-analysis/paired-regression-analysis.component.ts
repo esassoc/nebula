@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild , signal } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, signal, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UntypedFormGroup, UntypedFormControl, Validators, UntypedFormArray, UntypedFormBuilder } from '@angular/forms';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { LyraService } from 'src/app/services/lyra.service';
@@ -24,6 +25,7 @@ declare let vegaEmbed: any;
     standalone: false
 })
 export class PairedRegressionAnalysisComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   
   private currentUser: UserDto;
 
@@ -77,7 +79,7 @@ export class PairedRegressionAnalysisComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.authenticationService.getCurrentUser().subscribe(currentUser => {
+    this.authenticationService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(currentUser => {
       this.currentUser = currentUser;
       this.setupFormChangeListener();
     });
@@ -275,7 +277,7 @@ export class PairedRegressionAnalysisComponent implements OnInit {
   }
 
   public setupFormChangeListener() {
-    this.timeSeriesForm.valueChanges.subscribe(val => {
+    this.timeSeriesForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(val => {
       this.clearResults();
     })
   }
@@ -287,7 +289,7 @@ export class PairedRegressionAnalysisComponent implements OnInit {
   }
   
   public populateFormFromURL() {
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       if (params == null || params == undefined || !params.hasOwnProperty('json')) {
         return;
       }

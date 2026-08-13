@@ -1,4 +1,5 @@
-import { Component, OnInit, ViewChild, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, signal, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { ColDef } from 'ag-grid-community';
 import { LinkRendererComponent } from 'src/app/shared/components/ag-grid/link-renderer/link-renderer.component';
@@ -17,6 +18,7 @@ declare let $: any;
   standalone: false
 })
 export class UserListComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   @ViewChild('usersGrid') usersGrid: AgGridAngular;
   @ViewChild('unassignedUsersGrid') unassignedUsersGrid: AgGridAngular;
 
@@ -38,7 +40,7 @@ export class UserListComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.authenticationService.getCurrentUser().subscribe(currentUser => {
+    this.authenticationService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(currentUser => {
       this.currentUser = currentUser;
       this.usersGrid?.api.showLoadingOverlay();
       this.userService.usersGet().subscribe(users => {

@@ -1,4 +1,5 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Alert } from 'src/app/shared/models/alert';
@@ -13,6 +14,7 @@ import { FieldDefinitionDto, FieldDefinitionService } from 'src/app/shared/gener
     standalone: false
 })
 export class FieldDefinitionEditComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   
   private authenticationService = inject(AuthenticationService);
   private currentUser = this.authenticationService.currentUser;
@@ -29,7 +31,7 @@ export class FieldDefinitionEditComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.authenticationService.getCurrentUser().subscribe(() => {
+    this.authenticationService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       const id = parseInt(this.route.snapshot.paramMap.get('id'));
       if (id) {
         this.fieldDefinitionService.fieldDefinitionsFieldDefinitionTypeIDGet(id).subscribe(fieldDefinition => {

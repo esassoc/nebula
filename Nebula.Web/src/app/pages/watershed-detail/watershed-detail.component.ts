@@ -1,4 +1,5 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { forkJoin } from 'rxjs';
@@ -11,6 +12,7 @@ import { UserDto, WatershedDto, WatershedService } from 'src/app/shared/generate
     standalone: false
 })
 export class WatershedDetailComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
 
   private authenticationService = inject(AuthenticationService);
 
@@ -28,7 +30,7 @@ export class WatershedDetailComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.authenticationService.getCurrentUser().subscribe(() => {
+    this.authenticationService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       const id = parseInt(this.route.snapshot.paramMap.get('id'));
       if (id) {
         forkJoin(

@@ -1,4 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthenticationService } from 'src/app/services/authentication.service'
 import { UserDto, UserService } from 'src/app/shared/generated';
@@ -11,6 +12,7 @@ import { CustomRichTextTypeEnum } from 'src/app/shared/generated/enum/custom-ric
     standalone: false
 })
 export class DisclaimerComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
 
   private authenticationService = inject(AuthenticationService);
 
@@ -29,7 +31,7 @@ export class DisclaimerComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       this.returnRoute =  params.route || '/';
       this.returnQueryParams = params.queryParams || null;
     });

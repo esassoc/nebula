@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { CustomPageService, CustomPageUpsertDto, MenuItemDto, MenuItemService, RoleDto, RoleService, UserDto } from 'src/app/shared/generated';
@@ -16,8 +17,8 @@ import { AlertService } from 'src/app/shared/services/alert.service';
     standalone: false
 })
 
-export class CustomPageCreateComponent implements OnInit, OnDestroy {
-  private watchUserChangeSubscription: any;
+export class CustomPageCreateComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
 
   public menuItems = signal<Array<MenuItemDto>>([]);
   public roles = signal<Array<RoleDto>>([]);
@@ -36,7 +37,7 @@ export class CustomPageCreateComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.watchUserChangeSubscription = this.authenticationService.getCurrentUser().subscribe(() => {
+    this.authenticationService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.menuItemService.menuItemsGet().subscribe(result => {
         // only exposing learn more menu option for now, but will be easy to add others as needed
         this.menuItems.set(result.filter(x => x.MenuItemName == 'LearnMore'));
@@ -52,10 +53,6 @@ export class CustomPageCreateComponent implements OnInit, OnDestroy {
       this.model.ViewableRoleIDs = [];
       this.model.CustomPageContent = '';
     });
-  }
-
-  ngOnDestroy() {
-    this.watchUserChangeSubscription?.unsubscribe();
   }
 
   slugifyPageName(event: any): void {

@@ -1,4 +1,5 @@
-import { Component, OnDestroy, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { CustomPageDto, CustomPageService, CustomPageUpsertDto, MenuItemDto, MenuItemService, RoleDto, RoleService, UserDto } from 'src/app/shared/generated';
@@ -13,8 +14,8 @@ import { AlertService } from 'src/app/shared/services/alert.service';
     styleUrls: ['./custom-page-edit-properties.component.scss'],
     standalone: false
 })
-export class CustomPageEditPropertiesComponent implements OnInit, OnDestroy {
-  private watchUserChangeSubscription: any;
+export class CustomPageEditPropertiesComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   
   private authenticationService = inject(AuthenticationService);
   public currentUser = this.authenticationService.currentUser;
@@ -36,7 +37,7 @@ export class CustomPageEditPropertiesComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.watchUserChangeSubscription = this.authenticationService.getCurrentUser().subscribe(() => {
+    this.authenticationService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.model = new CustomPageUpsertDto();
       const vanityUrl = this.route.snapshot.paramMap.get('vanity-url');
       if (vanityUrl) {
@@ -66,10 +67,6 @@ export class CustomPageEditPropertiesComponent implements OnInit, OnDestroy {
           role.RoleID !== RoleEnum.Disabled));
       });
     });
-  }
-
-  ngOnDestroy(): void {
-    this.watchUserChangeSubscription?.unsubscribe();
   }
 
   slugifyPageName(event: any): void {

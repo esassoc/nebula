@@ -1,4 +1,5 @@
-import { Component, OnInit, HostListener, OnDestroy, signal, inject } from '@angular/core';
+import { Component, OnInit, HostListener, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { AlertService } from '../../services/alert.service';
 import { Alert } from '../../models/alert';
@@ -14,7 +15,8 @@ import { CustomPageService, CustomPageWithRolesDto, UserDto, UserService } from 
   standalone: false
 })
 
-export class HeaderNavComponent implements OnInit, OnDestroy {
+export class HeaderNavComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
 
   private authenticationService = inject(AuthenticationService);
 
@@ -25,7 +27,6 @@ export class HeaderNavComponent implements OnInit, OnDestroy {
   windowWidth: number;
 
   public learnMorePages = signal<CustomPageWithRolesDto[]>([]);
-  watchUserChangeSubscription: any;
 
   @HostListener('window:resize')
   resize() {
@@ -43,7 +44,7 @@ export class HeaderNavComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // Still subscribed, but only to trigger the dependent fetches when the user
     // resolves -- the user itself is read from the signal above.
-    this.watchUserChangeSubscription = this.authenticationService.currentUser$.subscribe(currentUser => {
+    this.authenticationService.currentUser$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(currentUser => {
       if (currentUser) {
         if (this.isAdministrator()) {
           this.userService.usersUnassignedReportGet().subscribe(report => {
@@ -59,10 +60,6 @@ export class HeaderNavComponent implements OnInit, OnDestroy {
         });
       }
     });
-  }
-
-  ngOnDestroy() {
-    this.watchUserChangeSubscription.unsubscribe();
   }
 
   public isAuthenticated(): boolean {

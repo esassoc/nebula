@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy, signal, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -16,6 +17,7 @@ import { RoleDto, RoleService, UserDto, UserService, UserUpsertDto } from 'src/a
     standalone: false
 })
 export class UserEditComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
 
   private authenticationService = inject(AuthenticationService);
 
@@ -38,7 +40,7 @@ export class UserEditComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.authenticationService.getCurrentUser().subscribe(currentUser => {
+    this.authenticationService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(currentUser => {
       if (!this.authenticationService.isUserAnAdministrator(currentUser)) {
         this.router.navigateByUrl('/not-found')
           .then();

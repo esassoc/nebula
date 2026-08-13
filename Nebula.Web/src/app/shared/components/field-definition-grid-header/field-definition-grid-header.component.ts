@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import {IHeaderParams} from 'ag-grid-community';
 import {IHeaderAngularComp} from 'ag-grid-angular';
 
@@ -12,7 +12,7 @@ interface MyParams extends IHeaderParams {
     styleUrls: ['./field-definition-grid-header.component.scss'],
     standalone: false
 })
-export class FieldDefinitionGridHeaderComponent implements OnDestroy, IHeaderAngularComp  {
+export class FieldDefinitionGridHeaderComponent implements IHeaderAngularComp {
   @ViewChild ('header') header: ElementRef;
   public params: any;
   public sorted: string;
@@ -30,9 +30,6 @@ export class FieldDefinitionGridHeaderComponent implements OnDestroy, IHeaderAng
     this.params.column.minWidth = this.params.column.actualWidth;
     this.params.column.addEventListener('sortChanged', this.onSortChanged.bind(this));
     this.onSortChanged();
-  }
-
-  ngOnDestroy() {
   }
 
   onMenuClick(event:Event) {

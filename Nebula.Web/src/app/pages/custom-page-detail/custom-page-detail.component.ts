@@ -27,7 +27,6 @@ export class CustomPageDetailComponent implements OnInit, AfterViewChecked {
   public isEditing = signal(false);
   public isEmptyContent = signal(false);
   
-  public watchUserChangeSubscription: any;
   public editor;
   public editedContent: string;
   

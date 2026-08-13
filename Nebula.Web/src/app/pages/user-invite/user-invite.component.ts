@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy, signal, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { Alert } from 'src/app/shared/models/alert';
 import { AlertContext } from 'src/app/shared/models/enums/alert-context.enum';
@@ -17,6 +18,7 @@ import { RoleDto, RoleService, UserDto, UserInviteDto, UserService } from 'src/a
   standalone: false
 })
 export class UserInviteComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
 
   private authenticationService = inject(AuthenticationService);
 
@@ -33,7 +35,7 @@ export class UserInviteComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.authenticationService.getCurrentUser().subscribe(() => {
+    this.authenticationService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.roleService.rolesGet().subscribe(result => {
         this.roles.set(result);
       });

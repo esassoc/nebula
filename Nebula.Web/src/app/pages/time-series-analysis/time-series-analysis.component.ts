@@ -1,4 +1,5 @@
-import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef, signal, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LyraService } from 'src/app/services/lyra.service';
 import { UntypedFormGroup, UntypedFormControl, Validators, UntypedFormArray, UntypedFormBuilder } from '@angular/forms';
 import { SiteVariable } from 'src/app/shared/models/site-variable';
@@ -24,7 +25,7 @@ declare let vegaEmbed: any;
     standalone: false
 })
 export class TimeSeriesAnalysisComponent implements OnInit {
-  public watchUserChangeSubscription: any;
+  private destroyRef = inject(DestroyRef);
   public currentUser: UserDto;
 
   @ViewChild('selectedDataCardRef') selectedDataCardRef: ElementRef;
@@ -73,7 +74,7 @@ export class TimeSeriesAnalysisComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.authenticationService.getCurrentUser().subscribe(currentUser => {
+    this.authenticationService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(currentUser => {
       this.currentUser = currentUser;
       this.setupFormChangeListener();
     });
@@ -280,7 +281,7 @@ export class TimeSeriesAnalysisComponent implements OnInit {
   }
 
   public setupFormChangeListener() {
-    this.timeSeriesForm.valueChanges.subscribe(val => {
+    this.timeSeriesForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(val => {
       this.clearResults();
     })
   }
@@ -292,7 +293,7 @@ export class TimeSeriesAnalysisComponent implements OnInit {
   }
 
   public populateFormFromURL() {
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       if (params == null || params == undefined || !params.hasOwnProperty('json')) {
         return;
       }

@@ -1,4 +1,5 @@
-import { Component, OnInit, ViewChild, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, signal, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -20,6 +21,7 @@ import { AlertService } from 'src/app/shared/services/alert.service';
     standalone: false
 })
 export class CustomPageListComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   @ViewChild('pageGrid') pageGrid: AgGridAngular;
   @ViewChild('deletePageModal') deleteEntity: any;
   
@@ -34,7 +36,6 @@ export class CustomPageListComponent implements OnInit {
   public currentUser: UserDto;
   public isPerformingAction = signal(false);
   public closeResult: string;
-  public watchUserChangeSubscription: any;
 
   constructor(
     private alertService: AlertService,
@@ -47,7 +48,7 @@ export class CustomPageListComponent implements OnInit {
   ngOnInit(): void {
     this.initializeGrid();
 
-    this.authenticationService.getCurrentUser().subscribe(currentUser => {
+    this.authenticationService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(currentUser => {
       this.currentUser = currentUser;
       
       this.customPageService.customPagesWithRolesGet().subscribe(customPagesWithRoles => {
