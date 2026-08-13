@@ -50,10 +50,6 @@ variable "databaseResourceGroup" {
   type = string
 }
 
-variable "sqlApiUsername" {
-  type = string
-}
-
 variable "datadogApiKey" {
   type = string
   sensitive = true
@@ -298,30 +294,13 @@ output "database_id" {
   value = azurerm_mssql_database.database.id
 }
 
-### BEGIN API Sql user/login ###
-resource "random_password" "sqlApiPassword" {
-  length           = 16
-  special          = true
-  override_special = "!+-"
-  min_lower        = 3
-  min_upper        = 3
-  min_special      = 3
-  min_numeric      = 3
-  keepers = {
-    amd_id = var.amd_id
-  }
-}
-
-output "sql_api_password" {
-  sensitive = true
-  value = random_password.sqlApiPassword.result
-  depends_on = [
-    random_password.sqlApiPassword
-  ]
-}
-
-
-### END API Sql user/login ###
+### API Sql user/login: RETIRED ###
+# The API authenticates to SQL as the workload identity
+# (Authentication=Active Directory Default -- see the DB-CONNECTION-STRING
+# secret below), so the NebulaWeb SQL login, its generated password and the
+# sqlApiUsername/sqlApiPassword/sqlApiConnectionString vault secrets are gone.
+# GeoServer's SQL login is deliberately unaffected: its JDBC store has no
+# Entra path and keeps the credentials defined further down.
 
 
 ### BEGIN Geoserver Sql user/login ###
@@ -423,39 +402,6 @@ resource "azurerm_key_vault_secret" "sqlAdminPass" {
 resource "azurerm_key_vault_secret" "sqlAdminUser" {
   name                         = "sqlAdministratorUsername"
   value                        = var.sqlUsername
-  key_vault_id                 = azurerm_key_vault.web.id
-
-  tags                         = local.tags
-  depends_on = [
-    time_sleep.kv_rbac_propagation
-  ]
-}
-
-resource "azurerm_key_vault_secret" "sqlApiUsername" {
-  name                         = "sqlApiUsername"
-  value                        = var.sqlApiUsername
-  key_vault_id                 = azurerm_key_vault.web.id
- 
-  tags                         = local.tags
-  depends_on = [
-    time_sleep.kv_rbac_propagation
-  ]
- }
-
-resource "azurerm_key_vault_secret" "sqlApiPassword" {
-  name                         = "sqlApiPassword"
-  value                        = random_password.sqlApiPassword.result
-  key_vault_id                 = azurerm_key_vault.web.id
-
-  tags                         = local.tags
-  depends_on = [
-    time_sleep.kv_rbac_propagation
-  ]
-}
-
-resource "azurerm_key_vault_secret" "sqlApiConnectionString" {
-  name                         = "sqlApiConnectionString"
-  value                        = "Data Source=tcp:${data.azurerm_mssql_server.spoke.fully_qualified_domain_name},1433;Initial Catalog=${var.databaseName};Persist Security Info=True;User ID=${var.sqlApiUsername};Password=${random_password.sqlApiPassword.result}"
   key_vault_id                 = azurerm_key_vault.web.id
 
   tags                         = local.tags

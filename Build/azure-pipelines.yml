@@ -17,7 +17,6 @@ variables:
   databaseName: 'NebulaDB'
   databaseEdition: 'Standard'
   databaseTier: 'ElasticPool'
-  sqlApiUsername: 'NebulaWeb'
   sqlGeoserverUsername: 'NebulaGeo'
 
   # domainApi: 'api-nebula.esa-$(Environment).sitkatech.com' # this is now in a pipeline variable
@@ -195,7 +194,6 @@ stages:
           -var "sqlUsername=$(kv-sqlAdministratorUsername)"
           -var "azureClusterResourceGroup=$(kv-azureClusterResourceGroup)"
           -var "databaseResourceGroup=$(kv-databaseResourceGroup)"
-          -var "sqlApiUsername=$(sqlApiUsername)"
           -var "sqlGeoserverUsername=$(sqlGeoserverUsername)"
           -var "team=$(team)"
           -var "projectNumber=$(projectNumber)"
@@ -266,7 +264,6 @@ stages:
               echo "##vso[task.setvariable variable=STORAGE_ACCOUNT_SAS_KEY;isOutput=true;issecret=true]$(TF_OUT_STORAGE_ACCOUNT_SAS_KEY)"
               echo "##vso[task.setvariable variable=APPLICATION_STORAGE_ACCOUNT_KEY;isOutput=true;issecret=true]$(TF_OUT_APPLICATION_STORAGE_ACCOUNT_KEY)"
               echo "##vso[task.setvariable variable=INSTRUMENTATION_KEY;isOutput=true]$(TF_OUT_INSTRUMENTATION_KEY)"
-              echo "##vso[task.setvariable variable=SQL_API_PASSWORD;isOutput=true;issecret=true]$(TF_OUT_SQL_API_PASSWORD)"
               echo "##vso[task.setvariable variable=SQL_GEOSERVER_PASSWORD;isOutput=true;issecret=true]$(TF_OUT_SQL_GEOSERVER_PASSWORD)"
               echo "##vso[task.setvariable variable=GEOSERVER_ADMIN_PASSWORD;isOutput=true;issecret=true]$(TF_OUT_GEOSERVER_ADMIN_PASSWORD)"
               echo "##vso[task.setvariable variable=DATABASE_ID;isOutput=true;issecret=true]$(TF_OUT_DATABASE_ID)"
@@ -288,7 +285,6 @@ stages:
     pool:
       vmImage: 'windows-latest'
     variables: 
-      SQL_API_PASSWORD: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.SQL_API_PASSWORD'] ]
       SQL_GEOSERVER_PASSWORD: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.SQL_GEOSERVER_PASSWORD'] ]
       DATABASE_ID: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.DATABASE_ID'] ]
     # creates an environment if it doesn't exist
@@ -327,24 +323,17 @@ stages:
               elasticPoolName: '$(kv-elasticPoolName)'
               sqlAdministratorUsername: '$(kv-sqlAdministratorUsername)'
               sqlAdministratorPassword: '$(kv-sqlAdministratorPassword)'
-              sqlApiUsername: '$(sqlApiUsername)'
               bacpacFile: '$(Pipeline.Workspace)/bacpac/$(databaseName).bacpac'
               dacpacFile: '$(Pipeline.Workspace)/Database/Nebula.Database.dacpac'
               projectResourceGroupName: '$(resourceGroupName)'
               databaseID: '$(DATABASE_ID)'
 
-          - template: azure-pipelines/templates/database/db-user.yml@BuildTemplates 
-            parameters:
-              subscription: '$(azureSubscription)'
-              serverName: '$(kv-dbServerName).database.windows.net'
-              databaseName: '$(databaseName)'
-              sqlAdministratorUsername: '$(kv-sqlAdministratorUsername)'
-              sqlAdministratorPassword: '$(kv-sqlAdministratorPassword)'
-              desiredSqlUsername: '$(sqlApiUsername)'
-              desiredSqlPassword: '$(SQL_API_PASSWORD)'
-              roles: 'db_datawriter,db_datareader'
-
-          - template: azure-pipelines/templates/database/db-user.yml@BuildTemplates 
+          # NOTE: the API's legacy NebulaWeb SQL login is intentionally absent.
+          # The API connects as the workload identity
+          # (Authentication=Active Directory Default); the db-aad-user step
+          # below is what provisions its DB user. The remaining db-user.yml
+          # step is GeoServer's, which stays on SQL auth.
+          - template: azure-pipelines/templates/database/db-user.yml@BuildTemplates
             parameters:
               subscription: '$(azureSubscription)'
               serverName: '$(kv-dbServerName).database.windows.net'
@@ -516,7 +505,6 @@ stages:
       INSTRUMENTATION_KEY: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.INSTRUMENTATION_KEY'] ]
       WORKLOAD_IDENTITY_CLIENT_ID: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.WORKLOAD_IDENTITY_CLIENT_ID'] ]
       WORKLOAD_IDENTITY_TENANT_ID: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.WORKLOAD_IDENTITY_TENANT_ID'] ]
-      SQL_API_PASSWORD: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.SQL_API_PASSWORD'] ]
       SQL_GEOSERVER_PASSWORD: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.SQL_GEOSERVER_PASSWORD'] ]
       GEOSERVER_ADMIN_PASSWORD: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.GEOSERVER_ADMIN_PASSWORD'] ]
     # creates an environment if it doesn't exist
