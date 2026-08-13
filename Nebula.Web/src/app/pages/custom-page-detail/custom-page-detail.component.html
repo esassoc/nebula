@@ -35,10 +35,10 @@
               </button>
             </div>
           </div>
-          @if (!emptyContent) {
+          @if (!emptyContent()) {
             <div [innerHtml]="customPageContent()"></div>
           }
-          @if (emptyContent) {
+          @if (emptyContent()) {
             <div class="hoverEmptySpace"></div>
           }
         </div>

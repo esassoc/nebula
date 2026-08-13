@@ -41,7 +41,7 @@
   <div class="modal-body">Are you sure you want to delete this page?</div>
   <div class="modal-footer">
     <button type="button" class="btn btn-nebula btn-sm" [disabled]="isPerformingAction()" (click)="removePageByID()">
-      @if (isLoadingSubmit) {
+      @if (isPerformingAction()) {
         <span class="fa fa-spinner loading-spinner"></span>
       }
       Confirm

@@ -27,7 +27,7 @@ export class AuthenticationService {
   public readonly currentUser = this.currentUserSignal.asReadonly();
   // Deliberately unfiltered: the service pushes null on logout / no-claims and
   // consumers (e.g. header-nav) rely on receiving it to clear their state.
-  public readonly currentUser$: Observable<UserDto> = toObservable(this.currentUserSignal);
+  public readonly currentUser$: Observable<UserDto | null> = toObservable(this.currentUserSignal);
   private hasClaims: boolean;
 
   constructor(private router: Router) {
@@ -132,7 +132,7 @@ export class AuthenticationService {
     return roleIDs.includes(roleID);
   }
 
-  private updateUser(user: UserDto) {
+  private updateUser(user: UserDto | null) {
     this.currentUserSignal.set(user);
   }
 
@@ -140,7 +140,7 @@ export class AuthenticationService {
     this.updateUser(user);
   }
 
-  public getCurrentUser(): Observable<UserDto> {
+  public getCurrentUser(): Observable<UserDto | null> {
     return this.currentUser$;
   }
 

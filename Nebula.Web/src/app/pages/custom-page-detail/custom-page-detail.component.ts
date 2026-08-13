@@ -25,7 +25,7 @@ export class CustomPageDetailComponent implements OnInit, AfterViewChecked {
   public viewableRoleIDs = signal<Array<number>>([]);
   public isLoading = signal(true);
   public isEditing = signal(false);
-  public isEmptyContent = signal(false);
+  public emptyContent = signal(false);
   
   public editor;
   public editedContent: string;
@@ -113,7 +113,9 @@ export class CustomPageDetailComponent implements OnInit, AfterViewChecked {
   private loadCustomPage(customPage: CustomPageDto)
   {
     this.customPage.set(customPage);
-    this.isEmptyContent.set(!!customPage.CustomPageContent);
+    // ! not !!: the flag means "there is no content", and the template renders
+    // the empty-state block when it is true.
+    this.emptyContent.set(!customPage.CustomPageContent);
     this.isLoading.set(false);
   }
 
