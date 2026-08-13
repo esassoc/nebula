@@ -371,14 +371,25 @@ stages:
               serverName: '$(kv-dbServerName).database.windows.net'
               databaseName: '$(databaseName)'
               aadPrincipalName: 'nebula-$(Environment)-identity'
-              roles: 'db_datareader,db_datawriter,db_ddladmin'
+              # db_executor (GRANT EXECUTE, defined in
+              # Nebula.Database/Security/db_executor.sql) lets the identity run
+              # stored procs without db_owner -- no ownership,
+              # permission-management or impersonation rights an app identity
+              # should not have. Ported from the zybach/Shasta standard.
+              roles: 'db_datareader,db_datawriter,db_ddladmin,db_executor'
 
           # Human access via the H2O Entra groups, granted as contained DB
           # users. Kept in-repo rather than using the shared template because
           # the per-env access matrix is app-specific: QA group writes on qa and
-          # reads on prod; Prod group writes everywhere. (H2O Readers Group is
-          # omitted while it has 0 members -- CREATE USER FROM EXTERNAL PROVIDER
-          # cannot resolve an empty group, and the grant would be a no-op.)
+          # reads on prod; Prod group writes everywhere.
+          #
+          # H2O Readers Group is deliberately absent. Verified against Entra on
+          # 2026-08-13: the group has 0 members, so CREATE USER FROM EXTERNAL
+          # PROVIDER cannot resolve it and the grant would be a no-op anyway.
+          # wave-runup dropped it from its matrix for the same reason (5d2c01d).
+          # Its Key Vault role assignment in nebula.tf is retained for parity
+          # with wave-runup -- that one is a harmless no-op rather than a
+          # failure, since role assignments do not need to resolve members.
           #
           # Gated at RUNTIME on $(Environment) inside the script. Do NOT gate
           # with a compile-time ${{ if eq(variables['Environment'], ...) }}:
@@ -412,14 +423,23 @@ stages:
 
                 $server = '$(kv-dbServerName).database.windows.net'
                 $db     = '$(databaseName)'
-                $env    = '$(Environment)'
 
-                # Runtime gate, not compile-time.
-                if ($env -eq 'prod') {
-                    $grants = @{ 'H2O Prod Group' = 'db_datareader,db_datawriter'; 'H2O QA Group' = 'db_datareader' }
-                } else {
-                    $grants = @{ 'H2O Prod Group' = 'db_datareader,db_datawriter'; 'H2O QA Group' = 'db_datareader,db_datawriter' }
+                # group display name -> comma-separated roles, per environment.
+                # A lookup rather than if/else so an unrecognised Environment
+                # throws instead of silently falling through to the branch that
+                # grants WRITE. Runtime gate, not compile-time.
+                $matrix = @{
+                    qa = @{
+                        'H2O Prod Group' = 'db_datareader,db_datawriter,db_executor'
+                        'H2O QA Group'   = 'db_datareader,db_datawriter,db_executor'
+                    }
+                    prod = @{
+                        'H2O Prod Group' = 'db_datareader,db_datawriter,db_executor'
+                        'H2O QA Group'   = 'db_datareader'
+                    }
                 }
+                if (-not $matrix.ContainsKey('$(Environment)')) { throw "No H2O access matrix defined for Environment '$(Environment)'." }
+                $grants = $matrix['$(Environment)']
 
                 foreach ($principal in $grants.Keys) {
                     $roles = $grants[$principal]
