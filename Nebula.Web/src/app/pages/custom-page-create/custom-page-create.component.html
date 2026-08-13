@@ -40,7 +40,7 @@
                   <option selected disabled [value]="">
                     Choose One
                   </option>
-                  @for (menuItem of menuItems; track menuItem) {
+                  @for (menuItem of menuItems(); track menuItem) {
                     <option
                       [ngValue]="menuItem.MenuItemID"
                       >
@@ -109,7 +109,7 @@
               <div class="col-sm-2 control-label">
                 <label>Viewable By</label>
               </div>
-              @for (role of roles; track role) {
+              @for (role of roles(); track role) {
                 <div
                   class="form-group form-check"
                   >
@@ -146,13 +146,13 @@
             type="submit"
             class="btn btn-nebula"
                     [disabled]="
-                        isLoadingSubmit ||
+                        isLoadingSubmit() ||
                         !createNewCustomPageForm.form.valid ||
                         !validVanityUrl(model.CustomPageVanityUrl) ||
                         !validPageName(model.CustomPageDisplayName)
                     "
             >
-            @if (isLoadingSubmit) {
+            @if (isLoadingSubmit()) {
               <span
                 class="fa fa-spinner loading-spinner"
               ></span>

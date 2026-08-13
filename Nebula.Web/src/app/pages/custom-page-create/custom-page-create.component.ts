@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { CustomPageService, CustomPageUpsertDto, MenuItemDto, MenuItemService, RoleDto, RoleService, UserDto } from 'src/app/shared/generated';
@@ -19,48 +19,43 @@ import { AlertService } from 'src/app/shared/services/alert.service';
 export class CustomPageCreateComponent implements OnInit, OnDestroy {
   private watchUserChangeSubscription: any;
 
-  public menuItems: Array<MenuItemDto>;
-  public roles: Array<RoleDto>;
+  public menuItems = signal<Array<MenuItemDto>>([]);
+  public roles = signal<Array<RoleDto>>([]);
   public model: CustomPageUpsertDto;
     
-  public isLoadingSubmit: boolean = false;
-  private currentUser: UserDto;
+  public isLoadingSubmit = signal(false);
+  private authenticationService = inject(AuthenticationService);
+  private currentUser = this.authenticationService.currentUser;
 
   constructor(
-    private cdr: ChangeDetectorRef,
-    private router: Router, 
+    private router: Router,
     private customPageService: CustomPageService,
     private menuItemService: MenuItemService,
     private roleService: RoleService,
-    private authenticationService: AuthenticationService, 
     private alertService: AlertService
   ) {}
 
   ngOnInit(): void {
-    this.watchUserChangeSubscription = this.authenticationService.getCurrentUser().subscribe(currentUser => {
-      this.currentUser = currentUser;
+    this.watchUserChangeSubscription = this.authenticationService.getCurrentUser().subscribe(() => {
       this.menuItemService.menuItemsGet().subscribe(result => {
         // only exposing learn more menu option for now, but will be easy to add others as needed
-        this.menuItems = result.filter(x => x.MenuItemName == 'LearnMore');
-        this.cdr.detectChanges();
+        this.menuItems.set(result.filter(x => x.MenuItemName == 'LearnMore'));
       });
       this.roleService.rolesGet().subscribe(roles => {
         // remove admin from role picker as admins default to viewable for all custom pages
         // and remove disabled users as well since they should not have viewable rights by default
-        this.roles = roles.filter(role => 
+        this.roles.set(roles.filter(role => 
           role.RoleID !== RoleEnum.Admin &&
-                    role.RoleID !== RoleEnum.Disabled);
-        this.cdr.detectChanges();
+                    role.RoleID !== RoleEnum.Disabled));
       });
       this.model = new CustomPageUpsertDto();
       this.model.ViewableRoleIDs = [];
       this.model.CustomPageContent = '';
-      this.cdr.detectChanges();
     });
   }
 
   ngOnDestroy() {
-    this.cdr.detach();
+    this.watchUserChangeSubscription?.unsubscribe();
   }
 
   slugifyPageName(event: any): void {
@@ -89,20 +84,19 @@ export class CustomPageCreateComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(createNewCustomPageForm: HTMLFormElement): void {
-    this.isLoadingSubmit = true;
+    this.isLoadingSubmit.set(true);
 
     this.customPageService.customPagesPost(this.model)
       .subscribe(response => {
-        this.isLoadingSubmit = false;
+        this.isLoadingSubmit.set(false);
         createNewCustomPageForm.reset();
         this.router.navigateByUrl(`/custom-pages/${response.CustomPageVanityUrl}`).then(() => {
-          this.authenticationService.refreshUserInfo(this.currentUser);
+          this.authenticationService.refreshUserInfo(this.currentUser());
           this.alertService.pushAlert(new Alert('The custom page was successfully created.', AlertContext.Success));
         });
       },
       error => {
-        this.isLoadingSubmit = false;
-        this.cdr.detectChanges();
+        this.isLoadingSubmit.set(false);
       });
   }
 }
