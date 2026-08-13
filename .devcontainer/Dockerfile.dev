@@ -1,0 +1,23 @@
+# Devcontainer image with Node, Angular CLI, sqlcmd, Azure CLI and a JRE for
+# openapi-generator-cli (npm run gen-model).
+#
+# Node 24 to match Nebula.Web/.nvmrc (v24.16.0) — Angular 22's CLI requires
+# >= v22.22.3 / v24.15.0.
+#
+# No Python here: unlike wave-runup there is no Worker process and nothing
+# spawns a Python subprocess. Nebula's analytics live in the external Lyra
+# service.
+FROM mcr.microsoft.com/devcontainers/javascript-node:24 AS devcontainer
+
+RUN npm install -g @angular/cli
+
+# sqlcmd (standalone Go binary)
+RUN curl -sSL https://github.com/microsoft/go-sqlcmd/releases/latest/download/sqlcmd-linux-amd64.tar.bz2 \
+    | tar -xj -C /usr/local/bin sqlcmd
+
+# Azure CLI
+RUN curl -sSL https://aka.ms/InstallAzureCLIDeb | bash
+
+# JRE for openapi-generator-cli
+RUN apt-get update && apt-get install -y --no-install-recommends default-jre-headless \
+    && rm -rf /var/lib/apt/lists/*
