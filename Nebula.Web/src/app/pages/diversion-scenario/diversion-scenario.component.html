@@ -30,7 +30,7 @@
     <div class="col-sm-12">
       <station-select-card
         #stationSelect
-        [(selectedVariables)]="selectedVariables"
+        [selectedVariables]="selectedVariables()"
         [mapID]="mapID"
         [disableAddingVariables]="isActionBeingPerformed()"
         [defaultSelectedMapFilter]="defaultSelectedMapFilter"
@@ -51,7 +51,7 @@
   <div class="row mt-sm-4">
     <div class="col-sm-12" #selectedDataCardRef>
       <selected-data-card
-        [(selectedVariables)]="selectedVariables"
+        [selectedVariables]="selectedVariables()"
         [disableActions]="isActionBeingPerformed()"
         (singleVariableRemoved)="removeVariableFromSelection()"
         (allVariablesCleared)="removeVariableFromSelection()"
@@ -66,7 +66,7 @@
           Data View and Download
         </div>
         <div class="card-body table-responsive">
-          @if (selectedVariables.length == 0) {
+          @if (selectedVariables().length == 0) {
             <div class="row">
               <div class="col text-center">
                 Select a station on the map and an applicable
@@ -74,11 +74,11 @@
               </div>
             </div>
           }
-          @if (selectedVariables.length > 0) {
+          @if (selectedVariables().length > 0) {
             <div class="row">
-              @if (lyraMessages.length > 0) {
+              @if (lyraMessages().length > 0) {
                 @for (
-                  alert of lyraMessages; track
+                  alert of lyraMessages(); track
                   alert; let i = $index) {
                   <div
                     class="col-12"
@@ -99,11 +99,11 @@
                   (ngSubmit)="onSubmit()"
                   class="form-inline"
                   >
-                  @if (errorMessage) {
+                  @if (errorMessage()) {
                     <div
                       class="alert alert-danger"
                       >
-                      {{ errorMessage }}
+                      {{ errorMessage() }}
                     </div>
                   }
                   <div class="form-group w-100 mb-1">
@@ -825,7 +825,7 @@
                               class="btn btn-nebula btn-sm mt-4 float-end"
                               [disabled]="isActionBeingPerformed()"
                               >
-                              @if (gettingTimeSeriesData) {
+                              @if (gettingTimeSeriesData()) {
                                 <span
                                   class="fa fa-spinner loading-spinner"
                                 ></span>
@@ -836,14 +836,14 @@
                         </form>
                       </div>
                       @if (
-                        selectedVariables != null &&
-                        selectedVariables.length == 1
+                        selectedVariables() != null &&
+                        selectedVariables().length == 1
                         ) {
                         <div
                           class="col-12 text-center"
                           >
-                          @if (!vegaSpec && !errorOccurred) {
-                            @if (gettingTimeSeriesData) {
+                          @if (!vegaSpec() && !errorOccurred()) {
+                            @if (gettingTimeSeriesData()) {
                               <span
                                 >Loading chart values
                                 <span
@@ -861,14 +861,14 @@
                                   >
                                 }
                               }
-                              @if (errorOccurred) {
+                              @if (errorOccurred()) {
                                 <span
                                   >Operation was unsuccessful. Please make another
                                   selection and try again.</span
                                   >
                                 }
                                 @if (
-                                  vegaSpec && currentlyDisplayingRequestDto
+                                  vegaSpec() && currentlyDisplayingRequestDto
                                   ) {
                                   <div class="row">
                                     <div class="col-12 mt-1">
@@ -887,7 +887,7 @@
                                                 isActionBeingPerformed()
                                             "
                                         >
-                                      @if (downloadingChartData) {
+                                      @if (downloadingChartData()) {
                                         <span
                                           class="fa fa-spinner loading-spinner"
                                           ></span
@@ -945,7 +945,7 @@
                                       </table>
                                     </div>
                                   }
-                                  @if (vegaSpec) {
+                                  @if (vegaSpec()) {
                                     <div
                                       id="vis"
                                       style="width: 100%"

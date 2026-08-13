@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild , signal } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AuthenticationService } from 'src/app/services/authentication.service';
@@ -35,23 +35,23 @@ export class DiversionScenarioComponent implements OnInit {
   public richTextTypeID = CustomRichTextTypeEnum.DiversionScenario;
   public defaultSelectedMapFilter = SiteFilterEnum.HasDischarge;
 
-  public vegaSpec: Object = null;
+  public vegaSpec = signal<Object>(null);
 
   public hydstraWeatherConditions: HydstraWeatherCondition[] = HydstraWeatherCondition.all();
 
   public selectedSiteProperties: any;
-  public selectedSiteAvailableVariables: SiteVariable[] = [];
-  public selectedSiteStation: string = null;
-  public selectedSiteName: string = null;
-  public selectedVariables: SiteVariable[] = [];
+  public selectedSiteAvailableVariables = signal<SiteVariable[]>([]);
+  public selectedSiteStation = signal<string>(null);
+  public selectedSiteName = signal<string>(null);
+  public selectedVariables = signal<SiteVariable[]>([]);
 
-  public errorOccurred: boolean;
-  public errorMessage: string = null;
-  public gettingTimeSeriesData: boolean = false;
+  public errorOccurred = signal(false);
+  public errorMessage = signal<string>(null);
+  public gettingTimeSeriesData = signal(false);
   public rainfallStations: any = null;
   public currentlyDisplayingRequestDto: any;
-  public downloadingChartData: boolean;
-  public lyraMessages: Alert[] = [];
+  public downloadingChartData = signal(false);
+  public lyraMessages = signal<Alert[]>([]);
 
   public variableNamesAllowedToAddToScenario = ['Discharge'];
 
@@ -172,7 +172,7 @@ export class DiversionScenarioComponent implements OnInit {
   }
 
   public isActionBeingPerformed() {
-    return this.gettingTimeSeriesData || this.downloadingChartData
+    return this.gettingTimeSeriesData() || this.downloadingChartData()
   }
 
   public getTimeSeriesData() {
@@ -202,19 +202,19 @@ export class DiversionScenarioComponent implements OnInit {
       diversion_days_active: this.timeSeriesForm.get('diversion_days_active').value,
       diversion_hours_active: this.timeSeriesForm.get('diversion_hours_active').value
     };
-    this.gettingTimeSeriesData = true;
-    this.errorOccurred = false;
-    this.vegaSpec = null;
+    this.gettingTimeSeriesData.set(true);
+    this.errorOccurred.set(false);
+    this.vegaSpec.set(null);
     this.currentlyDisplayingRequestDto = null;
-    this.lyraMessages = [];
+    this.lyraMessages.set([]);
     this.timeSeriesForm.disable({emitEvent: false});
     this.lyraService.getDiversionScenarioPlot(swnTimeSeriesRequestDto).subscribe(result => {
       if (result.hasOwnProperty('data') && result.data.hasOwnProperty('spec')) {
         if (result.data.hasOwnProperty('messages') && result.data.messages.length > 0) {
-          this.lyraMessages.push(...result.data.messages.filter(x => x != '').map(x => new Alert(x, AlertContext.Warning, true)));
+          this.lyraMessages.update(m => [...m, ...result.data.messages.filter(x => x != '').map(x => new Alert(x, AlertContext.Warning, true))]);
         }
-        this.vegaSpec = result.data.spec;
-        vegaEmbed('#vis', this.vegaSpec);
+        this.vegaSpec.set(result.data.spec);
+        vegaEmbed('#vis', this.vegaSpec());
         this.currentlyDisplayingRequestDto = swnTimeSeriesRequestDto;
         this.currentlyDisplayingRequestLinkText = `${window.location.origin}${window.location.pathname}?json=${JSON.stringify(this.currentlyDisplayingRequestDto)}`;
         if (result.data.hasOwnProperty('table')) {
@@ -224,12 +224,12 @@ export class DiversionScenarioComponent implements OnInit {
         }
       }
       else {
-        this.errorOccurred = true;
+        this.errorOccurred.set(true);
         if (result.hasOwnProperty('msg')) {
-          this.lyraMessages.push(new Alert(`There was an error with the entered query. Message: ${result.msg}`, AlertContext.Danger, true));
+          this.lyraMessages.update(m => [...m, new Alert(`There was an error with the entered query. Message: ${result.msg}`, AlertContext.Danger, true)]);
         }
       }
-      this.gettingTimeSeriesData = false;
+      this.gettingTimeSeriesData.set(false);
       this.timeSeriesForm.enable({emitEvent: false});
       this.cdr.detectChanges();
     },
@@ -237,12 +237,12 @@ export class DiversionScenarioComponent implements OnInit {
       if (error.hasOwnProperty('error') && error.error.hasOwnProperty('detail')) {
         for (const details of error.error.detail) {
           if (details.hasOwnProperty('msg')) {
-            this.lyraMessages.push(new Alert(`There was an error with the entered query. Message: ${details.msg}`, AlertContext.Danger, true));
+            this.lyraMessages.update(m => [...m, new Alert(`There was an error with the entered query. Message: ${details.msg}`, AlertContext.Danger, true)]);
           }
         }
       }
-      this.errorOccurred = true;
-      this.gettingTimeSeriesData = false;
+      this.errorOccurred.set(true);
+      this.gettingTimeSeriesData.set(false);
       this.timeSeriesForm.enable({emitEvent: false});
     });
   }
@@ -252,7 +252,7 @@ export class DiversionScenarioComponent implements OnInit {
       return;
     }
 
-    this.downloadingChartData = true;
+    this.downloadingChartData.set(true);
     this.timeSeriesForm.disable({emitEvent: false});
     this.lyraService.downloadDiversionScenarioData(this.currentlyDisplayingRequestDto).subscribe(result => {
       let toAppendToResults = ''
@@ -286,18 +286,18 @@ export class DiversionScenarioComponent implements OnInit {
       a.download = `SWN_Diversion_Scenario_Data_Request_${date.getMonth() + 1}_${date.getDate()}_${date.getFullYear()}_${date.getHours()}_${date.getMinutes()}.csv`;
       a.click();
       window.URL.revokeObjectURL(url);
-      this.downloadingChartData = false;
+      this.downloadingChartData.set(false);
       this.timeSeriesForm.enable({emitEvent: false});
     })
   }
 
   public siteSelectedAndVariablesFound(): boolean {
-    return this.selectedSiteName && this.selectedSiteAvailableVariables != null && this.selectedSiteAvailableVariables.length > 0
+    return this.selectedSiteName() && this.selectedSiteAvailableVariables() != null && this.selectedSiteAvailableVariables().length > 0
   }
 
   public addVariableToSelection(variable: SiteVariable): void {
-    this.selectedVariables = [];
-    this.selectedVariables.push(variable);
+    this.selectedVariables.set([]);
+    this.selectedVariables.update(v => [...v, variable]);
     this.timeSeriesForm.patchValue({ site: variable.station });
     this.timeSeriesForm.patchValue({ nearest_rainfall_station: variable.nearestRainfallStationInfo.station});
     this.clearResults();
@@ -305,7 +305,7 @@ export class DiversionScenarioComponent implements OnInit {
 
   public removeVariableFromSelection(): void {
     this.timeSeriesForm.patchValue({ site: null });
-    this.lyraMessages = [];
+    this.lyraMessages.set([]);
     this.clearResults();
   }
 
@@ -335,16 +335,16 @@ export class DiversionScenarioComponent implements OnInit {
   }
 
   public closeAlert(index: number) {
-    this.lyraMessages.splice(index, 1);
+    this.lyraMessages.update(m => m.filter((_, i) => i !== index));
   }
 
   public clearResults() {
-    this.vegaSpec = null;
+    this.vegaSpec.set(null);
     this.summaryTableColumns = [];
     this.summaryTableRows = [];
     this.currentlyDisplayingRequestDto = null;
-    this.lyraMessages = [];
-    this.errorOccurred = false;
+    this.lyraMessages.set([]);
+    this.errorOccurred.set(false);
   }
 
   //#endregion
@@ -431,7 +431,7 @@ export class DiversionScenarioComponent implements OnInit {
       this.updateFormWithValueIfProvidedAndSomePresentPopulateErrorIfNot(queriedParams, 'diversion_days_active', this.weekdayData, ((x, y) => x.some(z => z.id == y)), errorMessagesToDisplay);
       this.updateFormWithValueIfProvidedAndSomePresentPopulateErrorIfNot(queriedParams, 'diversion_hours_active', this.hourData, ((x, y) => x.some(z => z.id == y)), errorMessagesToDisplay);
 
-      this.lyraMessages = errorMessagesToDisplay;
+      this.lyraMessages.set(errorMessagesToDisplay);
       this.cdr.detectChanges();
       this.scrollIntoView(this.selectedDataCardRef);
     })
