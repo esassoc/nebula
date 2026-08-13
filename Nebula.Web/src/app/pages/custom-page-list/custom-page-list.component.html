@@ -24,7 +24,7 @@
   </div>
   <div class="table-responsive">
     <ag-grid-angular #pageGrid style="width: 100%; height: 500px" class="ag-theme-balham" theme="legacy"
-      [rowData]="rowData" [columnDefs]="columnDefs" [pagination]="true" [suppressMenuHide]="true"
+      [rowData]="rowData()" [columnDefs]="columnDefs()" [pagination]="true" [suppressMenuHide]="true"
       [paginationPageSize]="100" (firstDataRendered)="onFirstDataRendered($event)"
       (cellClicked)="onCellClicked($event)">
     </ag-grid-angular>
@@ -40,14 +40,14 @@
   </div>
   <div class="modal-body">Are you sure you want to delete this page?</div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-nebula btn-sm" [disabled]="isPerformingAction" (click)="removePageByID()">
+    <button type="button" class="btn btn-nebula btn-sm" [disabled]="isPerformingAction()" (click)="removePageByID()">
       @if (isLoadingSubmit) {
         <span class="fa fa-spinner loading-spinner"></span>
       }
       Confirm
     </button>
     <button type="button" class="btn btn-secondary btn-sm" (click)="modal.close('Cancel click')"
-      [disabled]="isPerformingAction">
+      [disabled]="isPerformingAction()">
       Cancel
     </button>
   </div>

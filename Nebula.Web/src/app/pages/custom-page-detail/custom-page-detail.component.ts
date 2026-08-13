@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
+import { AfterViewChecked, Component, Input, OnInit, ViewChild, signal, inject } from '@angular/core';
 import { SafeHtml, DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthenticationService } from 'src/app/services/authentication.service';
@@ -20,48 +20,43 @@ export class CustomPageDetailComponent implements OnInit, AfterViewChecked {
   public tinyMceConfig: object;
   
   @Input() customPageVanityUrl: string;
-  public customPageContent: SafeHtml;
-  public customPageDisplayName: string;
-  public viewableRoleIDs: Array<number>;
-  public isLoading: boolean = true;
-  public isEditing: boolean = false;
-  public isEmptyContent: boolean = false;
+  public customPageContent = signal<SafeHtml>(null);
+  public customPageDisplayName = signal<string>(null);
+  public viewableRoleIDs = signal<Array<number>>([]);
+  public isLoading = signal(true);
+  public isEditing = signal(false);
+  public isEmptyContent = signal(false);
   
   public watchUserChangeSubscription: any;
   public editor;
   public editedContent: string;
   
-  private currentUser: UserDto;
-  public customPage: CustomPageDto;
+  private authenticationService = inject(AuthenticationService);
+  private currentUser = this.authenticationService.currentUser;
+  public customPage = signal<CustomPageDto>(null);
 
   constructor(
     private customPageService: CustomPageService,
     private route: ActivatedRoute,
     private router: Router,
     private alertService: AlertService,
-    private authenticationService: AuthenticationService,
-    private cdr: ChangeDetectorRef,
     private sanitizer: DomSanitizer) {
     // force route reload whenever params change
     this.router.routeReuseStrategy.shouldReuseRoute = () => false;
   }
 
   ngOnInit() {
-    this.watchUserChangeSubscription = this.authenticationService.getCurrentUser().subscribe(currentUser => {
-      this.currentUser = currentUser;
-    });
-
     const vanityUrl = this.route.snapshot.paramMap.get('vanity-url');
 
     if (vanityUrl) {
       this.customPageService.customPagesGetByURLCustomPageVanityURLGet(vanityUrl).subscribe(customPage => {
         this.loadCustomPage(customPage);
-        this.customPageContent = this.sanitizer.bypassSecurityTrustHtml(customPage.CustomPageContent);
-        this.customPageDisplayName = customPage.CustomPageDisplayName;
+        this.customPageContent.set(this.sanitizer.bypassSecurityTrustHtml(customPage.CustomPageContent));
+        this.customPageDisplayName.set(customPage.CustomPageDisplayName);
         this.editedContent = customPage.CustomPageContent;
       });
       this.customPageService.customPagesGetByURLCustomPageVanityURLRolesGet(vanityUrl).subscribe(pageRoleDtos => {
-        this.viewableRoleIDs = pageRoleDtos.map(pageRole => pageRole.RoleID);
+        this.viewableRoleIDs.set(pageRoleDtos.map(pageRole => pageRole.RoleID));
       });
     }
   }
@@ -72,19 +67,15 @@ export class CustomPageDetailComponent implements OnInit, AfterViewChecked {
   }
 
   initalizeEditor() {
-    if (!this.isLoading && this.isEditing) {
+    if (!this.isLoading() && this.isEditing()) {
       this.tinyMceConfig = TinyMCEHelpers.DefaultInitConfig(
         this.tinyMceEditor
       );
     }
   }
 
-  ngOnDestroy() {
-    this.cdr.detach();
-  }
-
   public isUserAnAdministrator(): boolean {
-    return this.authenticationService.isUserAnAdministrator(this.currentUser);
+    return this.authenticationService.isUserAnAdministrator(this.currentUser());
   }
 
   public showEditButton(): boolean {
@@ -92,39 +83,39 @@ export class CustomPageDetailComponent implements OnInit, AfterViewChecked {
   }
 
   public enterEdit(): void {
-    this.isEditing = true;
+    this.isEditing.set(true);
   }
 
   public cancelEdit(): void {
-    this.isEditing = false;
+    this.isEditing.set(false);
   }
 
   public saveEdit(): void {
-    this.isEditing = false;
-    this.isLoading = true;
+    this.isEditing.set(false);
+    this.isLoading.set(true);
     const updateDto = new CustomPageUpsertDto({
-      CustomPageDisplayName: this.customPageDisplayName,
-      CustomPageVanityUrl: this.customPage.CustomPageVanityUrl,
+      CustomPageDisplayName: this.customPageDisplayName(),
+      CustomPageVanityUrl: this.customPage().CustomPageVanityUrl,
       CustomPageContent: this.editedContent,
-      MenuItemID: this.customPage.MenuItem.MenuItemID,
-      ViewableRoleIDs: this.viewableRoleIDs
+      MenuItemID: this.customPage().MenuItem.MenuItemID,
+      ViewableRoleIDs: this.viewableRoleIDs()
     });
 
-    this.customPageService.customPagesCustomPageIDPut(this.customPage.CustomPageID, updateDto).subscribe(x => {
-      this.customPageContent = this.sanitizer.bypassSecurityTrustHtml(x.CustomPageContent);
+    this.customPageService.customPagesCustomPageIDPut(this.customPage().CustomPageID, updateDto).subscribe(x => {
+      this.customPageContent.set(this.sanitizer.bypassSecurityTrustHtml(x.CustomPageContent));
       this.editedContent = x.CustomPageContent;
-      this.isLoading = false;
+      this.isLoading.set(false);
     }, error => {
-      this.isLoading = false;
+      this.isLoading.set(false);
       this.alertService.pushAlert(new Alert('There was an error updating the rich text content', AlertContext.Danger, true));
     });
   }
 
   private loadCustomPage(customPage: CustomPageDto)
   {
-    this.customPage = customPage; 
-    this.isEmptyContent = !!customPage.CustomPageContent;
-    this.isLoading = false;
+    this.customPage.set(customPage);
+    this.isEmptyContent.set(!!customPage.CustomPageContent);
+    this.isLoading.set(false);
   }
 
   public isUploadingImage(): boolean {

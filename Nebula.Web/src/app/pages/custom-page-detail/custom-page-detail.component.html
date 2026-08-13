@@ -6,19 +6,19 @@
   </div>
 </div>
 
-@if (isLoading) {
+@if (isLoading()) {
   <div class="text-center">
     <span class="fa fa-spinner loading-spinner"></span>
   </div>
 }
 
-@if (!isLoading) {
+@if (!isLoading()) {
   <div class="container mt-sm-4 mb-5">
     <app-alert-display></app-alert-display>
     <div>
-      <h2 class="d-inline-block">{{ customPageDisplayName }}</h2>
+      <h2 class="d-inline-block">{{ customPageDisplayName() }}</h2>
     </div>
-    @if (!isEditing) {
+    @if (!isEditing()) {
       @if (showEditButton()) {
         <div
           class="customPageContent"
@@ -36,7 +36,7 @@
             </div>
           </div>
           @if (!emptyContent) {
-            <div [innerHtml]="customPageContent"></div>
+            <div [innerHtml]="customPageContent()"></div>
           }
           @if (emptyContent) {
             <div class="hoverEmptySpace"></div>
@@ -44,10 +44,10 @@
         </div>
       }
       @if (!showEditButton()) {
-        <div [innerHtml]="customPageContent"></div>
+        <div [innerHtml]="customPageContent()"></div>
       }
     }
-    @if (isEditing) {
+    @if (isEditing()) {
       <div>
         <editor
           #tinyMceEditor
