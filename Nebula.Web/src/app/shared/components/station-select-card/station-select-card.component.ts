@@ -263,10 +263,13 @@ export class StationSelectCardComponent implements OnInit {
   }
 
   public addVariableToSelection(variable: SiteVariable): void {
-    this.selectedVariables.push(variable);
+    // Does NOT push into this.selectedVariables. That is an @Input, and pushing
+    // mutated the parent's array in place -- which a signal cannot observe, so
+    // the parent never re-rendered and its disabled-state predicates went
+    // stale. The parent owns the list and updates it from addingVariableEvent;
+    // the new value arrives back through the input setter.
     this.addingVariableEvent.emit(variable);
     this.updateSelectedDataStationsLayer();
-    this.cdr.detectChanges();
   }
 
   public variablePresentInSelectedVariables(variable: SiteVariable): boolean {

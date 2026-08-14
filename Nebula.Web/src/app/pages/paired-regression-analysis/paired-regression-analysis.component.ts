@@ -189,17 +189,23 @@ export class PairedRegressionAnalysisComponent implements OnInit {
   }
 
   public addVariableToSelection(variable: SiteVariable): void {
+    // The parent owns selectedVariables. station-select-card used to push into
+    // this array in place, which a signal cannot observe -- so the Add buttons
+    // kept a stale enabled state until some other signal forced a re-render.
+    this.selectedVariables.update(v => [...v, variable]);
     this.addSiteVariableToQuery(variable);
     this.clearResults();
     this.cdr.detectChanges();
   }
 
   public removeVariableFromSelection(index: number): void {
+    this.selectedVariables.update(v => v.filter((_, i) => i !== index));
     this.removeSiteVariableToQuery(index);
     this.clearResults();
   }
 
   public clearAllVariables(): void {
+    this.selectedVariables.set([]);
     this.timeseries().clear();
     this.clearResults();
   }
