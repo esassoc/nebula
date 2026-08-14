@@ -182,12 +182,36 @@ namespace Nebula.EFModels.Entities
                 .Single(x => x.UserID == userID);
 
             user.GlobalUserID = globalID;
-            user.LoginName = claims.Claims.Single(c => c.Type == "nickname").Value;
-            user.Email = claims.Claims.Single(c => c.Type == ClaimTypes.Email).Value;
             user.LastActivityDate = DateTime.UtcNow;
 
-            var firstName = claims?.Claims.SingleOrDefault(c => c.Type == ClaimsConstants.GivenName)?.Value;
-            var lastName = claims?.Claims.SingleOrDefault(c => c.Type == ClaimsConstants.FamilyName)?.Value;
+            // Every claim read is optional and every assignment guarded, matching
+            // Neptune's People.UpdateClaims. Previously LoginName and Email used
+            // .Single(), which throws when a claim is absent -- so a returning user
+            // 500'd on /user-claims while a first-time user succeeded, because the
+            // create path in UserController already tolerated a missing nickname.
+            //
+            // FirstOrDefault rather than SingleOrDefault: the latter still throws on
+            // DUPLICATE claims, which is reachable when an Auth0 action sets a custom
+            // claim that ASP.NET's inbound mapping also produces.
+            var email = claims?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            var loginName = claims?.Claims.FirstOrDefault(c => c.Type == "nickname")?.Value;
+            var firstName = claims?.Claims.FirstOrDefault(c => c.Type == ClaimsConstants.GivenName)?.Value;
+            var lastName = claims?.Claims.FirstOrDefault(c => c.Type == ClaimsConstants.FamilyName)?.Value;
+
+            if (!string.IsNullOrWhiteSpace(email))
+            {
+                user.Email = email;
+            }
+            // LoginName falls back to email, the same fallback the create path uses.
+            // Assigned after Email so it picks up a freshly updated address.
+            if (!string.IsNullOrWhiteSpace(loginName))
+            {
+                user.LoginName = loginName;
+            }
+            else if (string.IsNullOrWhiteSpace(user.LoginName))
+            {
+                user.LoginName = user.Email;
+            }
             if (!string.IsNullOrWhiteSpace(firstName))
             {
                 user.FirstName = firstName;
