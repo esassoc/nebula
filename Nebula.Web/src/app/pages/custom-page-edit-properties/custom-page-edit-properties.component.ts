@@ -2,7 +2,7 @@ import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthenticationService } from 'src/app/services/authentication.service';
-import { CustomPageDto, CustomPageService, CustomPageUpsertDto, MenuItemDto, MenuItemService, RoleDto, RoleService, UserDto } from 'src/app/shared/generated';
+import { CustomPageDto, CustomPageService, CustomPageUpsertDto, MenuItemDto, MenuItemService, RoleDto, RoleService } from 'src/app/shared/generated';
 import { RoleEnum } from 'src/app/shared/generated/enum/role-enum';
 import { Alert } from 'src/app/shared/models/alert';
 import { AlertContext } from 'src/app/shared/models/enums/alert-context.enum';

@@ -5,7 +5,7 @@ import { LinkRendererComponent } from 'src/app/shared/components/ag-grid/link-re
 import { ColDef } from 'ag-grid-community';
 import { AgGridAngular } from 'ag-grid-angular';
 import { CustomRichTextTypeEnum } from 'src/app/shared/generated/enum/custom-rich-text-type-enum';
-import { FieldDefinitionDto, FieldDefinitionService, UserDto } from 'src/app/shared/generated';
+import { FieldDefinitionDto, FieldDefinitionService } from 'src/app/shared/generated';
 
 @Component({
     selector: 'nebula-field-definition-list',

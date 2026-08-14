@@ -5,7 +5,7 @@ import { AlertService } from '../../services/alert.service';
 import { AlertContext } from '../../models/enums/alert-context.enum';
 import { NgbPopover } from '@ng-bootstrap/ng-bootstrap';
 import { FieldDefinitionTypeEnum } from '../../generated/enum/field-definition-type-enum';
-import { FieldDefinitionDto, FieldDefinitionService, UserDto } from '../../generated';
+import { FieldDefinitionDto, FieldDefinitionService } from '../../generated';
 
 declare let $: any
 

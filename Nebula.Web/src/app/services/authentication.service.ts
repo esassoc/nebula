@@ -1,19 +1,18 @@
-import { inject, Injectable, signal } from "@angular/core";
-import { toObservable } from "@angular/core/rxjs-interop";
-import { AuthService } from "@auth0/auth0-angular";
+import { inject, Injectable, signal } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { AuthService } from '@auth0/auth0-angular';
 import { AlertService } from '../shared/services/alert.service';
 import { Alert } from '../shared/models/alert';
 import { AlertContext } from '../shared/models/enums/alert-context.enum';
-import { Observable, of } from "rxjs";
-import { catchError, switchMap, } from "rxjs/operators";
+import { Observable, of } from 'rxjs';
+import { catchError, switchMap, } from 'rxjs/operators';
 import { UserDto, UserService } from '../shared/generated';
-import { Router } from "@angular/router";
-import { RoleEnum } from "../shared/generated/enum/role-enum";
-import { environment } from 'src/environments/environment';
-import { HttpErrorResponse } from "@angular/common/http";
+import { Router } from '@angular/router';
+import { RoleEnum } from '../shared/generated/enum/role-enum';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable({
-  providedIn: "root",
+  providedIn: 'root',
 })
 export class AuthenticationService {
   protected auth = inject(AuthService);
@@ -45,7 +44,7 @@ export class AuthenticationService {
           // user and no message -- which is how a 500 on this endpoint presented.
           return this.userService.userClaimsPost().pipe(
             catchError((error) => {
-              console.error("Failed to load user claims:", error);
+              console.error('Failed to load user claims:', error);
               // Auth0 authenticated us, but without an app account there is no
               // usable session -- so report unauthenticated rather than leave
               // hasClaims true with a null currentUser, which showed the
@@ -54,7 +53,7 @@ export class AuthenticationService {
               // control was never affected; this only realigns the chrome.
               this.hasClaims = false;
               this.alertService.pushAlert(new Alert(
-                "We could not load your account. Please try signing in again, or contact support if this continues.",
+                'We could not load your account. Please try signing in again, or contact support if this continues.',
                 AlertContext.Danger));
               return of(null);
             }),
@@ -67,7 +66,7 @@ export class AuthenticationService {
       );
 
     this.auth.error$.subscribe((err: HttpErrorResponse) => {
-      console.error("Auth0 Error:", err);
+      console.error('Auth0 Error:', err);
       this.alertService.pushAlert(new Alert(`An error occurred during authentication: ${err.message}`, AlertContext.Danger));
     });
   }
@@ -168,7 +167,7 @@ export class AuthenticationService {
   }
 
   public createAccount() {
-    this.auth.loginWithRedirect({ authorizationParams: { screen_hint: "signup" } } as any);
+    this.auth.loginWithRedirect({ authorizationParams: { screen_hint: 'signup' } } as any);
   }
 
   public getAuthRedirectUrl() {

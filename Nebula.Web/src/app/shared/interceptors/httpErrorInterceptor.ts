@@ -33,14 +33,12 @@ export class HttpErrorInterceptor implements HttpInterceptor {
 
           // If the backend indicates a missing refresh token, log which request triggered it.
           try {
-            if (typeof error.error === "string" && error.error.indexOf("missing_refresh_token") !== -1) {
-              // eslint-disable-next-line no-console
-              console.error("[HttpErrorInterceptor] Request triggered missing_refresh_token", {
+            if (typeof error.error === 'string' && error.error.indexOf('missing_refresh_token') !== -1) {
+              console.error('[HttpErrorInterceptor] Request triggered missing_refresh_token', {
                 method: request.method,
                 url: request.urlWithParams,
               });
-              // eslint-disable-next-line no-console
-              console.error("[HttpErrorInterceptor] Full HttpErrorResponse:", error);
+              console.error('[HttpErrorInterceptor] Full HttpErrorResponse:', error);
             }
           } catch (e) { }
 

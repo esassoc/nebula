@@ -6,7 +6,7 @@ import { Alert } from '../../models/alert';
 import { AlertContext } from '../../models/enums/alert-context.enum';
 import { Router } from '@angular/router';
 import { RoleEnum } from '../../generated/enum/role-enum';
-import { CustomPageService, CustomPageWithRolesDto, UserDto, UserService } from '../../generated';
+import { CustomPageService, CustomPageWithRolesDto, UserService } from '../../generated';
 
 @Component({
   selector: 'header-nav',

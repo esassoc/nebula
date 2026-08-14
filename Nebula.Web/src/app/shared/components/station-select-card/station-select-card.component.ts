@@ -1,4 +1,4 @@
-import { ApplicationRef, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, signal } from '@angular/core';
+import { ApplicationRef, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, signal, AfterViewInit } from '@angular/core';
 import { SiteFilterEnum } from '../../models/enums/site-filter.enum';
 import { SiteVariable } from '../../models/site-variable';
 import * as L from 'leaflet';
@@ -24,7 +24,7 @@ declare let $: any;
     styleUrls: ['./station-select-card.component.scss'],
     standalone: false
 })
-export class StationSelectCardComponent implements OnInit {
+export class StationSelectCardComponent implements OnInit, AfterViewInit {
   @ViewChild('mapDiv') mapElement: ElementRef;
 
   @Input()

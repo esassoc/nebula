@@ -37,7 +37,7 @@ export class TimeSeriesAnalysisComponent implements OnInit {
 
   public richTextTypeID = CustomRichTextTypeEnum.TimeSeriesAnalysis;
 
-  public vegaSpec = signal<Object>(null);
+  public vegaSpec = signal<object>(null);
 
   public hydstraAggregationMethods: HydstraAggregationMethod[] = Object.values(HydstraAggregationMethod);
   public hydstraIntervals: HydstraInterval[] = Object.values(HydstraInterval);

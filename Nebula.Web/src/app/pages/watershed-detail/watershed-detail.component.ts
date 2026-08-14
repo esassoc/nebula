@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { forkJoin } from 'rxjs';
-import { UserDto, WatershedDto, WatershedService } from 'src/app/shared/generated';
+import { WatershedDto, WatershedService } from 'src/app/shared/generated';
 
 @Component({
     selector: 'template-watershed-detail',

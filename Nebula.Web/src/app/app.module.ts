@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule, APP_INITIALIZER, ErrorHandler, importProvidersFrom } from '@angular/core';
-import { provideHttpClient, withInterceptors, withXhr } from "@angular/common/http";
+import { provideHttpClient, withInterceptors, withXhr } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SharedModule } from './shared/shared.module';
@@ -35,7 +35,7 @@ import { CustomPageEditPropertiesComponent } from './pages/custom-page-edit-prop
 import { ApiModule, Configuration } from './shared/generated';
 import { ModuleRegistry } from 'ag-grid-community';
 import { AllCommunityModule } from 'ag-grid-community';
-import { AuthClientConfig, authHttpInterceptorFn, AuthModule, provideAuth0 } from "@auth0/auth0-angular";
+import { AuthClientConfig, authHttpInterceptorFn, AuthModule, provideAuth0 } from '@auth0/auth0-angular';
 import { getAuthConfig } from './auth-config';
 
 export function init_app(authClientConfig: AuthClientConfig) {

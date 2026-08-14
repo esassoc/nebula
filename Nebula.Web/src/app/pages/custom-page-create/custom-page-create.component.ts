@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, signal, inject, DestroyRef 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { AuthenticationService } from 'src/app/services/authentication.service';
-import { CustomPageService, CustomPageUpsertDto, MenuItemDto, MenuItemService, RoleDto, RoleService, UserDto } from 'src/app/shared/generated';
+import { CustomPageService, CustomPageUpsertDto, MenuItemDto, MenuItemService, RoleDto, RoleService } from 'src/app/shared/generated';
 import { RoleEnum } from 'src/app/shared/generated/enum/role-enum';
 import { Alert } from 'src/app/shared/models/alert';
 import { AlertContext } from 'src/app/shared/models/enums/alert-context.enum';

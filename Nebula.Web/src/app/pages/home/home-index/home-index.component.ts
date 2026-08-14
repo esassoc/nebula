@@ -1,10 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { AuthenticationService } from 'src/app/services/authentication.service';
-import { environment } from 'src/environments/environment';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CustomRichTextTypeEnum } from 'src/app/shared/generated/enum/custom-rich-text-type-enum';
 import { RoleEnum } from 'src/app/shared/generated/enum/role-enum';
-import { UserDto } from 'src/app/shared/generated';
 
 @Component({
   selector: 'app-home-index',
