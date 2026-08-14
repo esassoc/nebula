@@ -1,913 +1,962 @@
 <div class="breadcrumb-container">
-    <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb breadcrumb-empty">
-                <li class="breadcrumb-item active" aria-current="page">
-                    Diversion Scenario
-                </li>
-            </ol>
-        </nav>
-    </div>
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb breadcrumb-empty">
+        <li class="breadcrumb-item active" aria-current="page">
+          Diversion Scenario
+        </li>
+      </ol>
+    </nav>
+  </div>
 </div>
 <div class="container">
-    <app-alert-display></app-alert-display>
+  <app-alert-display></app-alert-display>
 
-    <div class="row">
-        <div class="col">
-            <h2 class="d-inline-block">Diversion Scenario</h2>
-        </div>
+  <div class="row">
+    <div class="col">
+      <h2 class="d-inline-block">Diversion Scenario</h2>
     </div>
-    <div class="row mt-1 mb-2">
-        <div class="col">
-            <custom-rich-text
-                [customRichTextTypeID]="richTextTypeID"
-            ></custom-rich-text>
-        </div>
+  </div>
+  <div class="row mt-1 mb-2">
+    <div class="col">
+      <custom-rich-text
+        [customRichTextTypeID]="richTextTypeID"
+      ></custom-rich-text>
     </div>
+  </div>
 </div>
 <div class="container">
-    <div class="row mt-sm-4">
-        <div class="col-sm-12">
-            <station-select-card
-                #stationSelect
-                [(selectedVariables)]="selectedVariables"
-                [mapID]="mapID"
-                [disableAddingVariables]="isActionBeingPerformed()"
-                [defaultSelectedMapFilter]="defaultSelectedMapFilter"
+  <div class="row mt-sm-4">
+    <div class="col-sm-12">
+      <station-select-card
+        #stationSelect
+        [selectedVariables]="selectedVariables()"
+        [mapID]="mapID"
+        [disableAddingVariables]="isActionBeingPerformed()"
+        [defaultSelectedMapFilter]="defaultSelectedMapFilter"
                 [lyraStationAvailableVariablesKey]="
                     'variables_diversion_scenario'
                 "
                 [variableNamesAllowedToBeAdded]="
                     variableNamesAllowedToAddToScenario
                 "
-                (addingVariableEvent)="addVariableToSelection($event)"
+        (addingVariableEvent)="addVariableToSelection($event)"
                 (mapAndStationsLoadedEvent)="
                     setMapReadyToTrueAndCheckIfWeCanPopulateFormFromURL()
                 "
-            >
-            </station-select-card>
-        </div>
+        >
+      </station-select-card>
     </div>
-    <div class="row mt-sm-4">
-        <div class="col-sm-12" #selectedDataCardRef>
-            <selected-data-card
-                [(selectedVariables)]="selectedVariables"
-                [disableActions]="isActionBeingPerformed()"
-                (singleVariableRemoved)="removeVariableFromSelection()"
-                (allVariablesCleared)="removeVariableFromSelection()"
-                (selectStationOnMap)="showOnMapForStation($event)"
-            ></selected-data-card>
-        </div>
+  </div>
+  <div class="row mt-sm-4">
+    <div class="col-sm-12" #selectedDataCardRef>
+      <selected-data-card
+        [selectedVariables]="selectedVariables()"
+        [disableActions]="isActionBeingPerformed()"
+        (singleVariableRemoved)="removeVariableFromSelection()"
+        (allVariablesCleared)="removeVariableFromSelection()"
+        (selectStationOnMap)="showOnMapForStation($event)"
+      ></selected-data-card>
     </div>
-    <div class="row mt-sm-4">
-        <div class="col-sm-12">
-            <div class="card">
-                <div class="card-header text-center" #timeSeriesCard>
-                    Data View and Download
-                </div>
-                <div class="card-body table-responsive">
-                    <div *ngIf="selectedVariables.length == 0" class="row">
-                        <div class="col text-center">
-                            Select a station on the map and an applicable
-                            variable to get started!
-                        </div>
+  </div>
+  <div class="row mt-sm-4">
+    <div class="col-sm-12">
+      <div class="card">
+        <div class="card-header text-center" #timeSeriesCard>
+          Data View and Download
+        </div>
+        <div class="card-body table-responsive">
+          @if (selectedVariables().length == 0) {
+            <div class="row">
+              <div class="col text-center">
+                Select a station on the map and an applicable
+                variable to get started!
+              </div>
+            </div>
+          }
+          @if (selectedVariables().length > 0) {
+            <div class="row">
+              @if (lyraMessages().length > 0) {
+                @for (
+                  alert of lyraMessages(); track
+                  alert; let i = $index) {
+                  <div
+                    class="col-12"
+                    >
+                    <ngb-alert
+                      [type]="alert.context"
+                      [dismissible]="alert.dismissable"
+                      (close)="closeAlert(i)"
+                      >
+                      <span [innerHTML]="alert.message"></span>
+                    </ngb-alert>
+                  </div>
+                }
+              }
+              <div class="col-lg-6">
+                <form
+                  [formGroup]="timeSeriesForm"
+                  (ngSubmit)="onSubmit()"
+                  class="form-inline"
+                  >
+                  @if (errorMessage()) {
+                    <div
+                      class="alert alert-danger"
+                      >
+                      {{ errorMessage() }}
                     </div>
-                    <div *ngIf="selectedVariables.length > 0" class="row">
-                        <ng-container *ngIf="lyraMessages.length > 0">
+                  }
+                  <div class="form-group w-100 mb-1">
+                    <label
+                      for="start_date"
+                      class="col-sm-6 col-form-label justify-content-start"
+                      >Start Date</label
+                      >
+                      <div class="input-group col-sm-6">
+                        <input
+                          formControlName="start_date"
+                          id="start_date"
+                          type="text"
+                          ngbDatepicker
+                          container="body"
+                          #start="ngbDatepicker"
+                          placeholder="yyyy-mm-dd"
+                          (click)="start.toggle()"
+                          class="form-control"
+                          />
+                        <div class="input-group-append">
+                          <button
+                            class="btn btn-outline-secondary calendar"
+                            (click)="start.toggle()"
+                            [disabled]="disabled"
+                            type="button"
+                            >
+                            <i
+                              class="fa fa-calendar"
+                              aria-hidden="true"
+                            ></i>
+                          </button>
+                        </div>
+                      </div>
+                      @if (
+                        f.start_date.touched &&
+                        f.start_date.invalid
+                        ) {
+                        <div
+                          class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                          >
+                          @if (f.start_date.errors.required) {
                             <div
-                                class="col-12"
-                                *ngFor="
-                                    let alert of lyraMessages;
-                                    let i = index
-                                "
-                            >
-                                <ngb-alert
-                                    [type]="alert.context"
-                                    [dismissible]="alert.dismissable"
-                                    (close)="closeAlert(i)"
-                                >
-                                    <span [innerHTML]="alert.message"></span>
-                                </ngb-alert>
+                              >
+                              Date is required.
                             </div>
-                        </ng-container>
-                        <div class="col-lg-6">
-                            <form
-                                [formGroup]="timeSeriesForm"
-                                (ngSubmit)="onSubmit()"
-                                class="form-inline"
+                          }
+                          @if (
+                            f.start_date.errors.ngbDate
+                            ?.invalid
+                            ) {
+                            <div
+                              >
+                              Date must be in the format
+                              'yyyy-mm-dd'
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                    <div class="form-group w-100 mb-1">
+                      <label
+                        for="end_date"
+                        class="col-sm-6 col-form-label justify-content-start"
+                        >End Date</label
+                        >
+                        <div class="input-group col-sm-6">
+                          <input
+                            formControlName="end_date"
+                            id="end_date"
+                            type="text"
+                            ngbDatepicker
+                            container="body"
+                            #end="ngbDatepicker"
+                            placeholder="yyyy-mm-dd"
+                            (click)="end.toggle()"
+                            class="form-control"
+                            />
+                          <div class="input-group-append">
+                            <button
+                              class="btn btn-outline-secondary calendar"
+                              (click)="end.toggle()"
+                              [disabled]="disabled"
+                              type="button"
+                              >
+                              <i
+                                class="fa fa-calendar"
+                                aria-hidden="true"
+                              ></i>
+                            </button>
+                          </div>
+                        </div>
+                        @if (
+                          f.end_date.touched &&
+                          f.end_date.invalid
+                          ) {
+                          <div
+                            class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
                             >
-                                <div
-                                    *ngIf="errorMessage"
-                                    class="alert alert-danger"
+                            @if (f.end_date.errors.required) {
+                              <div>
+                                Date is required.
+                              </div>
+                            }
+                            @if (
+                              f.end_date.errors.ngbDate
+                              ?.invalid
+                              ) {
+                              <div
                                 >
-                                    {{ errorMessage }}
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="start_date"
-                                        class="col-sm-6 col-form-label justify-content-start"
-                                        >Start Date</label
-                                    >
-                                    <div class="input-group col-sm-6">
-                                        <input
-                                            formControlName="start_date"
-                                            id="start_date"
-                                            type="text"
-                                            ngbDatepicker
-                                            container="body"
-                                            #start="ngbDatepicker"
-                                            placeholder="yyyy-mm-dd"
-                                            (click)="start.toggle()"
-                                            class="form-control"
-                                        />
-                                        <div class="input-group-append">
-                                            <button
-                                                class="btn btn-outline-secondary calendar"
-                                                (click)="start.toggle()"
-                                                [disabled]="disabled"
-                                                type="button"
-                                            >
-                                                <i
-                                                    class="fa fa-calendar"
-                                                    aria-hidden="true"
-                                                ></i>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        *ngIf="
-                                            f.start_date.touched &&
-                                            f.start_date.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
-                                    >
-                                        <div
-                                            *ngIf="f.start_date.errors.required"
-                                        >
-                                            Date is required.
-                                        </div>
-                                        <div
-                                            *ngIf="
-                                                f.start_date.errors.ngbDate
-                                                    ?.invalid
-                                            "
-                                        >
-                                            Date must be in the format
-                                            'yyyy-mm-dd'
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="end_date"
-                                        class="col-sm-6 col-form-label justify-content-start"
-                                        >End Date</label
-                                    >
-                                    <div class="input-group col-sm-6">
-                                        <input
-                                            formControlName="end_date"
-                                            id="end_date"
-                                            type="text"
-                                            ngbDatepicker
-                                            container="body"
-                                            #end="ngbDatepicker"
-                                            placeholder="yyyy-mm-dd"
-                                            (click)="end.toggle()"
-                                            class="form-control"
-                                        />
-                                        <div class="input-group-append">
-                                            <button
-                                                class="btn btn-outline-secondary calendar"
-                                                (click)="end.toggle()"
-                                                [disabled]="disabled"
-                                                type="button"
-                                            >
-                                                <i
-                                                    class="fa fa-calendar"
-                                                    aria-hidden="true"
-                                                ></i>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        *ngIf="
-                                            f.end_date.touched &&
-                                            f.end_date.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
-                                    >
-                                        <div *ngIf="f.end_date.errors.required">
-                                            Date is required.
-                                        </div>
-                                        <div
-                                            *ngIf="
-                                                f.end_date.errors.ngbDate
-                                                    ?.invalid
-                                            "
-                                        >
-                                            Date must be in the format
-                                            'yyyy-mm-dd'
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="diversion_rate_cfs"
-                                        class="col-sm-6 col-form-label justify-content-start"
-                                    >
-                                        <field-definition
+                                Date must be in the format
+                                'yyyy-mm-dd'
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                      <div class="form-group w-100 mb-1">
+                        <label
+                          for="diversion_rate_cfs"
+                          class="col-sm-6 col-form-label justify-content-start"
+                          >
+                          <field-definition
                                             [fieldDefinitionType]="
                                                 'DiversionRate'
                                             "
-                                        >
-                                        </field-definition>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <input
-                                            formControlName="diversion_rate_cfs"
-                                            id="diversion_rate_cfs"
-                                            type="number"
-                                            class="form-control w-100"
-                                        />
-                                    </div>
-                                    <div
-                                        *ngIf="
-                                            f.diversion_rate_cfs.touched &&
-                                            f.diversion_rate_cfs.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
-                                    >
-                                        <div
-                                            *ngIf="
-                                                f.diversion_rate_cfs.errors
-                                                    .required
-                                            "
-                                        >
-                                            Diversion Rate is required.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="storage_max_depth_ft"
-                                        class="col-sm-6 col-form-label justify-content-start"
-                                    >
-                                        <field-definition
+                            >
+                          </field-definition>
+                        </label>
+                        <div class="col-sm-6">
+                          <input
+                            formControlName="diversion_rate_cfs"
+                            id="diversion_rate_cfs"
+                            type="number"
+                            class="form-control w-100"
+                            />
+                        </div>
+                        @if (
+                          f.diversion_rate_cfs.touched &&
+                          f.diversion_rate_cfs.invalid
+                          ) {
+                          <div
+                            class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                            >
+                            @if (
+                              f.diversion_rate_cfs.errors
+                              .required
+                              ) {
+                              <div
+                                >
+                                Diversion Rate is required.
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                      <div class="form-group w-100 mb-1">
+                        <label
+                          for="storage_max_depth_ft"
+                          class="col-sm-6 col-form-label justify-content-start"
+                          >
+                          <field-definition
                                             [fieldDefinitionType]="
                                                 'StorageMaxDepth'
                                             "
-                                        >
-                                        </field-definition>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <input
-                                            formControlName="storage_max_depth_ft"
-                                            id="storage_max_depth_ft"
-                                            type="number"
-                                            class="form-control w-100"
-                                        />
-                                    </div>
-
-                                    <div
-                                        *ngIf="
-                                            f.storage_max_depth_ft.touched &&
-                                            f.storage_max_depth_ft.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
-                                    >
-                                        <div
-                                            *ngIf="
-                                                f.storage_max_depth_ft.errors
-                                                    .required
-                                            "
-                                        >
-                                            Storage Max Depth is required.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="storage_initial_depth_ft"
-                                        class="col-sm-6 col-form-label justify-content-start"
-                                    >
-                                        <field-definition
+                            >
+                          </field-definition>
+                        </label>
+                        <div class="col-sm-6">
+                          <input
+                            formControlName="storage_max_depth_ft"
+                            id="storage_max_depth_ft"
+                            type="number"
+                            class="form-control w-100"
+                            />
+                        </div>
+                        @if (
+                          f.storage_max_depth_ft.touched &&
+                          f.storage_max_depth_ft.invalid
+                          ) {
+                          <div
+                            class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                            >
+                            @if (
+                              f.storage_max_depth_ft.errors
+                              .required
+                              ) {
+                              <div
+                                >
+                                Storage Max Depth is required.
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                      <div class="form-group w-100 mb-1">
+                        <label
+                          for="storage_initial_depth_ft"
+                          class="col-sm-6 col-form-label justify-content-start"
+                          >
+                          <field-definition
                                             [fieldDefinitionType]="
                                                 'StorageInitialDepth'
                                             "
-                                        >
-                                        </field-definition>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <input
-                                            formControlName="storage_initial_depth_ft"
-                                            id="storage_initial_depth_ft"
-                                            type="number"
-                                            class="form-control w-100"
-                                        />
-                                    </div>
-                                    <div
-                                        *ngIf="
-                                            f.storage_initial_depth_ft
-                                                .touched &&
-                                            f.storage_initial_depth_ft.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
-                                    >
-                                        <div
-                                            *ngIf="
-                                                f.storage_initial_depth_ft
-                                                    .errors.required
-                                            "
-                                        >
-                                            Storage Initial Depth is required.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="storage_area_sqft"
-                                        class="col-sm-6 col-form-label justify-content-start"
-                                    >
-                                        <field-definition
+                            >
+                          </field-definition>
+                        </label>
+                        <div class="col-sm-6">
+                          <input
+                            formControlName="storage_initial_depth_ft"
+                            id="storage_initial_depth_ft"
+                            type="number"
+                            class="form-control w-100"
+                            />
+                        </div>
+                        @if (
+                          f.storage_initial_depth_ft
+                          .touched &&
+                          f.storage_initial_depth_ft.invalid
+                          ) {
+                          <div
+                            class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                            >
+                            @if (
+                              f.storage_initial_depth_ft
+                              .errors.required
+                              ) {
+                              <div
+                                >
+                                Storage Initial Depth is required.
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                      <div class="form-group w-100 mb-1">
+                        <label
+                          for="storage_area_sqft"
+                          class="col-sm-6 col-form-label justify-content-start"
+                          >
+                          <field-definition
                                             [fieldDefinitionType]="
                                                 'StorageArea'
                                             "
-                                        >
-                                        </field-definition>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <input
-                                            formControlName="storage_area_sqft"
-                                            id="storage_area_sqft"
-                                            type="number"
-                                            class="form-control w-100"
-                                        />
-                                    </div>
-
-                                    <div
-                                        *ngIf="
-                                            f.storage_area_sqft.touched &&
-                                            f.storage_area_sqft.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
-                                    >
-                                        <div
-                                            *ngIf="
-                                                f.storage_area_sqft.errors
-                                                    .required
-                                            "
-                                        >
-                                            Storage Area is required.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="infiltration_rate_inhr"
-                                        class="col-sm-6 col-form-label justify-content-start"
-                                    >
-                                        <field-definition
+                            >
+                          </field-definition>
+                        </label>
+                        <div class="col-sm-6">
+                          <input
+                            formControlName="storage_area_sqft"
+                            id="storage_area_sqft"
+                            type="number"
+                            class="form-control w-100"
+                            />
+                        </div>
+                        @if (
+                          f.storage_area_sqft.touched &&
+                          f.storage_area_sqft.invalid
+                          ) {
+                          <div
+                            class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                            >
+                            @if (
+                              f.storage_area_sqft.errors
+                              .required
+                              ) {
+                              <div
+                                >
+                                Storage Area is required.
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                      <div class="form-group w-100 mb-1">
+                        <label
+                          for="infiltration_rate_inhr"
+                          class="col-sm-6 col-form-label justify-content-start"
+                          >
+                          <field-definition
                                             [fieldDefinitionType]="
                                                 'InfiltrationRate'
                                             "
-                                        >
-                                        </field-definition>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <input
-                                            formControlName="infiltration_rate_inhr"
-                                            id="infiltration_rate_inhr"
-                                            type="number"
-                                            class="form-control w-100"
-                                        />
-                                    </div>
-                                    <div
-                                        *ngIf="
-                                            f.infiltration_rate_inhr.touched &&
-                                            f.infiltration_rate_inhr.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
-                                    >
-                                        <div
-                                            *ngIf="
-                                                f.infiltration_rate_inhr.errors
-                                                    .required
-                                            "
-                                        >
-                                            Infiltration Rate is required.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="rainfall_event_shutdown"
-                                        class="col-sm-6 col-form-label justify-content-start"
-                                    >
-                                        <field-definition
+                            >
+                          </field-definition>
+                        </label>
+                        <div class="col-sm-6">
+                          <input
+                            formControlName="infiltration_rate_inhr"
+                            id="infiltration_rate_inhr"
+                            type="number"
+                            class="form-control w-100"
+                            />
+                        </div>
+                        @if (
+                          f.infiltration_rate_inhr.touched &&
+                          f.infiltration_rate_inhr.invalid
+                          ) {
+                          <div
+                            class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                            >
+                            @if (
+                              f.infiltration_rate_inhr.errors
+                              .required
+                              ) {
+                              <div
+                                >
+                                Infiltration Rate is required.
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                      <div class="form-group w-100 mb-1">
+                        <label
+                          for="rainfall_event_shutdown"
+                          class="col-sm-6 col-form-label justify-content-start"
+                          >
+                          <field-definition
                                             [fieldDefinitionType]="
                                                 'RainfallEventShutdown'
                                             "
-                                        >
-                                        </field-definition>
-                                    </label>
-                                    <div class="col-sm-6 input-group">
-                                        <div
-                                            class="form-check form-check-inline"
-                                        >
-                                            <input
-                                                type="radio"
-                                                class="form-check-input"
-                                                formControlName="rainfall_event_shutdown"
-                                                name="rainfall_event_shutdown"
-                                                id="rainfall_event_shutdownTrue"
-                                                [value]="true"
-                                            />
-                                            <label
-                                                class="form-check-label"
-                                                for="rainfall_event_shutdownTrue"
-                                                >True</label
-                                            >
-                                        </div>
-                                        <div
-                                            class="form-check form-check-inline"
-                                        >
-                                            <input
-                                                type="radio"
-                                                class="form-check-input"
-                                                formControlName="rainfall_event_shutdown"
-                                                name="rainfall_event_shutdown"
-                                                id="rainfall_event_shutdownFalse"
-                                                [value]="false"
-                                            />
-                                            <label
-                                                class="form-check-label"
-                                                for="rainfall_event_shutdownFalse"
-                                                >False</label
-                                            >
-                                        </div>
-                                    </div>
-                                    <div
-                                        *ngIf="
-                                            f.rainfall_event_shutdown.touched &&
-                                            f.rainfall_event_shutdown.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                            >
+                          </field-definition>
+                        </label>
+                        <div class="col-sm-6 input-group">
+                          <div
+                            class="form-check form-check-inline"
+                            >
+                            <input
+                              type="radio"
+                              class="form-check-input"
+                              formControlName="rainfall_event_shutdown"
+                              name="rainfall_event_shutdown"
+                              id="rainfall_event_shutdownTrue"
+                              [value]="true"
+                              />
+                            <label
+                              class="form-check-label"
+                              for="rainfall_event_shutdownTrue"
+                              >True</label
+                              >
+                            </div>
+                            <div
+                              class="form-check form-check-inline"
+                              >
+                              <input
+                                type="radio"
+                                class="form-check-input"
+                                formControlName="rainfall_event_shutdown"
+                                name="rainfall_event_shutdown"
+                                id="rainfall_event_shutdownFalse"
+                                [value]="false"
+                                />
+                              <label
+                                class="form-check-label"
+                                for="rainfall_event_shutdownFalse"
+                                >False</label
+                                >
+                              </div>
+                            </div>
+                            @if (
+                              f.rainfall_event_shutdown.touched &&
+                              f.rainfall_event_shutdown.invalid
+                              ) {
+                              <div
+                                class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                                >
+                                @if (
+                                  f.rainfall_event_shutdown.errors
+                                  .required
+                                  ) {
+                                  <div
                                     >
-                                        <div
-                                            *ngIf="
-                                                f.rainfall_event_shutdown.errors
-                                                    .required
-                                            "
-                                        >
-                                            Rainfall Event Depth Threshold is
-                                            required.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="rainfall_event_depth_threshold"
-                                        class="col-sm-6 col-form-label justify-content-start"
-                                    >
-                                        <field-definition
+                                    Rainfall Event Depth Threshold is
+                                    required.
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                          <div class="form-group w-100 mb-1">
+                            <label
+                              for="rainfall_event_depth_threshold"
+                              class="col-sm-6 col-form-label justify-content-start"
+                              >
+                              <field-definition
                                             [fieldDefinitionType]="
                                                 'RainfallEventDepthThreshold'
                                             "
-                                        >
-                                        </field-definition>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <input
-                                            formControlName="rainfall_event_depth_threshold"
-                                            id="rainfall_event_depth_threshold"
-                                            type="number"
-                                            class="form-control w-100"
-                                        />
-                                    </div>
-                                    <div
-                                        *ngIf="
-                                            f.rainfall_event_depth_threshold
-                                                .touched &&
-                                            f.rainfall_event_depth_threshold
-                                                .invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                                >
+                              </field-definition>
+                            </label>
+                            <div class="col-sm-6">
+                              <input
+                                formControlName="rainfall_event_depth_threshold"
+                                id="rainfall_event_depth_threshold"
+                                type="number"
+                                class="form-control w-100"
+                                />
+                            </div>
+                            @if (
+                              f.rainfall_event_depth_threshold
+                              .touched &&
+                              f.rainfall_event_depth_threshold
+                              .invalid
+                              ) {
+                              <div
+                                class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                                >
+                                @if (
+                                  f.rainfall_event_depth_threshold
+                                  .errors.required
+                                  ) {
+                                  <div
                                     >
-                                        <div
-                                            *ngIf="
-                                                f.rainfall_event_depth_threshold
-                                                    .errors.required
-                                            "
-                                        >
-                                            Rainfall Event Depth Threshold is
-                                            required.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="event_seperation_hrs"
-                                        class="col-sm-6 col-form-label justify-content-start"
-                                    >
-                                        <field-definition
+                                    Rainfall Event Depth Threshold is
+                                    required.
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                          <div class="form-group w-100 mb-1">
+                            <label
+                              for="event_seperation_hrs"
+                              class="col-sm-6 col-form-label justify-content-start"
+                              >
+                              <field-definition
                                             [fieldDefinitionType]="
                                                 'EventSeperationTime'
                                             "
-                                        >
-                                        </field-definition>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <input
-                                            formControlName="event_seperation_hrs"
-                                            id="event_seperation_hrs"
-                                            type="number"
-                                            class="form-control w-100"
-                                        />
-                                    </div>
-                                    <div
-                                        *ngIf="
-                                            f.event_seperation_hrs.touched &&
-                                            f.event_seperation_hrs.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                                >
+                              </field-definition>
+                            </label>
+                            <div class="col-sm-6">
+                              <input
+                                formControlName="event_seperation_hrs"
+                                id="event_seperation_hrs"
+                                type="number"
+                                class="form-control w-100"
+                                />
+                            </div>
+                            @if (
+                              f.event_seperation_hrs.touched &&
+                              f.event_seperation_hrs.invalid
+                              ) {
+                              <div
+                                class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                                >
+                                @if (
+                                  f.event_seperation_hrs.errors
+                                  .required
+                                  ) {
+                                  <div
                                     >
-                                        <div
-                                            *ngIf="
-                                                f.event_seperation_hrs.errors
-                                                    .required
-                                            "
-                                        >
-                                            Event Seperation Time is required.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="after_rain_delay_hrs"
-                                        class="col-sm-6 col-form-label justify-content-start"
-                                    >
-                                        <field-definition
+                                    Event Seperation Time is required.
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                          <div class="form-group w-100 mb-1">
+                            <label
+                              for="after_rain_delay_hrs"
+                              class="col-sm-6 col-form-label justify-content-start"
+                              >
+                              <field-definition
                                             [fieldDefinitionType]="
                                                 'AfterRainDelay'
                                             "
-                                        >
-                                        </field-definition>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <input
-                                            formControlName="after_rain_delay_hrs"
-                                            id="after_rain_delay_hrs"
-                                            type="number"
-                                            class="form-control w-100"
-                                        />
-                                    </div>
-                                    <div
-                                        *ngIf="
-                                            f.after_rain_delay_hrs.touched &&
-                                            f.after_rain_delay_hrs.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                                >
+                              </field-definition>
+                            </label>
+                            <div class="col-sm-6">
+                              <input
+                                formControlName="after_rain_delay_hrs"
+                                id="after_rain_delay_hrs"
+                                type="number"
+                                class="form-control w-100"
+                                />
+                            </div>
+                            @if (
+                              f.after_rain_delay_hrs.touched &&
+                              f.after_rain_delay_hrs.invalid
+                              ) {
+                              <div
+                                class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                                >
+                                @if (
+                                  f.after_rain_delay_hrs.errors
+                                  .required
+                                  ) {
+                                  <div
                                     >
-                                        <div
-                                            *ngIf="
-                                                f.after_rain_delay_hrs.errors
-                                                    .required
-                                            "
-                                        >
-                                            Resume Diversion After Delay is
-                                            required.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="nearest_rainfall_station"
-                                        class="col-sm-6 col-form-label justify-content-start d-flex"
-                                    >
-                                        <field-definition
+                                    Resume Diversion After Delay is
+                                    required.
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                          <div class="form-group w-100 mb-1">
+                            <label
+                              for="nearest_rainfall_station"
+                              class="col-sm-6 col-form-label justify-content-start d-flex"
+                              >
+                              <field-definition
                                             [fieldDefinitionType]="
                                                 'NearestRainfallStation'
                                             "
-                                        >
-                                        </field-definition>
-                                    </label>
-                                    <div class="col w-100">
-                                        <select
-                                            formControlName="nearest_rainfall_station"
-                                            id="nearest_rainfall_station"
-                                            class="form-select"
-                                        >
-                                            <option
-                                                *ngFor="
-                                                    let station of rainfallStations
-                                                "
+                                >
+                              </field-definition>
+                            </label>
+                            <div class="col w-100">
+                              <select
+                                formControlName="nearest_rainfall_station"
+                                id="nearest_rainfall_station"
+                                class="form-select"
+                                >
+                                @for (
+                                  station of rainfallStations()
+                                  ; track
+                                  station) {
+                                  <option
                                                 [value]="
                                                     station.properties.station
                                                 "
-                                            >
-                                                {{ station.properties.stname }}
-                                            </option>
-                                        </select>
-                                    </div>
-                                    <div
-                                        *ngIf="
-                                            f.nearest_rainfall_station
-                                                .touched &&
-                                            f.nearest_rainfall_station.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
                                     >
-                                        <div
-                                            *ngIf="
-                                                f.nearest_rainfall_station
-                                                    .errors.required
-                                            "
-                                        >
-                                            Nearest Rainfall Station is
-                                            required.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="diversion_months_active"
-                                        class="col-sm-6 col-form-label justify-content-start"
+                                    {{ station.properties.stname }}
+                                  </option>
+                                }
+                              </select>
+                            </div>
+                            @if (
+                              f.nearest_rainfall_station
+                              .touched &&
+                              f.nearest_rainfall_station.invalid
+                              ) {
+                              <div
+                                class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                                >
+                                @if (
+                                  f.nearest_rainfall_station
+                                  .errors.required
+                                  ) {
+                                  <div
                                     >
-                                        <field-definition
+                                    Nearest Rainfall Station is
+                                    required.
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                          <div class="form-group w-100 mb-1">
+                            <label
+                              for="diversion_months_active"
+                              class="col-sm-6 col-form-label justify-content-start"
+                              >
+                              <field-definition
                                             [fieldDefinitionType]="
                                                 'MonthsActive'
                                             "
-                                        >
-                                        </field-definition>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <ng-select-custom
-                                            #diversion_months_active
+                                >
+                              </field-definition>
+                            </label>
+                            <div class="col-sm-6">
+                              <ng-select-custom
+                                #diversion_months_active
                                             [placeholder]="
                                                 'Select one or more Months'
                                             "
-                                            [bindLabel]="'display'"
-                                            [bindValue]="'id'"
+                                [bindLabel]="'display'"
+                                [bindValue]="'id'"
                                             [labelForId]="
                                                 'diversion_months_active'
                                             "
-                                            [multiple]="true"
-                                            [items]="monthData"
+                                [multiple]="true"
+                                [items]="monthData"
                                             [control]="
                                                 timeSeriesForm.get(
                                                     'diversion_months_active'
                                                 )
                                             "
-                                        >
-                                        </ng-select-custom>
-                                    </div>
-                                    <div
-                                        *ngIf="
-                                            f.diversion_months_active.touched &&
-                                            f.diversion_months_active.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                                >
+                              </ng-select-custom>
+                            </div>
+                            @if (
+                              f.diversion_months_active.touched &&
+                              f.diversion_months_active.invalid
+                              ) {
+                              <div
+                                class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                                >
+                                @if (
+                                  f.diversion_months_active.errors
+                                  .required
+                                  ) {
+                                  <div
                                     >
-                                        <div
-                                            *ngIf="
-                                                f.diversion_months_active.errors
-                                                    .required
-                                            "
-                                        >
-                                            At least one active Month must be
-                                            selected.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="diversion_days_active"
-                                        class="col-sm-6 col-form-label justify-content-start"
-                                    >
-                                        <field-definition
+                                    At least one active Month must be
+                                    selected.
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                          <div class="form-group w-100 mb-1">
+                            <label
+                              for="diversion_days_active"
+                              class="col-sm-6 col-form-label justify-content-start"
+                              >
+                              <field-definition
                                             [fieldDefinitionType]="
                                                 'WeekdaysActive'
                                             "
-                                        >
-                                        </field-definition>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <ng-select-custom
-                                            #diversion_days_active
+                                >
+                              </field-definition>
+                            </label>
+                            <div class="col-sm-6">
+                              <ng-select-custom
+                                #diversion_days_active
                                             [placeholder]="
                                                 'Select one or more Weekdays'
                                             "
-                                            [bindLabel]="'display'"
-                                            [bindValue]="'id'"
+                                [bindLabel]="'display'"
+                                [bindValue]="'id'"
                                             [labelForId]="
                                                 'diversion_days_active'
                                             "
-                                            [multiple]="true"
-                                            [items]="weekdayData"
+                                [multiple]="true"
+                                [items]="weekdayData"
                                             [control]="
                                                 timeSeriesForm.get(
                                                     'diversion_days_active'
                                                 )
                                             "
-                                        >
-                                        </ng-select-custom>
-                                    </div>
-                                    <div
-                                        *ngIf="
-                                            f.diversion_days_active.touched &&
-                                            f.diversion_days_active.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                                >
+                              </ng-select-custom>
+                            </div>
+                            @if (
+                              f.diversion_days_active.touched &&
+                              f.diversion_days_active.invalid
+                              ) {
+                              <div
+                                class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                                >
+                                @if (
+                                  f.diversion_days_active.errors
+                                  .required
+                                  ) {
+                                  <div
                                     >
-                                        <div
-                                            *ngIf="
-                                                f.diversion_days_active.errors
-                                                    .required
-                                            "
-                                        >
-                                            At least one active Weekday must be
-                                            selected.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="diversion_hours_active"
-                                        class="col-sm-6 col-form-label justify-content-start"
-                                    >
-                                        <field-definition
+                                    At least one active Weekday must be
+                                    selected.
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                          <div class="form-group w-100 mb-1">
+                            <label
+                              for="diversion_hours_active"
+                              class="col-sm-6 col-form-label justify-content-start"
+                              >
+                              <field-definition
                                             [fieldDefinitionType]="
                                                 'HoursActive'
                                             "
-                                        >
-                                        </field-definition>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <ng-select-custom
-                                            #diversion_hours_active
+                                >
+                              </field-definition>
+                            </label>
+                            <div class="col-sm-6">
+                              <ng-select-custom
+                                #diversion_hours_active
                                             [placeholder]="
                                                 'Select one or more Hours'
                                             "
-                                            [bindLabel]="'display'"
-                                            [bindValue]="'id'"
+                                [bindLabel]="'display'"
+                                [bindValue]="'id'"
                                             [labelForId]="
                                                 'diversion_hours_active'
                                             "
-                                            [multiple]="true"
-                                            [items]="hourData"
-                                            [numSelectedItemsToShow]="2"
+                                [multiple]="true"
+                                [items]="hourData"
+                                [numSelectedItemsToShow]="2"
                                             [control]="
                                                 timeSeriesForm.get(
                                                     'diversion_hours_active'
                                                 )
                                             "
-                                        >
-                                        </ng-select-custom>
-                                    </div>
-                                    <div
-                                        *ngIf="
-                                            f.diversion_hours_active.touched &&
-                                            f.diversion_hours_active.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
-                                    >
-                                        <div
-                                            *ngIf="
-                                                f.diversion_hours_active.errors
-                                                    .required
-                                            "
-                                        >
-                                            At least one active Hour must be
-                                            selected.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="ms-auto">
-                                    <button
-                                        type="submit"
-                                        class="btn btn-nebula btn-sm mt-4 float-end"
-                                        [disabled]="isActionBeingPerformed()"
-                                    >
-                                        <span
-                                            *ngIf="gettingTimeSeriesData"
-                                            class="fa fa-spinner loading-spinner"
-                                        ></span>
-                                        Submit
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                        <div
-                            *ngIf="
-                                selectedVariables != null &&
-                                selectedVariables.length == 1
-                            "
-                            class="col-12 text-center"
-                        >
-                            <ng-container *ngIf="!vegaSpec && !errorOccurred">
-                                <span *ngIf="gettingTimeSeriesData"
-                                    >Loading chart values
-                                    <span
-                                        class="fa fa-spinner loading-spinner"
-                                    ></span
-                                ></span>
-                                <span
-                                    *ngIf="
-                                        !isActionBeingPerformed() &&
-                                        !gettingAvailableVariables
-                                    "
-                                    >Complete and submit the form to get
-                                    started</span
                                 >
-                            </ng-container>
-                            <span *ngIf="errorOccurred"
-                                >Operation was unsuccessful. Please make another
-                                selection and try again.</span
-                            >
-                            <ng-container
-                                *ngIf="
-                                    vegaSpec && currentlyDisplayingRequestDto
-                                "
-                            >
-                                <div class="row">
+                              </ng-select-custom>
+                            </div>
+                            @if (
+                              f.diversion_hours_active.touched &&
+                              f.diversion_hours_active.invalid
+                              ) {
+                              <div
+                                class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                                >
+                                @if (
+                                  f.diversion_hours_active.errors
+                                  .required
+                                  ) {
+                                  <div
+                                    >
+                                    At least one active Hour must be
+                                    selected.
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                          <div class="ms-auto">
+                            <button
+                              type="submit"
+                              class="btn btn-nebula btn-sm mt-4 float-end"
+                              [disabled]="isActionBeingPerformed()"
+                              >
+                              @if (gettingTimeSeriesData()) {
+                                <span
+                                  class="fa fa-spinner loading-spinner"
+                                ></span>
+                              }
+                              Submit
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                      @if (
+                        selectedVariables() != null &&
+                        selectedVariables().length == 1
+                        ) {
+                        <div
+                          class="col-12 text-center"
+                          >
+                          @if (!vegaSpec() && !errorOccurred()) {
+                            @if (gettingTimeSeriesData()) {
+                              <span
+                                >Loading chart values
+                                <span
+                                  class="fa fa-spinner loading-spinner"
+                                  ></span
+                                ></span>
+                              }
+                              @if (
+                                !isActionBeingPerformed() &&
+                                !gettingAvailableVariables
+                                ) {
+                                <span
+                                  >Complete and submit the form to get
+                                  started</span
+                                  >
+                                }
+                              }
+                              @if (errorOccurred()) {
+                                <span
+                                  >Operation was unsuccessful. Please make another
+                                  selection and try again.</span
+                                  >
+                                }
+                                @if (
+                                  vegaSpec() && currentlyDisplayingRequestDto
+                                  ) {
+                                  <div class="row">
                                     <div class="col-12 mt-1">
-                                        <link-to-analysis
+                                      <link-to-analysis
                                             [linkText]="
                                                 currentlyDisplayingRequestLinkText
                                             "
-                                            class="float-end"
-                                        ></link-to-analysis>
+                                        class="float-end"
+                                      ></link-to-analysis>
                                     </div>
                                     <div class="col-12 mt-1">
-                                        <button
-                                            (click)="downloadChartData()"
-                                            class="btn btn-sm btn-nebula float-end"
+                                      <button
+                                        (click)="downloadChartData()"
+                                        class="btn btn-sm btn-nebula float-end"
                                             [disabled]="
                                                 isActionBeingPerformed()
                                             "
                                         >
-                                            <span
-                                                *ngIf="downloadingChartData"
-                                                class="fa fa-spinner loading-spinner"
-                                            ></span
-                                            >Download Data (.csv)
+                                      @if (downloadingChartData()) {
+                                        <span
+                                          class="fa fa-spinner loading-spinner"
+                                          ></span
+                                          >
+                                          }Download Data (.csv)
                                         </button>
+                                      </div>
                                     </div>
-                                </div>
-                            </ng-container>
-                            <div
-                                class="table-responsive text-start"
-                                *ngIf="
+                                  }
+                                  @if (
                                     summaryTableColumns.length > 0 &&
                                     summaryTableRows.length > 0
-                                "
-                            >
-                                <h6 class="text-center font-weight-bold">
-                                    Scenario Summary Table
-                                </h6>
-                                <table class="table table-bordered table-sm">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th
-                                                *ngFor="
-                                                    let column of summaryTableColumns
-                                                "
-                                            >
+                                    ) {
+                                    <div
+                                      class="table-responsive text-start"
+                                      >
+                                      <h6 class="text-center font-weight-bold">
+                                        Scenario Summary Table
+                                      </h6>
+                                      <table class="table table-bordered table-sm">
+                                        <thead class="table-light">
+                                          <tr>
+                                            @for (
+                                              column of summaryTableColumns
+                                              ; track
+                                              column) {
+                                              <th
+                                                >
                                                 {{ column | titlecase }}
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr
-                                            *ngFor="let row of summaryTableRows"
-                                        >
-                                            <td
-                                                *ngFor="
-                                                    let column of summaryTableColumns
-                                                "
-                                            >
-                                                {{
-                                                    getSummaryRowDataForColumn(
-                                                        row,
-                                                        column
-                                                    )
-                                                }}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                              </th>
+                                            }
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          @for (row of summaryTableRows; track row) {
+                                            <tr
+                                              >
+                                              @for (
+                                                column of summaryTableColumns
+                                                ; track
+                                                column) {
+                                                <td
+                                                  >
+                                                  {{
+                                                  getSummaryRowDataForColumn(
+                                                  row,
+                                                  column
+                                                  )
+                                                  }}
+                                                </td>
+                                              }
+                                            </tr>
+                                          }
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  }
+                                  @if (vegaSpec()) {
+                                    <div
+                                      id="vis"
+                                      style="width: 100%"
+                                    ></div>
+                                  }
+                                </div>
+                              }
                             </div>
-                            <div
-                                *ngIf="vegaSpec"
-                                id="vis"
-                                style="width: 100%"
-                            ></div>
+                          }
                         </div>
+                      </div>
                     </div>
+                  </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>

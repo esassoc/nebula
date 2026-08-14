@@ -1,74 +1,86 @@
 <div class="container-fluid text-light my-0 py-0 d-none d-sm-block">
-    <div class="row mt-0">
-        <div class="col-sm homepageJumbotronImage" id="homepageJumbotronImage1"></div>
-    </div>
+  <div class="row mt-0">
+    <div class="col-sm homepageJumbotronImage" id="homepageJumbotronImage1"></div>
+  </div>
 </div>
 
 <div class="container mt-4">
-    <ngb-alert *ngIf="userIsUnassigned()" [type]="'info'" [dismissible]="false">
-        <span>
-            Welcome {{ currentUser.FullName }}. You have successfully logged in
-            to the Smart Watershed Network Platform, but your account is not yet
-            configured. You will receive an email from ESA Administrators when
-            your account is ready to use. You may
-            <a routerLink="/help">Request Support</a> to contact the
-            Administrators with any questions or comments.
-        </span>
+  @if (userIsUnassigned()) {
+    <ngb-alert [type]="'info'" [dismissible]="false">
+      <span>
+        Welcome {{ currentUser().FullName }}. You have successfully logged in
+        to the Smart Watershed Network Platform, but your account is not yet
+        configured. You will receive an email from ESA Administrators when
+        your account is ready to use. You may
+        <a routerLink="/help">Request Support</a> to contact the
+        Administrators with any questions or comments.
+      </span>
     </ngb-alert>
+  }
 
-    <ngb-alert *ngIf="userRoleIsDisabled()" [type]="'info'" [dismissible]="false">
-        <span>
-            Your account is currently disabled. Please
-            <a routerLink="/help">Request Support</a> if you would like to
-            activate your account.
-        </span>
+  @if (userRoleIsDisabled()) {
+    <ngb-alert [type]="'info'" [dismissible]="false">
+      <span>
+        Your account is currently disabled. Please
+        <a routerLink="/help">Request Support</a> if you would like to
+        activate your account.
+      </span>
     </ngb-alert>
+  }
 
-    <app-alert-display></app-alert-display>
-    <h1 class="text-primary mb-4">Smart Watershed Network Platform</h1>
-    <div class="row mt-sm-4">
-        <div class="col-md-4 order-md-5 order-1 col-sm-12">
-            <div class="card">
-                <div class="card-header">
-                    <ng-container *ngIf="!currentUser">Access</ng-container>
-                    <ng-container *ngIf="currentUser">Quick actions</ng-container>
-                </div>
-                <div class="card-body" *ngIf="!currentUser">
-                    <div class="row">
-                        <div class="col">
-                            Log in to view your Water Account. Create an Account
-                            if you don't have one yet.
-                        </div>
-                    </div>
-                    <div class="row mt-2">
-                        <div class="col mx-1">
-                            <button (click)="login()" class="btn btn-nebula me-1">
-                                Login
-                            </button>
-                            <button (click)="createAccount()" class="btn btn-nebula ms-1">
-                                Create Account
-                            </button>
-                        </div>
-                    </div>
-                    <hr />
-                    <div class="row">
-                        <div class="col">
-                            <small style="font-size: 11px">
-                                Need help logging in?
-                                <a routerLink="/help">Request Support</a>
-                            </small>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body" *ngIf="currentUser">
-                    <a class="btn btn-nebula" routerLink="/help">Request Support</a>
-                </div>
-            </div>
+  <app-alert-display></app-alert-display>
+  <h1 class="text-primary mb-4">Smart Watershed Network Platform</h1>
+  <div class="row mt-sm-4">
+    <div class="col-md-4 order-md-5 order-1 col-sm-12">
+      <div class="card">
+        <div class="card-header">
+          @if (!currentUser()) {
+            Access
+          }
+          @if (currentUser()) {
+            Quick actions
+          }
         </div>
-        <div class="col-md-8 order-md-1 order-5 col-sm-12">
-            <div class="mt-2">
-                <custom-rich-text [customRichTextTypeID]="richTextTypeID"></custom-rich-text>
+        @if (!currentUser()) {
+          <div class="card-body">
+            <div class="row">
+              <div class="col">
+                Log in to view your Water Account. Create an Account
+                if you don't have one yet.
+              </div>
             </div>
-        </div>
+            <div class="row mt-2">
+              <div class="col mx-1">
+                <button (click)="login()" class="btn btn-nebula me-1">
+                  Login
+                </button>
+                <button (click)="createAccount()" class="btn btn-nebula ms-1">
+                  Create Account
+                </button>
+              </div>
+            </div>
+            <hr />
+            <div class="row">
+              <div class="col">
+                <small style="font-size: 11px">
+                  Need help logging in?
+                  <a routerLink="/help">Request Support</a>
+                </small>
+              </div>
+            </div>
+          </div>
+        }
+        @if (currentUser()) {
+          <div class="card-body">
+            <a class="btn btn-nebula" routerLink="/help">Request Support</a>
+          </div>
+        }
+      </div>
     </div>
+    <div class="col-md-8 order-md-1 order-5 col-sm-12">
+      <div class="mt-2">
+        <custom-rich-text [customRichTextTypeID]="richTextTypeID"></custom-rich-text>
+      </div>
+    </div>
+  </div>
 </div>

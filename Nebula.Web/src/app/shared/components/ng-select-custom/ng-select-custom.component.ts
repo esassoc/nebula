@@ -1,4 +1,4 @@
-import { Component, forwardRef,ViewEncapsulation,Input } from '@angular/core';
+import { Component, forwardRef, ViewEncapsulation, Input } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
 @Component({

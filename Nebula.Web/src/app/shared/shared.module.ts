@@ -20,7 +20,6 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { NgSelectCustomComponent } from './components/ng-select-custom/ng-select-custom.component';
 import { SelectedDataCardComponent } from './components/selected-data-card/selected-data-card.component';
 import { StationSelectCardComponent } from './components/station-select-card/station-select-card.component';
-import { AutoCompleteModule } from 'primeng/autocomplete';
 import { LinkToAnalysisComponent } from './components/link-to-analysis/link-to-analysis.component';
 import { CustomDropdownFilterComponent } from './components/custom-dropdown-filter/custom-dropdown-filter.component';
 import { CsvDownloadButtonComponent } from './components/csv-download-button/csv-download-button.component';
@@ -76,8 +75,7 @@ import { TinyMceConfigPipe } from './pipes/tiny-mce-config.pipe';
     SelectDropDownModule,
     EditorModule,
     NgbModule,
-    NgSelectModule,
-    AutoCompleteModule], providers: [
+    NgSelectModule], providers: [
       { provide: TINYMCE_SCRIPT_SRC, useValue: 'assets/tinymce/tinymce.min.js' },
     ]
 })

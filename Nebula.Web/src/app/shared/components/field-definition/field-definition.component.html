@@ -1,127 +1,140 @@
-<div *ngIf="isLoading" class="text-center">
+@if (isLoading()) {
+  <div class="text-center">
     <span class="fa fa-spinner loading-spinner"></span>
-</div>
+  </div>
+}
 
-<div *ngIf="!isLoading">
+@if (!isLoading()) {
+  <div>
     <ng-template #popTitle>
-        <div class="row">
-            <div class="col-auto me-auto">
-                <div class="mt-1">
-                    {{
-                        fieldDefinition.FieldDefinitionType
-                            .FieldDefinitionTypeDisplayName
-                    }}
-                </div>
-            </div>
-            <div class="col-auto" *ngIf="!isEditing">
-                <div class="row">
-                    <div class="col-sm-2 ps-0 pe-0">
-                        <button
-                            type="button"
-                            class="btn btn-link"
-                            (click)="enterEdit()"
-                        >
-                            <i
-                                class="fa fa-pencil-square-o"
+      <div class="row">
+        <div class="col-auto me-auto">
+          <div class="mt-1">
+            {{
+            fieldDefinition().FieldDefinitionType
+            .FieldDefinitionTypeDisplayName
+            }}
+          </div>
+        </div>
+        @if (!isEditing()) {
+          <div class="col-auto">
+            <div class="row">
+              <div class="col-sm-2 ps-0 pe-0">
+                <button
+                  type="button"
+                  class="btn btn-link"
+                  (click)="enterEdit()"
+                  >
+                  <i
+                    class="fa fa-pencil-square-o"
                                 attr.aria-label="Edit the definition for {{
-                                    fieldDefinition.FieldDefinitionType
+                                    fieldDefinition().FieldDefinitionType
                                         .FieldDefinitionTypeDisplayName
                                 }}"
-                            >
-                            </i>
-                        </button>
-                    </div>
-                </div>
+                    >
+                  </i>
+                </button>
+              </div>
             </div>
-        </div>
+          </div>
+        }
+      </div>
     </ng-template>
     <ng-template #popContent>
-        <ng-container *ngIf="!isEditing">
-            <div *ngIf="canEdit" style="position: relative; min-height: 30px">
-                <div
-                    *ngIf="!emptyContent"
-                    [innerHtml]="fieldDefinition.FieldDefinitionValue"
-                ></div>
-                <div *ngIf="emptyContent" class="hoverEmptySpace"></div>
-            </div>
-            <div
-                *ngIf="!canEdit"
-                [innerHtml]="fieldDefinition.FieldDefinitionValue"
-            ></div>
-        </ng-container>
-
-        <div *ngIf="isEditing">
-            <editor
-                #tinyMceEditor
-                licenseKey="gpl"
-                [init]="tinyMceEditor | tinyMceConfig"
-                [(ngModel)]="editedContent"
-            ></editor>
-            <div style="float: right">
-                <button
-                    type="button"
-                    class="btn btn-sm btn-nebula mt-1 me-1 mb-1"
-                    (click)="saveEdit()"
-                >
-                    Save
-                </button>
-                <button
-                    type="button"
-                    class="btn btn-sm btn-secondary mt-1 mb-1"
-                    (click)="cancelEdit(p)"
-                >
-                    Cancel
-                </button>
-            </div>
+      @if (!isEditing()) {
+        @if (canEdit()) {
+          <div style="position: relative; min-height: 30px">
+            @if (!emptyContent()) {
+              <div
+                [innerHtml]="fieldDefinition().FieldDefinitionValue"
+              ></div>
+            }
+            @if (emptyContent()) {
+              <div class="hoverEmptySpace"></div>
+            }
+          </div>
+        }
+        @if (!canEdit()) {
+          <div
+            [innerHtml]="fieldDefinition().FieldDefinitionValue"
+          ></div>
+        }
+      }
+      @if (isEditing()) {
+        <div>
+          <editor
+            #tinyMceEditor
+            licenseKey="gpl"
+            [init]="tinyMceEditor | tinyMceConfig"
+            [(ngModel)]="editedContent"
+          ></editor>
+          <div style="float: right">
+            <button
+              type="button"
+              class="btn btn-sm btn-nebula mt-1 me-1 mb-1"
+              (click)="saveEdit()"
+              >
+              Save
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-secondary mt-1 mb-1"
+              (click)="cancelEdit(p)"
+              >
+              Cancel
+            </button>
+          </div>
         </div>
+      }
     </ng-template>
-    <ng-container *ngIf="canEdit">
-        <div
-            class="d-inline-block"
-            (mouseenter)="notEditingMouseEnter()"
-            (mouseleave)="notEditingMouseLeave()"
+    @if (canEdit()) {
+      <div
+        class="d-inline-block"
+        (mouseenter)="notEditingMouseEnter()"
+        (mouseleave)="notEditingMouseLeave()"
         >
-            <span style="overflow: hidden; text-overflow: ellipsis">
-                {{
-                    fieldDefinition.FieldDefinitionType
-                        .FieldDefinitionTypeDisplayName
-                }}
-                <i
-                    class="fas fa-question-circle small"
-                    style="cursor: help"
-                    #p="ngbPopover"
-                    [ngbPopover]="popContent"
-                    [popoverTitle]="popTitle"
-                    triggers="manual"
-                    [autoClose]="false"
-                    [animation]="false"
-                    [placement]="['bottom', 'right', 'left', 'auto']"
-                    popoverClass="popover-override"
-                    container="body"
-                >
-                </i>
-            </span>
-        </div>
-    </ng-container>
-    <ng-container *ngIf="!canEdit">
-        <span>
-            {{
-                fieldDefinition.FieldDefinitionType
-                    .FieldDefinitionTypeDisplayName
-            }}
-            <i
-                class="fas fa-question-circle small"
-                style="cursor: help"
-                [ngbPopover]="popContent"
+        <span style="overflow: hidden; text-overflow: ellipsis">
+          {{
+          fieldDefinition().FieldDefinitionType
+          .FieldDefinitionTypeDisplayName
+          }}
+          <i
+            class="fas fa-question-circle small"
+            style="cursor: help"
+            #p="ngbPopover"
+            [ngbPopover]="popContent"
+            [popoverTitle]="popTitle"
+            triggers="manual"
+            [autoClose]="false"
+            [animation]="false"
+            [placement]="['bottom', 'right', 'left', 'auto']"
+            popoverClass="popover-override"
+            container="body"
+            >
+          </i>
+        </span>
+      </div>
+    }
+    @if (!canEdit()) {
+      <span>
+        {{
+        fieldDefinition().FieldDefinitionType
+        .FieldDefinitionTypeDisplayName
+        }}
+        <i
+          class="fas fa-question-circle small"
+          style="cursor: help"
+          [ngbPopover]="popContent"
                 [popoverTitle]="
-                    fieldDefinition.FieldDefinitionType
+                    fieldDefinition().FieldDefinitionType
                         .FieldDefinitionTypeDisplayName
                 "
-                triggers="mouseenter:mouseleave"
-                [animation]="false"
-                container="body"
-            >
-            </i>
-        </span>
-    </ng-container>
-</div>
+          triggers="mouseenter:mouseleave"
+          [animation]="false"
+          container="body"
+          >
+        </i>
+      </span>
+    }
+  </div>
+}

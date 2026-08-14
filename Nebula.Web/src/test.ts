@@ -1,6 +1,10 @@
 // This file is required by karma.conf.js and loads recursively all the .spec and framework files
 
-import 'zone.js/testing';
+// No 'zone.js/testing' import: the app bootstraps with
+// provideZonelessChangeDetection(), so the test environment matches it.
+// Consequence for specs: fakeAsync/tick/async are unavailable under zoneless --
+// use `await fixture.whenStable()` instead.
+import { provideZonelessChangeDetection } from '@angular/core';
 import { getTestBed } from '@angular/core/testing';
 import {
   BrowserDynamicTestingModule,
@@ -14,3 +18,7 @@ getTestBed().initTestEnvironment(
     teardown: { destroyAfterEach: false }
   }
 );
+
+getTestBed().configureTestingModule({
+  providers: [provideZonelessChangeDetection()]
+});

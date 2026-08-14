@@ -138,7 +138,7 @@ geoserver:
   image:
     repository: kartoza/geoserver
     pullPolicy: Always
-    tag: "2.25.2"
+    tag: "2.28.0"
     # Overrides the image tag whose default is the chart appVersion.
   nameOverride: ""
   fullnameOverride: ""

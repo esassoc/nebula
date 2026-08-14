@@ -1,4 +1,5 @@
-import { Component, Inject, DOCUMENT } from '@angular/core';
+import { Component, Inject, DOCUMENT, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouteConfigLoadStart, RouteConfigLoadEnd, NavigationEnd } from '@angular/router';
 import { BusyService } from './shared/services';
 import { Title } from '@angular/platform-browser';
@@ -10,6 +11,7 @@ import { Title } from '@angular/platform-browser';
   standalone: false
 })
 export class AppComponent {
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private router: Router,
@@ -19,7 +21,7 @@ export class AppComponent {
   ) { }
 
   ngOnInit() {
-    this.router.events.subscribe((event: any) => {
+    this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event: any) => {
       if (event instanceof RouteConfigLoadStart) { // lazy loaded route started
         this.busyService.setBusy(true);
       } else if (event instanceof RouteConfigLoadEnd) { // lazy loaded route ended

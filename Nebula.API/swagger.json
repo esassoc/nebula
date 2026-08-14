@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.0.4",
   "info": {
     "title": "Nebula.API",
     "version": "1.0"
@@ -1697,5 +1697,31 @@
         "additionalProperties": false
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "CustomPage"
+    },
+    {
+      "name": "CustomRichText"
+    },
+    {
+      "name": "FieldDefinition"
+    },
+    {
+      "name": "MenuItem"
+    },
+    {
+      "name": "Role"
+    },
+    {
+      "name": "SystemInfo"
+    },
+    {
+      "name": "User"
+    },
+    {
+      "name": "Watershed"
+    }
+  ]
 }

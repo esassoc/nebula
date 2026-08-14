@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { environment } from 'src/environments/environment';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,45 +12,38 @@ import { UserDto } from 'src/app/shared/generated';
   styleUrls: ['./home-index.component.scss'],
   standalone: false
 })
-export class HomeIndexComponent implements OnInit, OnDestroy {
-  public watchUserChangeSubscription: any;
-  public currentUser: UserDto;
+export class HomeIndexComponent {
+  private authenticationService = inject(AuthenticationService);
+
+  // Reads the service signal directly. The old subscribe-and-mirror pattern
+  // would not schedule change detection under zoneless, so the page could show
+  // a stale login state.
+  public currentUser = this.authenticationService.currentUser;
 
   public richTextTypeID: number = CustomRichTextTypeEnum.Homepage;
 
-  constructor(private authenticationService: AuthenticationService,
-    private router: Router,
+  constructor(private router: Router,
     private route: ActivatedRoute) {
   }
 
-  public ngOnInit(): void {
-    this.authenticationService.getCurrentUser().subscribe(currentUser => {
-      this.currentUser = currentUser;
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.watchUserChangeSubscription?.unsubscribe();
-  }
-
   public userIsUnassigned() {
-    if (!this.currentUser) {
+    if (!this.currentUser()) {
       return false; // doesn't exist != unassigned
     }
 
-    return this.currentUser.Role.RoleID == RoleEnum.Unassigned;
+    return this.currentUser().Role.RoleID == RoleEnum.Unassigned;
   }
 
   public userRoleIsDisabled() {
-    if (!this.currentUser) {
+    if (!this.currentUser()) {
       return false; // doesn't exist != unassigned
     }
 
-    return this.currentUser.Role.RoleID == RoleEnum.Disabled;
+    return this.currentUser().Role.RoleID == RoleEnum.Disabled;
   }
 
   public isUserAnAdministrator() {
-    return this.authenticationService.isUserAnAdministrator(this.currentUser);
+    return this.authenticationService.isUserAnAdministrator(this.currentUser());
   }
 
   public login(): void {

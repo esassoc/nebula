@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, signal, computed, inject } from '@angular/core';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { AlertService } from '../../services/alert.service';
 import { Alert } from '../../models/alert';
@@ -16,55 +16,56 @@ export class CustomRichTextComponent implements OnInit {
   @ViewChild('tinyMceEditor') tinyMceEditor: EditorComponent;
   public tinyMceConfig: object;
 
+  private authenticationService = inject(AuthenticationService);
+
   @Input() customRichTextTypeID: number;
-  public customRichTextContent: string;
-  public isLoading: boolean = true;
-  public isEditing: boolean = false;
-  public isEmptyContent: boolean = false;
-  public watchUserChangeSubscription: any;
+  // Signals: these are set from HTTP callbacks, which no longer schedule change
+  // detection under zoneless.
+  public customRichTextContent = signal<string>(null);
+  public isLoading = signal(true);
+  public isEditing = signal(false);
+  public emptyContent = signal(false);
   public editedContent: string;
   public editor;
-  public canEdit: boolean;
 
-  currentUser: UserDto;
+  // Derived from the auth signal rather than captured once via subscribe, so it
+  // stays correct if the user resolves after this component initialises.
+  public canEdit = computed(() =>
+    this.authenticationService.isUserAnAdministrator(this.authenticationService.currentUser()));
 
   constructor(
     private customRichTextService: CustomRichTextService,
-    private authenticationService: AuthenticationService,
     private alertService: AlertService
   ) { }
 
   ngOnInit() {
-    this.authenticationService.getCurrentUser().subscribe(currentUser => {
-      this.currentUser = currentUser;
-      this.canEdit = this.authenticationService.isUserAnAdministrator(currentUser);
-    });
-
     this.customRichTextService.publicCustomRichTextCustomRichTextTypeIDGet(this.customRichTextTypeID).subscribe(x => {
-      this.customRichTextContent = x.CustomRichTextContent;
-      this.isEmptyContent = x.IsEmptyContent;
-      this.isLoading = false;
+      this.customRichTextContent.set(x.CustomRichTextContent);
+      // Renamed from isEmptyContent: the template has always read
+      // `emptyContent`, so the empty-state branch could never render.
+      this.emptyContent.set(x.IsEmptyContent);
+      this.isLoading.set(false);
     });
   }
 
   public enterEdit(): void {
-    this.editedContent = this.customRichTextContent;
-    this.isEditing = true;
+    this.editedContent = this.customRichTextContent();
+    this.isEditing.set(true);
   }
 
   public cancelEdit(): void {
-    this.isEditing = false;
+    this.isEditing.set(false);
   }
 
   public saveEdit(): void {
-    this.isEditing = false;
-    this.isLoading = true;
+    this.isEditing.set(false);
+    this.isLoading.set(true);
     const updateDto = new CustomRichTextDto({ CustomRichTextContent: this.editedContent });
     this.customRichTextService.customRichTextCustomRichTextTypeIDPut(this.customRichTextTypeID, updateDto).subscribe(x => {
-      this.customRichTextContent = x.CustomRichTextContent;
-      this.isLoading = false;
+      this.customRichTextContent.set(x.CustomRichTextContent);
+      this.isLoading.set(false);
     }, error => {
-      this.isLoading = false;
+      this.isLoading.set(false);
       this.alertService.pushAlert(new Alert('There was an error updating the rich text content', AlertContext.Danger, true));
     });
   }

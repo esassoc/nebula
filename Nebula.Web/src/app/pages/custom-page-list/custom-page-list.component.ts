@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, signal, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -19,26 +20,25 @@ import { AlertService } from 'src/app/shared/services/alert.service';
     styleUrls: ['./custom-page-list.component.scss'],
     standalone: false
 })
-export class CustomPageListComponent implements OnInit, OnDestroy {
+export class CustomPageListComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   @ViewChild('pageGrid') pageGrid: AgGridAngular;
   @ViewChild('deletePageModal') deleteEntity: any;
   
   public richTextTypeID : number = CustomRichTextTypeEnum.CustomPages;
-  public rowData = [];
-  public columnDefs: ColDef[];
+  public rowData = signal<any[]>([]);
+  public columnDefs = signal<ColDef[]>([]);
   
   private gridApi: any;
 
   public modalReference: NgbModalRef;
   public customPageIDToRemove: number;
   public currentUser: UserDto;
-  public isPerformingAction: boolean = false;
+  public isPerformingAction = signal(false);
   public closeResult: string;
-  public watchUserChangeSubscription: any;
 
   constructor(
     private alertService: AlertService,
-    private cdr: ChangeDetectorRef, 
     private authenticationService: AuthenticationService,
     private customPageService: CustomPageService,
     private modalService: NgbModal,
@@ -48,20 +48,19 @@ export class CustomPageListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.initializeGrid();
 
-    this.authenticationService.getCurrentUser().subscribe(currentUser => {
+    this.authenticationService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(currentUser => {
       this.currentUser = currentUser;
       
       this.customPageService.customPagesWithRolesGet().subscribe(customPagesWithRoles => {
-        this.rowData = customPagesWithRoles;
-        this.cdr.detectChanges();
-        this.pageGrid.api.hideOverlay();
+        this.rowData.set(customPagesWithRoles);
+        this.pageGrid?.api.hideOverlay();
       });
 
     });
   }
 
   initializeGrid() {
-    this.columnDefs = [
+    const columnDefs: ColDef[] = [
       {
         width: 30,
         cellRenderer: FontAwesomeIconLinkRendererComponent,
@@ -130,9 +129,10 @@ export class CustomPageListComponent implements OnInit, OnDestroy {
       }
     ]; 
 
-    this.columnDefs.forEach(x => {
+    columnDefs.forEach(x => {
       x.resizable = true;
     });
+    this.columnDefs.set(columnDefs);
   }
 
   public onFirstDataRendered(params): void {
@@ -143,10 +143,9 @@ export class CustomPageListComponent implements OnInit, OnDestroy {
 
   public updateGridData(): void {
     this.customPageService.customPagesWithRolesGet().subscribe(customPagesWithRoles => {
-      this.rowData = customPagesWithRoles;
-      this.cdr.detectChanges();
+      this.rowData.set(customPagesWithRoles);
+      this.pageGrid?.api.hideOverlay();
     });
-    this.pageGrid.api.hideOverlay();
   }
 
   public onCellClicked(event: any): void {
@@ -166,25 +165,22 @@ export class CustomPageListComponent implements OnInit, OnDestroy {
   }
   
   public checkIfSubmitting(): boolean {
-    return !this.isPerformingAction;
+    return !this.isPerformingAction();
   }
 
   public removePageByID(): void {
-    this.isPerformingAction = true;
+    this.isPerformingAction.set(true);
     this.customPageService.customPagesCustomPageIDDelete(this.customPageIDToRemove).subscribe(() => {
       this.modalReference.close();
-      this.isPerformingAction = false;
+      this.isPerformingAction.set(false);
       this.authenticationService.refreshUserInfo(this.currentUser);
       this.alertService.pushAlert(new Alert(`Custom page successfully deleted`, AlertContext.Success, true));
       this.updateGridData();
     }, error => {
       this.modalReference.close();
-      this.isPerformingAction = false;
+      this.isPerformingAction.set(false);
       this.alertService.pushAlert(new Alert(`There was an error deleting the page. Please try again`, AlertContext.Danger, true));
     })
   }
 
-  ngOnDestroy(): void {
-    this.cdr.detach();
-  }
 }
