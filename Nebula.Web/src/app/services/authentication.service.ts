@@ -46,6 +46,13 @@ export class AuthenticationService {
           return this.userService.userClaimsPost().pipe(
             catchError((error) => {
               console.error("Failed to load user claims:", error);
+              // Auth0 authenticated us, but without an app account there is no
+              // usable session -- so report unauthenticated rather than leave
+              // hasClaims true with a null currentUser, which showed the
+              // signed-in header (Welcome / Sign Out) with a blank name.
+              // The route guards already keyed off currentUser, so access
+              // control was never affected; this only realigns the chrome.
+              this.hasClaims = false;
               this.alertService.pushAlert(new Alert(
                 "We could not load your account. Please try signing in again, or contact support if this continues.",
                 AlertContext.Danger));
