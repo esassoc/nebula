@@ -103,7 +103,6 @@ stages:
 
     - template: azure-pipelines/templates/docker/docker-template.yml@BuildTemplates 
       parameters:
-        projectName: 'nebula'
         displayName: 'API'
         subscription: '$(azureSubscription)'
         containerRegistry: '$(kv-containerRegistry)'
@@ -133,7 +132,6 @@ stages:
 
     - template: azure-pipelines/templates/docker/docker-template.yml@BuildTemplates 
       parameters:
-        projectName: 'nebula'
         displayName: 'Web'
         subscription: '$(azureSubscription)'
         containerRegistry: '$(kv-containerRegistry)'
