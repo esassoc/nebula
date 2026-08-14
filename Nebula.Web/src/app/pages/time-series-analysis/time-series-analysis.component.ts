@@ -232,10 +232,6 @@ export class TimeSeriesAnalysisComponent implements OnInit {
     el.nativeElement.scrollIntoView(true)
   }
 
-  public formatDateForNgbDatepicker(date: Date): any {
-    const dateToChange = new Date(date);
-    return { year: dateToChange.getUTCFullYear(), month: dateToChange.getUTCMonth() + 1, day: dateToChange.getUTCDate() };
-  }
 
   public closeAlert(index: number) {
     this.lyraMessages.update(m => m.filter((_, i) => i !== index));

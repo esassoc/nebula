@@ -331,10 +331,6 @@ export class DiversionScenarioComponent implements OnInit {
     }
   }
 
-  public formatDateForNgbDatepicker(date: Date): any {
-    const dateToChange = new Date(date);
-    return { year: dateToChange.getUTCFullYear(), month: dateToChange.getUTCMonth() + 1, day: dateToChange.getUTCDate() };
-  }
 
   public scrollIntoView(el: ElementRef) {
     el.nativeElement.scrollIntoView(true);
