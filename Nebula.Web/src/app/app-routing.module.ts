@@ -23,7 +23,7 @@ import { CustomPageCreateComponent } from './pages/custom-page-create/custom-pag
 import { CustomPageEditPropertiesComponent } from './pages/custom-page-edit-properties/custom-page-edit-properties.component';
 import { CustomPageDetailComponent } from './pages/custom-page-detail/custom-page-detail.component';
 import { CustomPageAccessGuard } from './shared/guards/custom-page-access-guard';
-import { authGuardFn } from "@auth0/auth0-angular";
+import { authGuardFn } from '@auth0/auth0-angular';
 
 const routes: Routes = [
   { path: 'labels-and-definitions/:id', component: FieldDefinitionEditComponent, canActivate: [authGuardFn, ManagerOnlyGuard, AcknowledgedDisclaimerGuard] },

@@ -1,4 +1,4 @@
-import { Component, Inject, DOCUMENT, DestroyRef, inject } from '@angular/core';
+import { Component, Inject, DOCUMENT, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouteConfigLoadStart, RouteConfigLoadEnd, NavigationEnd } from '@angular/router';
 import { BusyService } from './shared/services';
@@ -10,7 +10,7 @@ import { Title } from '@angular/platform-browser';
   styleUrls: ['./app.component.scss'],
   standalone: false
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
 
   constructor(

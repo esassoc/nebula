@@ -3,7 +3,7 @@ import { AuthenticationService } from 'src/app/services/authentication.service';
 import { AlertService } from '../../services/alert.service';
 import { Alert } from '../../models/alert';
 import { AlertContext } from '../../models/enums/alert-context.enum';
-import { CustomRichTextDto, CustomRichTextService, UserDto } from '../../generated';
+import { CustomRichTextDto, CustomRichTextService } from '../../generated';
 import { EditorComponent } from '@tinymce/tinymce-angular';
 
 @Component({

@@ -38,7 +38,7 @@ export class PairedRegressionAnalysisComponent implements OnInit {
 
   public richTextTypeID = CustomRichTextTypeEnum.PairedRegressionAnalysis;
 
-  public vegaSpec = signal<Object>(null);
+  public vegaSpec = signal<object>(null);
 
   public hydstraIntervals: HydstraInterval[] = HydstraInterval.all();
   public hydstraWeatherConditions: HydstraWeatherCondition[] = HydstraWeatherCondition.all();

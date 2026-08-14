@@ -37,7 +37,7 @@ export class DiversionScenarioComponent implements OnInit {
   public richTextTypeID = CustomRichTextTypeEnum.DiversionScenario;
   public defaultSelectedMapFilter = SiteFilterEnum.HasDischarge;
 
-  public vegaSpec = signal<Object>(null);
+  public vegaSpec = signal<object>(null);
 
   public hydstraWeatherConditions: HydstraWeatherCondition[] = HydstraWeatherCondition.all();
 

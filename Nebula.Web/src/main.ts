@@ -8,7 +8,7 @@ if (environment.production) {
 }
 
 // Load config BEFORE bootstrapping
-fetch("/assets/config.json", { credentials: "include" })
+fetch('/assets/config.json', { credentials: 'include' })
   .then(async (res) => {
     if (!res.ok) throw new Error(`Preload failed: ${res.status}`);
     const cfg = await res.json();
