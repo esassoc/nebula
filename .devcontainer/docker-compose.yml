@@ -1,0 +1,85 @@
+services:
+  nebula.db:
+    image: mcr.microsoft.com/mssql/server:2025-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${DB_PASSWORD}
+      MSSQL_PID: Express
+    ports:
+      - "${DB_PORT:-12167}:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "${DB_PASSWORD}" -C -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # GeoServer serves the WMS/WFS layers the maps depend on. wave-runup's
+  # devcontainer has no equivalent -- this is nebula-specific.
+  # The data_dir is bind-mounted from the repo rather than an absolute host
+  # path (docker-compose/docker-compose.override.yml hardcodes
+  # c:/git/sitkatech/nebula/..., which only works on one machine).
+  nebula.geoserver:
+    image: kartoza/geoserver:2.28.0
+    environment:
+      ENABLE_JSONP: "true"
+      CATALINA_OPTS: "-DALLOW_ENV_PARAMETRIZATION=true"
+      ENV_PROPERTIES: /opt/geoserver/geoserver-environment.properties
+      STABLE_EXTENSIONS: sqlserver-plugin
+      TOMCAT_EXTRAS: "false"
+      ROOT_WEBAPP_REDIRECT: "true"
+      SAMPLE_DATA: "false"
+      GEOSERVER_ADMIN_USER: ${GEOSERVER_ADMIN_USER:-admin}
+      GEOSERVER_ADMIN_PASSWORD: ${GEOSERVER_ADMIN_PASSWORD:-geomaster}
+    ports:
+      - "${GEOSERVER_PORT:-12168}:8080"
+    volumes:
+      - ../Nebula.GeoServer/data_dir:/opt/geoserver/data_dir
+      - ./geoserver-environment.properties:/opt/geoserver/geoserver-environment.properties:ro
+    depends_on:
+      nebula.db:
+        condition: service_healthy
+
+  nebula.dev:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile.dev
+    env_file:
+      - .env
+      # Per-developer overrides (gitignored). Optional -- see .developer.env.template.
+      - path: .developer.env
+        required: false
+    environment:
+      ASPNETCORE_URLS: "http://+:${API_PORT:-12160}"
+      SECRET_PATH: /workspace/Nebula.API/appsecrets.json
+    ports:
+      - "${API_PORT:-12160}:${API_PORT:-12160}"
+      - "${WEB_PORT:-12162}:${WEB_PORT:-12162}"
+    volumes:
+      - ..:/workspace:cached
+      - node_modules:/workspace/Nebula.Web/node_modules
+      # Auth state (claude / az / gh) shared across ALL nebula devcontainers
+      # via the `name:` overrides below, so one `make auth` seeds every current
+      # and future devcontainer on this host and survives rebuilds. Wipe with:
+      #   docker volume rm nebula-claude-config nebula-azure-config nebula-gh-config
+      - nebula-claude-config:/root/.claude
+      - nebula-azure-config:/root/.azure
+      - nebula-gh-config:/root/.config/gh
+    command: sleep infinity
+    depends_on:
+      nebula.db:
+        condition: service_healthy
+
+volumes:
+  node_modules:
+  sqldata:
+  # Explicit `name:` bypasses the compose-project-name prefix so the main
+  # devcontainer and any worktree reference the SAME underlying volume.
+  nebula-claude-config:
+    name: nebula-claude-config
+  nebula-azure-config:
+    name: nebula-azure-config
+  nebula-gh-config:
+    name: nebula-gh-config

@@ -1,8 +1,11 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using Azure.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Nebula.API.Services;
 using Serilog;
 
 namespace Nebula.API
@@ -24,6 +27,24 @@ namespace Nebula.API
                     if (File.Exists(secretPath))
                     {
                         config.AddJsonFile(secretPath);
+                    }
+
+                    // Azure Key Vault as the real-secret source in deployed
+                    // environments. Opt-in: only wired when KeyVaultName is set,
+                    // so local dev with no vault and no `az login` is unaffected
+                    // and keeps using the SECRET_PATH file above.
+                    // DefaultAzureCredential resolves to the developer's
+                    // `az login` identity locally and to the AKS workload
+                    // identity in QA/prod.
+                    var keyVaultName = configurationRoot["KeyVaultName"];
+                    if (!string.IsNullOrWhiteSpace(keyVaultName))
+                    {
+                        var keyVaultUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
+                        config.AddAzureKeyVault(keyVaultUri, new DefaultAzureCredential(),
+                            new NebulaKeyVaultSecretManager());
+                        // Re-add environment variables after the vault so local
+                        // overrides still win over a vault entry.
+                        config.AddEnvironmentVariables();
                     }
                 })
                 .ConfigureLogging(logging => { logging.ClearProviders(); })

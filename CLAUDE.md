@@ -92,10 +92,19 @@ dotnet test Nebula.Tests
 
 - `Nebula.EFModels/Entities/Generated/` - EF entities from database (via `Scaffold-DbContext`)
 - `Nebula.EFModels/Entities/Generated/ExtensionMethods/` - Entity extension methods (via EFCorePOCOGenerator)
-- `Nebula.Models/DataTransferObjects/Generated/` - C# DTOs (via EFCorePOCOGenerator)
 - `Nebula.Web/src/app/shared/generated/` - TypeScript API client, models, enums (via OpenAPI Generator + EFCorePOCOGenerator)
 
 After database schema changes, run `Build/Scaffold.ps1` to regenerate all generated code.
+
+**`Nebula.Models/DataTransferObjects/EntityDtos/` is hand-maintained, not generated.**
+EFCorePOCOGenerator used to emit these, but current versions no longer produce C#
+DTOs at all (the `--api-models-output-dir` / `--csharp-dto-namespace` options were
+removed upstream). When you change a table, update the matching DTO in that folder
+by hand. Scaffold.ps1 will not do it for you and will not warn you.
+
+`Build/Scaffold.ps1` must be run from Windows: it uses the `Scaffold-DbContext`
+PowerShell cmdlet and a Windows EFCorePOCOGenerator.exe, so it does not run inside
+the Linux devcontainer.
 
 ## Naming Conventions
 
