@@ -135,7 +135,13 @@ variable "h2oReadersGroupObjectId" {
 }
 
 terraform {
-  required_version   = ">= 0.11"
+  # Was ">= 0.11", which this file has not actually supported for years: the
+  # required_providers block form needs >= 0.13 and the federated-credential
+  # for_each needs >= 0.12. The pipeline installs 1.9.1
+  # (TerraformVersion default in terraform.yml@BuildTemplates), so this floor
+  # is well below what actually runs -- it just stops the declared minimum
+  # from being misleading. Matches Build/dev-tf/Main.tf.
+  required_version   = ">= 1.1"
   backend "azurerm" {
     container_name          = "terraform"
     key                     = "terraform.tfstate"
