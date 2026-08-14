@@ -32,8 +32,11 @@ namespace Nebula.API.Controllers
             // Access claims via the User property instead of injecting ClaimsPrincipal
             var claims = User;
             
-            var globalID = claims.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
-            var email = claims.Claims.Single(c => c.Type == ClaimTypes.Email).Value;
+            // FirstOrDefault, not Single: .Single() threw before the guard below could
+            // run, so the intended 400 was unreachable and a missing or duplicated
+            // claim surfaced as a 500 instead.
+            var globalID = claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var email = claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
             if (string.IsNullOrWhiteSpace(globalID) || string.IsNullOrWhiteSpace(email))
             {
                 return BadRequest();

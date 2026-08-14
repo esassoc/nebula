@@ -222,7 +222,7 @@ export class WatershedMapComponent implements OnInit, AfterViewInit {
                   minWidth: 200,
                 })
                   .setLatLng(event.latlng)
-                  .setContent(this.compileService.compile(WatershedDetailPopupComponent, (c) => { c.instance.feature = feature; })
+                  .setContent(this.compileService.compile(WatershedDetailPopupComponent, (c) => { c.instance.feature.set(feature); })
                   )
                   .openOn(self.map);
               });

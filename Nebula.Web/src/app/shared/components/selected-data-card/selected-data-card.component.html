@@ -1,42 +1,45 @@
 <div class="card">
-    <div class="card-header text-center">
-        <span class="align-middle">{{ headerText }}</span>
-        <button
-            (click)="clearAllVariables()"
-            [disabled]="selectedVariables.length == 0 || disableActions"
-            class="float-end btn btn-sm btn-nebula"
-        >
-            Clear All
-        </button>
-    </div>
-    <div class="card-body table-responsive">
-        <ng-container *ngIf="selectedVariables.length > 0">
-            <div
-                placement="top"
-                ngbTooltip="Click to select this station on the map"
-                [style.cursor]="'pointer'"
-                class="selected-variable"
-                (click)="emitSelectStationOnMap(variable)"
-                *ngFor="let variable of selectedVariables; let i = index"
+  <div class="card-header text-center">
+    <span class="align-middle">{{ headerText }}</span>
+    <button
+      (click)="clearAllVariables()"
+      [disabled]="selectedVariables.length == 0 || disableActions"
+      class="float-end btn btn-sm btn-nebula"
+      >
+      Clear All
+    </button>
+  </div>
+  <div class="card-body table-responsive">
+    @if (selectedVariables.length > 0) {
+      @for (variable of selectedVariables; track variable; let i = $index) {
+        <div
+          placement="top"
+          ngbTooltip="Click to select this station on the map"
+          [style.cursor]="'pointer'"
+          class="selected-variable"
+          (click)="emitSelectStationOnMap(variable)"
+          >
+          <span
+            >{{ variable.stationShortName }} - {{ variable.name }}</span
             >
-                <span
-                    >{{ variable.stationShortName }} - {{ variable.name }}</span
-                >
-                <button
-                    (click)="removeVariableFromSelection(i)"
-                    [disabled]="disableActions"
-                    type="button"
-                    class="btn-close"
-                    data-dismiss="alert"
-                    aria-label="Close"
-                ></button>
-            </div>
-        </ng-container>
-        <div *ngIf="selectedVariables.length == 0" class="row">
-            <div class="col text-center">
-                Select a station on the map and an applicable variable to get
-                started!
-            </div>
+            <button
+              (click)="removeVariableFromSelection(i)"
+              [disabled]="disableActions"
+              type="button"
+              class="btn-close"
+              data-dismiss="alert"
+              aria-label="Close"
+            ></button>
+          </div>
+        }
+      }
+      @if (selectedVariables.length == 0) {
+        <div class="row">
+          <div class="col text-center">
+            Select a station on the map and an applicable variable to get
+            started!
+          </div>
         </div>
+      }
     </div>
-</div>
+  </div>

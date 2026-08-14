@@ -1,4 +1,4 @@
-import { enableProdMode } from '@angular/core';
+import { enableProdMode, provideZonelessChangeDetection } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
@@ -8,7 +8,7 @@ if (environment.production) {
 }
 
 // Load config BEFORE bootstrapping
-fetch("/assets/config.json", { credentials: "include" })
+fetch('/assets/config.json', { credentials: 'include' })
   .then(async (res) => {
     if (!res.ok) throw new Error(`Preload failed: ${res.status}`);
     const cfg = await res.json();
@@ -21,6 +21,6 @@ fetch("/assets/config.json", { credentials: "include" })
   .then(() => {
     // Bootstrap AFTER config is loaded
     platformBrowserDynamic()
-      .bootstrapModule(AppModule)
+      .bootstrapModule(AppModule, { applicationProviders: [provideZonelessChangeDetection()], })
       .catch((err) => console.error(err));
   });

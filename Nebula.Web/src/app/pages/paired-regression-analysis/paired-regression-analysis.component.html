@@ -1,499 +1,530 @@
 <div class="breadcrumb-container">
-    <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb breadcrumb-empty">
-                <li class="breadcrumb-item active" aria-current="page">
-                    Paired Regression Analysis
-                </li>
-            </ol>
-        </nav>
-    </div>
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb breadcrumb-empty">
+        <li class="breadcrumb-item active" aria-current="page">
+          Paired Regression Analysis
+        </li>
+      </ol>
+    </nav>
+  </div>
 </div>
 <div class="container">
-    <app-alert-display></app-alert-display>
+  <app-alert-display></app-alert-display>
 
-    <div class="row">
-        <div class="col">
-            <h2 class="d-inline-block">Paired Regression Analysis</h2>
-        </div>
+  <div class="row">
+    <div class="col">
+      <h2 class="d-inline-block">Paired Regression Analysis</h2>
     </div>
-    <div class="row mt-1 mb-2">
-        <div class="col">
-            <custom-rich-text
-                [customRichTextTypeID]="richTextTypeID"
-            ></custom-rich-text>
-        </div>
+  </div>
+  <div class="row mt-1 mb-2">
+    <div class="col">
+      <custom-rich-text
+        [customRichTextTypeID]="richTextTypeID"
+      ></custom-rich-text>
     </div>
+  </div>
 </div>
 <div class="container">
-    <div class="row mt-sm-4">
-        <div class="col-sm-12">
-            <station-select-card
-                #stationSelect
-                [(selectedVariables)]="selectedVariables"
-                [mapID]="mapID"
-                [disableAddingVariables]="!canSelectVariable()"
-                [canAddDuplicateVariable]="true"
-                [lyraStationAvailableVariablesKey]="'variables_regression'"
-                (addingVariableEvent)="addVariableToSelection($event)"
-                (mapAndStationsLoadedEvent)="populateFormFromURL()"
-            >
-            </station-select-card>
-        </div>
+  <div class="row mt-sm-4">
+    <div class="col-sm-12">
+      <station-select-card
+        #stationSelect
+        [selectedVariables]="selectedVariables()"
+        [mapID]="mapID"
+        [disableAddingVariables]="!canSelectVariable()"
+        [canAddDuplicateVariable]="true"
+        [lyraStationAvailableVariablesKey]="'variables_regression'"
+        (addingVariableEvent)="addVariableToSelection($event)"
+        (mapAndStationsLoadedEvent)="populateFormFromURL()"
+        >
+      </station-select-card>
     </div>
-    <div class="row mt-sm-4">
-        <div class="col-sm-12" #selectedDataCardRef>
-            <selected-data-card
-                [(selectedVariables)]="selectedVariables"
-                [disableActions]="isActionBeingPerformed()"
-                [headerText]="'Selected Data (x,y)'"
-                (singleVariableRemoved)="removeVariableFromSelection($event)"
-                (allVariablesCleared)="clearAllVariables()"
-                (selectStationOnMap)="showOnMapForStation($event)"
-            ></selected-data-card>
-        </div>
+  </div>
+  <div class="row mt-sm-4">
+    <div class="col-sm-12" #selectedDataCardRef>
+      <selected-data-card
+        [selectedVariables]="selectedVariables()"
+        [disableActions]="isActionBeingPerformed()"
+        [headerText]="'Selected Data (x,y)'"
+        (singleVariableRemoved)="removeVariableFromSelection($event)"
+        (allVariablesCleared)="clearAllVariables()"
+        (selectStationOnMap)="showOnMapForStation($event)"
+      ></selected-data-card>
     </div>
-    <div class="row mt-sm-4">
-        <div class="col-sm-12">
-            <div class="card">
-                <div class="card-header text-center" #timeSeriesCard>
-                    Data View and Download
-                </div>
-                <div class="card-body table-responsive">
-                    <div *ngIf="selectedVariables.length == 0" class="row">
-                        <div class="col text-center">
-                            Select a station on the map and an applicable
-                            variable to get started!
-                        </div>
+  </div>
+  <div class="row mt-sm-4">
+    <div class="col-sm-12">
+      <div class="card">
+        <div class="card-header text-center" #timeSeriesCard>
+          Data View and Download
+        </div>
+        <div class="card-body table-responsive">
+          @if (selectedVariables().length == 0) {
+            <div class="row">
+              <div class="col text-center">
+                Select a station on the map and an applicable
+                variable to get started!
+              </div>
+            </div>
+          }
+          @if (selectedVariables().length > 0) {
+            <div class="row">
+              @if (lyraMessages().length > 0) {
+                @for (
+                  alert of lyraMessages(); track
+                  alert; let i = $index) {
+                  <div
+                    class="col-12"
+                    >
+                    <ngb-alert
+                      [type]="alert.context"
+                      [dismissible]="alert.dismissable"
+                      (close)="closeAlert(i)"
+                      >
+                      <span [innerHTML]="alert.message"></span>
+                    </ngb-alert>
+                  </div>
+                }
+              }
+              <div class="col-lg-6">
+                <form
+                  [formGroup]="timeSeriesForm"
+                  (ngSubmit)="onSubmit()"
+                  class="form-inline"
+                  >
+                  @if (errorMessage()) {
+                    <div
+                      class="alert alert-danger"
+                      >
+                      {{ errorMessage() }}
                     </div>
-                    <div *ngIf="selectedVariables.length > 0" class="row">
-                        <ng-container *ngIf="lyraMessages.length > 0">
+                  }
+                  <div class="form-group w-100 mb-1">
+                    <label
+                      for="start_date"
+                      class="col-sm-6 col-form-label justify-content-start"
+                      >Start Date</label
+                      >
+                      <div class="input-group col-sm-6">
+                        <input
+                          formControlName="start_date"
+                          id="start_date"
+                          type="text"
+                          ngbDatepicker
+                          container="body"
+                          #start="ngbDatepicker"
+                          placeholder="yyyy-mm-dd"
+                          (click)="start.toggle()"
+                          class="form-control"
+                          />
+                        <div class="input-group-append">
+                          <button
+                            class="btn btn-outline-secondary calendar"
+                            (click)="start.toggle()"
+                            type="button"
+                            >
+                            <i
+                              class="fa fa-calendar"
+                              aria-hidden="true"
+                            ></i>
+                          </button>
+                        </div>
+                      </div>
+                      @if (
+                        f.start_date.touched &&
+                        f.start_date.invalid
+                        ) {
+                        <div
+                          class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                          >
+                          @if (f.start_date.errors.required) {
                             <div
-                                class="col-12"
-                                *ngFor="
-                                    let alert of lyraMessages;
-                                    let i = index
-                                "
-                            >
-                                <ngb-alert
-                                    [type]="alert.context"
-                                    [dismissible]="alert.dismissable"
-                                    (close)="closeAlert(i)"
-                                >
-                                    <span [innerHTML]="alert.message"></span>
-                                </ngb-alert>
+                              >
+                              Date is required.
                             </div>
-                        </ng-container>
-                        <div class="col-lg-6">
-                            <form
-                                [formGroup]="timeSeriesForm"
-                                (ngSubmit)="onSubmit()"
-                                class="form-inline"
+                          }
+                          @if (
+                            f.start_date.errors.ngbDate
+                            ?.invalid
+                            ) {
+                            <div
+                              >
+                              Date must be in the format
+                              'yyyy-mm-dd'
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                    <div class="form-group w-100 mb-1">
+                      <label
+                        for="end_date"
+                        class="col-sm-6 col-form-label justify-content-start"
+                        >End Date</label
+                        >
+                        <div class="input-group col-sm-6">
+                          <input
+                            formControlName="end_date"
+                            id="end_date"
+                            type="text"
+                            ngbDatepicker
+                            container="body"
+                            #end="ngbDatepicker"
+                            placeholder="yyyy-mm-dd"
+                            (click)="end.toggle()"
+                            class="form-control"
+                            />
+                          <div class="input-group-append">
+                            <button
+                              class="btn btn-outline-secondary calendar"
+                              (click)="end.toggle()"
+                              type="button"
+                              >
+                              <i
+                                class="fa fa-calendar"
+                                aria-hidden="true"
+                              ></i>
+                            </button>
+                          </div>
+                        </div>
+                        @if (
+                          f.end_date.touched &&
+                          f.end_date.invalid
+                          ) {
+                          <div
+                            class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
                             >
-                                <div
-                                    *ngIf="errorMessage"
-                                    class="alert alert-danger"
+                            @if (f.end_date.errors.required) {
+                              <div>
+                                Date is required.
+                              </div>
+                            }
+                            @if (
+                              f.end_date.errors.ngbDate
+                              ?.invalid
+                              ) {
+                              <div
                                 >
-                                    {{ errorMessage }}
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="start_date"
-                                        class="col-sm-6 col-form-label justify-content-start"
-                                        >Start Date</label
-                                    >
-                                    <div class="input-group col-sm-6">
-                                        <input
-                                            formControlName="start_date"
-                                            id="start_date"
-                                            type="text"
-                                            ngbDatepicker
-                                            container="body"
-                                            #start="ngbDatepicker"
-                                            placeholder="yyyy-mm-dd"
-                                            (click)="start.toggle()"
-                                            class="form-control"
-                                        />
-                                        <div class="input-group-append">
-                                            <button
-                                                class="btn btn-outline-secondary calendar"
-                                                (click)="start.toggle()"
-                                                type="button"
-                                            >
-                                                <i
-                                                    class="fa fa-calendar"
-                                                    aria-hidden="true"
-                                                ></i>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        *ngIf="
-                                            f.start_date.touched &&
-                                            f.start_date.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
-                                    >
-                                        <div
-                                            *ngIf="f.start_date.errors.required"
-                                        >
-                                            Date is required.
-                                        </div>
-                                        <div
-                                            *ngIf="
-                                                f.start_date.errors.ngbDate
-                                                    ?.invalid
-                                            "
-                                        >
-                                            Date must be in the format
-                                            'yyyy-mm-dd'
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="end_date"
-                                        class="col-sm-6 col-form-label justify-content-start"
-                                        >End Date</label
-                                    >
-                                    <div class="input-group col-sm-6">
-                                        <input
-                                            formControlName="end_date"
-                                            id="end_date"
-                                            type="text"
-                                            ngbDatepicker
-                                            container="body"
-                                            #end="ngbDatepicker"
-                                            placeholder="yyyy-mm-dd"
-                                            (click)="end.toggle()"
-                                            class="form-control"
-                                        />
-                                        <div class="input-group-append">
-                                            <button
-                                                class="btn btn-outline-secondary calendar"
-                                                (click)="end.toggle()"
-                                                type="button"
-                                            >
-                                                <i
-                                                    class="fa fa-calendar"
-                                                    aria-hidden="true"
-                                                ></i>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        *ngIf="
-                                            f.end_date.touched &&
-                                            f.end_date.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
-                                    >
-                                        <div *ngIf="f.end_date.errors.required">
-                                            Date is required.
-                                        </div>
-                                        <div
-                                            *ngIf="
-                                                f.end_date.errors.ngbDate
-                                                    ?.invalid
-                                            "
-                                        >
-                                            Date must be in the format
-                                            'yyyy-mm-dd'
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="interval"
-                                        class="col-sm-6 col-form-label justify-content-start d-flex"
-                                    >
-                                        <field-definition
+                                Date must be in the format
+                                'yyyy-mm-dd'
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                      <div class="form-group w-100 mb-1">
+                        <label
+                          for="interval"
+                          class="col-sm-6 col-form-label justify-content-start d-flex"
+                          >
+                          <field-definition
                                             [fieldDefinitionType]="
                                                 'TimeInterval'
                                             "
-                                        >
-                                        </field-definition>
-                                    </label>
-                                    <div class="col w-100">
-                                        <select
-                                            formControlName="interval"
-                                            id="interval"
-                                            class="form-select"
-                                        >
-                                            <option
-                                                *ngFor="
-                                                    let interval of hydstraIntervals
-                                                "
-                                                [value]="interval.value"
-                                            >
-                                                {{ interval.key }}
-                                            </option>
-                                        </select>
-                                    </div>
-                                    <div
-                                        *ngIf="
-                                            f.interval.touched &&
-                                            f.interval.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
-                                    >
-                                        <div *ngIf="f.interval.errors.required">
-                                            Time Interval is required.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="weather_condition"
-                                        class="col-sm-6 col-form-label justify-content-start d-flex"
-                                    >
-                                        <field-definition
+                            >
+                          </field-definition>
+                        </label>
+                        <div class="col w-100">
+                          <select
+                            formControlName="interval"
+                            id="interval"
+                            class="form-select"
+                            >
+                            @for (
+                              interval of hydstraIntervals
+                              ; track
+                              interval) {
+                              <option
+                                [value]="interval.value"
+                                >
+                                {{ interval.key }}
+                              </option>
+                            }
+                          </select>
+                        </div>
+                        @if (
+                          f.interval.touched &&
+                          f.interval.invalid
+                          ) {
+                          <div
+                            class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                            >
+                            @if (f.interval.errors.required) {
+                              <div>
+                                Time Interval is required.
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                      <div class="form-group w-100 mb-1">
+                        <label
+                          for="weather_condition"
+                          class="col-sm-6 col-form-label justify-content-start d-flex"
+                          >
+                          <field-definition
                                             [fieldDefinitionType]="
                                                 'WeatherCondition'
                                             "
-                                        ></field-definition>
-                                    </label>
-                                    <div class="col w-100">
-                                        <select
-                                            formControlName="weather_condition"
-                                            id="weather_condition"
-                                            class="form-select"
-                                        >
-                                            <option
-                                                *ngFor="
-                                                    let weather_condition of hydstraWeatherConditions
-                                                "
+                          ></field-definition>
+                        </label>
+                        <div class="col w-100">
+                          <select
+                            formControlName="weather_condition"
+                            id="weather_condition"
+                            class="form-select"
+                            >
+                            @for (
+                              weather_condition of hydstraWeatherConditions
+                              ; track
+                              weather_condition) {
+                              <option
                                                 [value]="
                                                     weather_condition.value
                                                 "
-                                            >
-                                                {{ weather_condition.key }}
-                                            </option>
-                                        </select>
-                                    </div>
-                                    <div
-                                        *ngIf="
-                                            f.weather_condition.touched &&
-                                            f.weather_condition.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
-                                    >
-                                        <div
-                                            *ngIf="
-                                                f.weather_condition.errors
-                                                    .required
-                                            "
-                                        >
-                                            Weather Condition is required.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group w-100 mb-1">
-                                    <label
-                                        for="regressionMethod"
-                                        class="col-sm-6 col-form-label justify-content-start d-flex"
-                                    >
-                                        <field-definition
+                                >
+                                {{ weather_condition.key }}
+                              </option>
+                            }
+                          </select>
+                        </div>
+                        @if (
+                          f.weather_condition.touched &&
+                          f.weather_condition.invalid
+                          ) {
+                          <div
+                            class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                            >
+                            @if (
+                              f.weather_condition.errors
+                              .required
+                              ) {
+                              <div
+                                >
+                                Weather Condition is required.
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                      <div class="form-group w-100 mb-1">
+                        <label
+                          for="regressionMethod"
+                          class="col-sm-6 col-form-label justify-content-start d-flex"
+                          >
+                          <field-definition
                                             [fieldDefinitionType]="
                                                 'RegressionMethod'
                                             "
-                                        >
-                                        </field-definition>
-                                    </label>
-                                    <div class="col-sm-6 w-100">
-                                        <select
-                                            formControlName="regression_method"
-                                            id="regressionMethod"
-                                            class="form-select"
-                                        >
-                                            <option
-                                                *ngFor="
-                                                    let mode of hydstraRegressionMethods
-                                                "
-                                                [value]="mode.value"
-                                            >
-                                                {{ mode.key }}
-                                            </option>
-                                        </select>
-                                    </div>
-                                    <div
-                                        *ngIf="
-                                            f.regression_method.touched &&
-                                            f.regression_method.invalid
-                                        "
-                                        class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
-                                    >
-                                        <div
-                                            *ngIf="
-                                                f.regression_method.errors
-                                                    .required
-                                            "
-                                        >
-                                            Regression Method is required.
-                                        </div>
-                                    </div>
-                                </div>
-                                <ng-container
-                                    formArrayName="timeseries"
-                                    class="form-group w-100 mb-1"
+                            >
+                          </field-definition>
+                        </label>
+                        <div class="col-sm-6 w-100">
+                          <select
+                            formControlName="regression_method"
+                            id="regressionMethod"
+                            class="form-select"
+                            >
+                            @for (
+                              mode of hydstraRegressionMethods
+                              ; track
+                              mode) {
+                              <option
+                                [value]="mode.value"
                                 >
-                                    <ng-container
-                                        *ngFor="
-                                            let control of timeseries()
-                                                .controls;
-                                            let i = index
-                                        "
-                                        class="form-group w-100 mb-1"
-                                        [formGroupName]="i"
-                                    >
-                                        <div
-                                            class="selected-variable mb-1 mt-1"
-                                        >
-                                            <span>{{
-                                                control.value.variable
-                                                    .stationShortName
-                                            }}</span>
-                                            -
-                                            <span>{{
-                                                control.value.variable.name
-                                            }}</span>
-                                        </div>
-                                        <div class="form-group w-100 mb-1">
-                                            <label
-                                                for="aggregation_method"
-                                                class="col-sm-6 col-form-label justify-content-start d-flex"
-                                            >
-                                                <field-definition
+                                {{ mode.key }}
+                              </option>
+                            }
+                          </select>
+                        </div>
+                        @if (
+                          f.regression_method.touched &&
+                          f.regression_method.invalid
+                          ) {
+                          <div
+                            class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                            >
+                            @if (
+                              f.regression_method.errors
+                              .required
+                              ) {
+                              <div
+                                >
+                                Regression Method is required.
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                      <ng-container
+                        formArrayName="timeseries"
+                        class="form-group w-100 mb-1"
+                        >
+                        @for (
+                          control of timeseries()
+                          .controls; track
+                          control; let i = $index) {
+                          <ng-container
+                            class="form-group w-100 mb-1"
+                            [formGroupName]="i"
+                            >
+                            <div
+                              class="selected-variable mb-1 mt-1"
+                              >
+                              <span>{{
+                                control.value.variable
+                                .stationShortName
+                              }}</span>
+                              -
+                              <span>{{
+                                control.value.variable.name
+                              }}</span>
+                            </div>
+                            <div class="form-group w-100 mb-1">
+                              <label
+                                for="aggregation_method"
+                                class="col-sm-6 col-form-label justify-content-start d-flex"
+                                >
+                                <field-definition
                                                     [fieldDefinitionType]="
                                                         'AggregationMethod'
                                                     "
-                                                >
-                                                </field-definition>
-                                            </label>
-                                            <div class="col-sm-6 w-100">
-                                                <select
-                                                    formControlName="aggregation_method"
-                                                    id="aggregation_method"
-                                                    class="form-select"
-                                                >
-                                                    <option
-                                                        *ngFor="
-                                                            let mode of getAvailableAggregationMethods(
-                                                                control.value
-                                                                    .variable
-                                                            )
-                                                        "
-                                                        [value]="mode.value"
-                                                    >
-                                                        {{ mode.key }}
-                                                    </option>
-                                                </select>
-                                            </div>
-                                            <div
-                                                *ngIf="
-                                                    timeseries().controls[
-                                                        i
-                                                    ].get('aggregation_method')
-                                                        .touched &&
-                                                    timeseries().controls[
-                                                        i
-                                                    ].get('aggregation_method')
-                                                        .invalid
-                                                "
-                                                class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
-                                            >
-                                                <div
-                                                    *ngIf="
-                                                        timeseries().controls[
-                                                            i
-                                                        ].get(
-                                                            'aggregation_method'
-                                                        ).errors.required
-                                                    "
-                                                >
-                                                    Aggregation Mode is
-                                                    required.
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </ng-container>
-                                </ng-container>
-                                <div class="ms-auto">
-                                    <button
-                                        type="submit"
-                                        class="btn btn-nebula btn-sm mt-4 float-end"
-                                        [disabled]="isActionBeingPerformed()"
-                                    >
-                                        <span
-                                            *ngIf="gettingTimeSeriesData"
-                                            class="fa fa-spinner loading-spinner"
-                                        ></span>
-                                        Submit
-                                    </button>
+                                  >
+                                </field-definition>
+                              </label>
+                              <div class="col-sm-6 w-100">
+                                <select
+                                  formControlName="aggregation_method"
+                                  id="aggregation_method"
+                                  class="form-select"
+                                  >
+                                  @for (
+                                    mode of getAvailableAggregationMethods(
+                                    control.value
+                                    .variable
+                                    )
+                                    ; track
+                                    mode) {
+                                    <option
+                                      [value]="mode.value"
+                                      >
+                                      {{ mode.key }}
+                                    </option>
+                                  }
+                                </select>
+                              </div>
+                              @if (
+                                timeseries().controls[
+                                i
+                                ].get('aggregation_method')
+                                .touched &&
+                                timeseries().controls[
+                                i
+                                ].get('aggregation_method')
+                                .invalid
+                                ) {
+                                <div
+                                  class="alert alert-danger col-sm-6 offset-sm-6 mt-1"
+                                  >
+                                  @if (
+                                    timeseries().controls[
+                                    i
+                                    ].get(
+                                    'aggregation_method'
+                                    ).errors.required
+                                    ) {
+                                    <div
+                                      >
+                                      Aggregation Mode is
+                                      required.
+                                    </div>
+                                  }
                                 </div>
-                            </form>
-                        </div>
-                        <div
-                            *ngIf="
-                                selectedVariables != null &&
-                                selectedVariables.length > 0
-                            "
-                            class="col-lg-6"
-                        >
-                            <ng-container *ngIf="!vegaSpec && !errorOccurred">
-                                <span *ngIf="gettingTimeSeriesData"
-                                    >Loading chart values
-                                    <span
-                                        class="fa fa-spinner loading-spinner"
-                                    ></span
-                                ></span>
-                                <span
-                                    *ngIf="
-                                        !isActionBeingPerformed() &&
-                                        !gettingAvailableVariables
-                                    "
-                                    >Complete and submit the form to get
-                                    started</span
+                              }
+                            </div>
+                          </ng-container>
+                        }
+                      </ng-container>
+                      <div class="ms-auto">
+                        <button
+                          type="submit"
+                          class="btn btn-nebula btn-sm mt-4 float-end"
+                          [disabled]="isActionBeingPerformed()"
+                          >
+                          @if (gettingTimeSeriesData()) {
+                            <span
+                              class="fa fa-spinner loading-spinner"
+                            ></span>
+                          }
+                          Submit
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                  @if (
+                    selectedVariables() != null &&
+                    selectedVariables().length > 0
+                    ) {
+                    <div
+                      class="col-lg-6"
+                      >
+                      @if (!vegaSpec() && !errorOccurred()) {
+                        @if (gettingTimeSeriesData()) {
+                          <span
+                            >Loading chart values
+                            <span
+                              class="fa fa-spinner loading-spinner"
+                              ></span
+                            ></span>
+                          }
+                          @if (!isActionBeingPerformed()) {
+                            <span
+                              >Complete and submit the form to get
+                              started</span
+                              >
+                            }
+                          }
+                          @if (errorOccurred()) {
+                            <span
+                              >Operation was unsuccessful. Please make another
+                              selection and try again.</span
+                              >
+                            }
+                            @if (
+                              vegaSpec() && currentlyDisplayingRequestDto
+                              ) {
+                              <button
+                                (click)="downloadChartData()"
+                                class="btn btn-sm btn-nebula mb-1 mt-1 mt-lg-0 float-end"
+                                [disabled]="isActionBeingPerformed()"
                                 >
-                            </ng-container>
-                            <span *ngIf="errorOccurred"
-                                >Operation was unsuccessful. Please make another
-                                selection and try again.</span
-                            >
-                            <ng-container
-                                *ngIf="
-                                    vegaSpec && currentlyDisplayingRequestDto
-                                "
-                            >
-                                <button
-                                    (click)="downloadChartData()"
-                                    class="btn btn-sm btn-nebula mb-1 mt-1 mt-lg-0 float-end"
-                                    [disabled]="isActionBeingPerformed()"
-                                >
-                                    <span
-                                        *ngIf="downloadingChartData"
-                                        class="fa fa-spinner loading-spinner"
+                                @if (downloadingChartData()) {
+                                  <span
+                                    class="fa fa-spinner loading-spinner"
                                     ></span
-                                    >Download Data (.csv)
-                                </button>
-                                <link-to-analysis
+                                    >
+                                    }Download Data (.csv)
+                                  </button>
+                                  <link-to-analysis
                                     [linkText]="
                                         currentlyDisplayingRequestLinkText
                                     "
                                     class="float-end me-1"
-                                ></link-to-analysis>
-                            </ng-container>
-                            <div
-                                *ngIf="vegaSpec"
-                                id="vis"
-                                style="width: 100%"
-                            ></div>
-                        </div>
+                                  ></link-to-analysis>
+                                }
+                                @if (vegaSpec()) {
+                                  <div
+                                    id="vis"
+                                    style="width: 100%"
+                                  ></div>
+                                }
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
                     </div>
+                  </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
+              </div>

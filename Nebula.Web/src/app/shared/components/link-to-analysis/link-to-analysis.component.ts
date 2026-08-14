@@ -38,9 +38,11 @@ export class LinkToAnalysisComponent implements OnInit {
       return;
     }
 
-    this.elem.nativeElement.closest('body')
-      .querySelector('#linkText')
-      .select();
+    // Scoped to this component. The popover used to be appended to body, so
+    // this had to search the whole document for #linkText -- which picks the
+    // first match, not necessarily this component's, and every instance of
+    // this component uses that same id.
+    this.elem.nativeElement.querySelector('#linkText')?.select();
   }
 
 }

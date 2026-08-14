@@ -1,10 +1,11 @@
-import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { LinkRendererComponent } from 'src/app/shared/components/ag-grid/link-renderer/link-renderer.component';
 import { ColDef } from 'ag-grid-community';
 import { AgGridAngular } from 'ag-grid-angular';
 import { CustomRichTextTypeEnum } from 'src/app/shared/generated/enum/custom-rich-text-type-enum';
-import { FieldDefinitionDto, FieldDefinitionService, UserDto } from 'src/app/shared/generated';
+import { FieldDefinitionDto, FieldDefinitionService } from 'src/app/shared/generated';
 
 @Component({
     selector: 'nebula-field-definition-list',
@@ -13,33 +14,33 @@ import { FieldDefinitionDto, FieldDefinitionService, UserDto } from 'src/app/sha
     standalone: false
 })
 export class FieldDefinitionListComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
 
   @ViewChild('fieldDefinitionsGrid') fieldDefinitionsGrid: AgGridAngular;
   
-  private currentUser: UserDto;
+  private authenticationService = inject(AuthenticationService);
+  private currentUser = this.authenticationService.currentUser;
 
-  public fieldDefinitions: Array<FieldDefinitionDto>
+  // Signals: assigned from an HTTP callback, which no longer schedules change
+  // detection on its own under zoneless.
+  public fieldDefinitions = signal<Array<FieldDefinitionDto>>(null);
   public richTextTypeID : number = CustomRichTextTypeEnum.LabelsAndDefinitionsList;
 
-  public rowData = [];
-  public columnDefs: ColDef[];
+  public rowData = signal<Array<FieldDefinitionDto>>([]);
+  public columnDefs = signal<ColDef[]>([]);
 
   constructor(
-    private fieldDefinitionService: FieldDefinitionService,
-    private authenticationService: AuthenticationService,
-    private cdr: ChangeDetectorRef) { }
+    private fieldDefinitionService: FieldDefinitionService) { }
 
   ngOnInit() {
-    this.authenticationService.getCurrentUser().subscribe(currentUser => {
-      this.currentUser = currentUser;
+    this.authenticationService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.fieldDefinitionsGrid?.api.showLoadingOverlay();
       this.fieldDefinitionService.fieldDefinitionsGet().subscribe(fieldDefinitions => {
-        this.fieldDefinitions = fieldDefinitions;
-        this.rowData = fieldDefinitions;
-        this.fieldDefinitionsGrid.api.hideOverlay();
-        this.cdr.detectChanges();
+        this.fieldDefinitions.set(fieldDefinitions);
+        this.rowData.set(fieldDefinitions);
+        this.fieldDefinitionsGrid?.api.hideOverlay();
       });
-      this.columnDefs = [
+      const columnDefs: ColDef[] = [
         {
           headerName: 'Label', valueGetter: function (params: any) {
             return { LinkValue: params.data.FieldDefinitionType.FieldDefinitionTypeID, LinkDisplay: params.data.FieldDefinitionType.FieldDefinitionTypeDisplayName };
@@ -68,15 +69,10 @@ export class FieldDefinitionListComponent implements OnInit {
           autoHeight:true, sortable: true, filter: true, width:900, cellStyle: {'white-space': 'normal'}},
       ];
 
-      this.columnDefs.forEach(x => {
+      columnDefs.forEach(x => {
         x.resizable = true;
       });
+      this.columnDefs.set(columnDefs);
     });
-  }
-
-  ngOnDestroy(): void {
-    
-    
-    this.cdr.detach();
   }
 }

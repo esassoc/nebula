@@ -1,0 +1,105 @@
+# =============================================================================
+# Nebula dev-environment Terraform pipeline (plan -> approval -> apply)
+# =============================================================================
+# Provisions the dev support resources in Build/dev-tf/Main.tf (resource group,
+# RBAC Key Vault, seeded secrets). Run manually (trigger: none).
+#
+# BEFORE FIRST RUN -- supply these (Azure DevOps variable group / library);
+# they are intentionally NOT in the repo:
+#   - azureSubscription ........... service-connection name (as the main pipeline)
+#   - devReaderGroupObjectId ...... AAD group object id for the dev team (or "")
+#   - secretSendGridApiKey ........ (secret) dev SendGrid key (optional)
+#
+# PREREQ, same as the deployed vaults: the pipeline SP needs "Role Based Access
+# Control Administrator" on nebula-keyvault-dev to create it with
+# enable_rbac_authorization.
+# =============================================================================
+
+trigger: none
+
+variables:
+  team: 'h2o'
+  projectNumber: 'D020211956.00'
+  environment: 'dev'
+  # tfstate backend -- the dev tfstate account mirrors the main pipeline's
+  # esatfstate$(Environment) convention. The distinct state KEY
+  # (dev-terraform.tfstate) lives in Main.tf so this can share the container
+  # with the deployed state safely.
+  tfStateStorageAccountName: 'esatfstatedev'
+  TfStateStorageAccountContainerName: 'nebula'
+  azureApplicationTfStateResourceGroup: 'esa-dev'
+  # resource names (distinct from the deployed qa/prod envs)
+  resourceGroupName: 'nebula-dev'
+  keyVaultName: 'nebula-keyvault-dev'
+
+resources:
+  repositories:
+    - repository: self
+      type: git
+      ref: develop
+    - repository: BuildTemplates
+      type: github
+      name: esassoc/BuildTemplates
+      endpoint: "esassoc"
+
+stages:
+  - stage: BuildTerraform
+    displayName: Terraform Plan
+    jobs:
+      - job: Terraform
+        displayName: Terraform Plan
+        pool:
+          vmImage: 'windows-2022'
+          demands: msbuild
+        steps:
+          - checkout: self
+            fetchDepth: 0
+          - template: azure-pipelines/templates/terraform/terraform.yml@BuildTemplates
+            parameters:
+              ServiceConnectionName: "$(azureSubscription)"
+              TfStateStorageAccountName: "$(tfStateStorageAccountName)"
+              TfStateStorageAccountContainerName: "$(TfStateStorageAccountContainerName)"
+              TfStateStorageAccountResourceGroup: "$(azureApplicationTfStateResourceGroup)"
+              WorkingDirectory: './Build/dev-tf'
+              TerraformCommand: plan
+              # Folded scalar (>-) joins these lines with spaces. The TerraformCLI
+              # task strips newlines WITHOUT adding one, so a literal block (|)
+              # only works via invisible trailing spaces on every line.
+              TerraformCommandOptions: >-
+                -var "keyVaultName=$(keyVaultName)"
+                -var "resourceGroupName=$(resourceGroupName)"
+                -var "team=$(team)"
+                -var "projectNumber=$(projectNumber)"
+                -var "devReaderGroupObjectId=$(devReaderGroupObjectId)"
+                -var "secretSendGridApiKey=$(secretSendGridApiKey)"
+
+  - stage: DeployTerraform
+    displayName: Deploy Terraform (with Approval)
+    dependsOn:
+      - BuildTerraform
+    condition: in(dependencies.BuildTerraform.result, 'Succeeded', 'SucceededWithIssues')
+    jobs:
+      - deployment: Terraform
+        pool:
+          vmImage: 'windows-2022'
+          demands: msbuild
+        # Creates the environment if absent; attach an Approval gate to it in
+        # the Azure DevOps UI so an apply never runs unattended.
+        environment: 'dev-Approve'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  fetchDepth: 0
+                - template: azure-pipelines/templates/terraform/terraform.yml@BuildTemplates
+                  parameters:
+                    ServiceConnectionName: "$(azureSubscription)"
+                    TfStateStorageAccountName: "$(tfStateStorageAccountName)"
+                    TfStateStorageAccountContainerName: "$(TfStateStorageAccountContainerName)"
+                    TfStateStorageAccountResourceGroup: "$(azureApplicationTfStateResourceGroup)"
+                    WorkingDirectory: './Build/dev-tf'
+                    TerraformCommand: apply
+                    # No TerraformCommandOptions here: apply consumes the SAVED
+                    # tfplan from the Plan stage, which already has the vars
+                    # baked in. Passing them again would be ignored at best.

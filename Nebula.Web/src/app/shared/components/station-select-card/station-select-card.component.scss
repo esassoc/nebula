@@ -3,33 +3,29 @@
     color: gray;
 }
 
-::ng-deep .custom.p-autocomplete {
+// Was a PrimeNG wrapper override that re-implemented Bootstrap's form-control
+// styling on p-autocomplete's inner input. The NgbTypeahead input is a real
+// .form-control, so only the sizing and the custom focus colour remain.
+.custom-station-search {
     @media only screen and (min-width: 576px) {
         width: 270px;
     }
 
-    > input {
-        display: block;
-        width: 100%;
-        height: calc(1.5em + 0.75rem + 2px);
-        padding: 0.375rem 0.75rem;
-        font-size: 1rem;
-        font-weight: 400;
-        line-height: 1.5;
-        color: #495057;
-        background-color: #fff;
-        background-clip: padding-box;
-        border: 1px solid #ced4da;
-        border-radius: 0.25rem;
-        font-family: "Tahoma", sans-serif, "Helvetica Neue", sans-serif;
+    font-family: "Tahoma", sans-serif, "Helvetica Neue", sans-serif;
 
-        &:hover,
-        &:focus {
-            border-color: #2ce9ff;
-        }
-
-        &:focus {
-            box-shadow: 0 0 0 0.2rem rgb(0 153 171 / 25%);
-        }
+    &:hover,
+    &:focus {
+        border-color: #2ce9ff;
     }
+
+    &:focus {
+        box-shadow: 0 0 0 0.2rem rgb(0 153 171 / 25%);
+    }
+}
+
+// Previously inline styles on the p-autoComplete item template.
+.station-search-result {
+    border-bottom: 1px solid #d5d5d5;
+    background-color: white;
+    width: 100%;
 }

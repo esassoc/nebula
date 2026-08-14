@@ -70,6 +70,7 @@
     <Folder Include="Scripts\Utility" />
     <Folder Include="dbo\Procs" />
     <Folder Include="dbo\Functions" />
+    <Folder Include="Security" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\dbo.CustomRichText.sql" />
@@ -96,6 +97,7 @@
     <Build Include="dbo\Views\dbo.vGeoServerBackbones.sql" />
     <Build Include="dbo\Views\dbo.vGeoServerRegionalSubbasins.sql" />
     <Build Include="dbo\Views\dbo.vGeoServerWatersheds.sql" />
+    <Build Include="Security\db_executor.sql" />
     <None Include="Scripts\LookupTables\dbo.MenuItem.sql" />
     <None Include="Scripts\Utility\Script.PostDeployment.Utility.sql" />
   </ItemGroup>

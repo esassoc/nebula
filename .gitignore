@@ -12,6 +12,12 @@ Hotfixes
 
 Nebula.Web/src/assets/config.json
 Nebula.API/appsecrets.json
+# Per-developer devcontainer overrides; .devcontainer/.env is committed and
+# must stay secret-free. Template: .devcontainer/.developer.env.template
+.devcontainer/.developer.env
+# Empty manifest the .NET 10 SDK's `dotnet new tool-manifest` drops in the
+# project dir on every Debug build; the real manifest is .config/dotnet-tools.json
+Nebula.API/dotnet-tools.json
 Nebula.GeoServer/data_dir/geoserver-environment.properties
 Nebula.GeoServer/data_dir/.updatepassword.lock
 Nebula.GeoServer/data_dir/security/*

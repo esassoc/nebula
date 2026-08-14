@@ -4,7 +4,9 @@ kind: ConfigMap
 metadata:
   name: {{ include "api.fullname" . }}-prod-configmap
 data:
-  SECRET_PATH: "/app/secrets/nebulaApiSecrets"
+  # KeyVaultName drives the startup secret load (DefaultAzureCredential via
+  # workload identity); SECRET_PATH from the mounted-JSON era is gone.
+  KeyVaultName: "{{ .Values.global.env.keyVaultName }}"
   DOCKER_BUILD_SOURCE: "."
   ASPNETCORE_ENVIRONMENT: "Production"
   SITKA_EMAIL_REDIRECT: ""

@@ -5,5 +5,15 @@
         "types": ["node"]
     },
     "files": ["main.ts", "polyfills.ts"],
-    "include": ["src/**/*.d.ts"]
+    "include": [
+      "src/**/*.d.ts"
+    ],
+    "angularCompilerOptions": {
+      // The v22 migration added both strictTemplates:false and an
+      // extendedDiagnostics suppression block, which contradict each other
+      // (NG4003: extendedDiagnostics requires strictTemplates). Keeping
+      // strictTemplates:false preserves pre-v22 behaviour; the suppressions
+      // only apply under strictTemplates, so they are dropped.
+      "strictTemplates": false
+    }
 }

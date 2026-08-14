@@ -1,8 +1,8 @@
-import { environment } from "src/environments/environment";
+import { environment } from 'src/environments/environment';
 
 const authExcludedApiRoutePrefixes = ['public/'];
 
-export function getAuthConfig(): import("@auth0/auth0-angular").AuthConfig {
+export function getAuthConfig(): import('@auth0/auth0-angular').AuthConfig {
   return {
     domain: environment.auth0Configuration.domain,
     clientId: environment.auth0Configuration.clientId,
@@ -11,7 +11,7 @@ export function getAuthConfig(): import("@auth0/auth0-angular").AuthConfig {
     authorizationParams: {
       redirect_uri: window.location.origin,
       audience: environment.auth0Configuration.audience,
-      scope: "openid profile email offline_access",
+      scope: 'openid profile email offline_access',
     },
     httpInterceptor: {
       allowedList: [

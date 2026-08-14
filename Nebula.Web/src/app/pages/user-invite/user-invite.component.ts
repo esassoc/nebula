@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { Alert } from 'src/app/shared/models/alert';
 import { AlertContext } from 'src/app/shared/models/enums/alert-context.enum';
@@ -16,33 +17,30 @@ import { RoleDto, RoleService, UserDto, UserInviteDto, UserService } from 'src/a
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class UserInviteComponent implements OnInit, OnDestroy {
+export class UserInviteComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
 
-  private currentUser: UserDto;
+  private authenticationService = inject(AuthenticationService);
 
-  public roles: Array<RoleDto>;
-  public model: UserInviteDto;
-  public isLoadingSubmit: boolean = false;
+  public roles = signal<Array<RoleDto>>([]);
+  public model = signal<UserInviteDto>(null);
+  public isLoadingSubmit = signal(false);
 
   constructor(
-    private cdr: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
     private userService: UserService,
     private roleService: RoleService,
-    private authenticationService: AuthenticationService,
     private alertService: AlertService
   ) { }
 
   ngOnInit(): void {
-    this.authenticationService.getCurrentUser().subscribe(currentUser => {
-      this.currentUser = currentUser;
+    this.authenticationService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.roleService.rolesGet().subscribe(result => {
-        this.roles = result;
-        this.cdr.detectChanges();
+        this.roles.set(result);
       });
 
-      this.model = new UserInviteDto();
+      this.model.set(new UserInviteDto());
 
       const userID = parseInt(this.route.snapshot.paramMap.get('userID'));
       if (userID) {
@@ -53,31 +51,31 @@ export class UserInviteComponent implements OnInit, OnDestroy {
             const userToInvite = user instanceof Array
               ? null
               : user as UserDto;
-            this.model.Email = userToInvite.Email;
-            this.model.FirstName = userToInvite.FirstName;
-            this.model.LastName = userToInvite.LastName;
-            this.model.RoleID = userToInvite.Role.RoleID;
-            this.cdr.detectChanges();
+            // New object rather than in-place mutation: a signal only notifies
+            // on identity change, and this population happens in an HTTP callback.
+            this.model.set(Object.assign(new UserInviteDto(), {
+              Email: userToInvite.Email,
+              FirstName: userToInvite.FirstName,
+              LastName: userToInvite.LastName,
+              RoleID: userToInvite.Role.RoleID
+            }));
           }
         });
       }
     });
   }
 
-  ngOnDestroy() {
-    this.cdr.detach();
-  }
-
   canInviteUser(): boolean {
-    return this.model.FirstName && this.model.LastName && this.model.RoleID && this.model.Email && this.model.Email.indexOf('@') != -1;
+    const model = this.model();
+    return model.FirstName && model.LastName && model.RoleID && model.Email && model.Email.indexOf('@') != -1;
   }
 
   onSubmit(inviteUserForm: HTMLFormElement): void {
-    this.isLoadingSubmit = true;
+    this.isLoadingSubmit.set(true);
 
-    this.userService.usersInvitePost(this.model)
+    this.userService.usersInvitePost(this.model())
       .subscribe(response => {
-        this.isLoadingSubmit = false;
+        this.isLoadingSubmit.set(false);
         inviteUserForm.reset();
         this.router.navigateByUrl(`/users/${response.UserID}`).then(x => {
           this.alertService.pushAlert(new Alert('The user invite was successful.', AlertContext.Success));
@@ -85,13 +83,12 @@ export class UserInviteComponent implements OnInit, OnDestroy {
       }
         ,
         error => {
-          this.isLoadingSubmit = false;
-          this.cdr.detectChanges();
-        }
+          this.isLoadingSubmit.set(false);
+          }
       );
   }
 
   public currentUserIsAdmin(): boolean {
-    return this.authenticationService.isUserAnAdministrator(this.currentUser);
+    return this.authenticationService.isUserAnAdministrator(this.authenticationService.currentUser());
   }
 }

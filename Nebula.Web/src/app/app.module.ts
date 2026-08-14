@@ -1,11 +1,10 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule, APP_INITIALIZER, ErrorHandler, importProvidersFrom } from '@angular/core';
-import { provideHttpClient, withInterceptors } from "@angular/common/http";
+import { provideHttpClient, withInterceptors, withXhr } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SharedModule } from './shared/shared.module';
-import { CookieService } from 'ngx-cookie-service';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { HomeIndexComponent } from './pages/home/home-index/home-index.component';
 import { UserListComponent } from './pages/user-list/user-list.component';
@@ -34,11 +33,9 @@ import { CustomPageDetailComponent } from './pages/custom-page-detail/custom-pag
 import { CustomPageCreateComponent } from './pages/custom-page-create/custom-page-create.component';
 import { CustomPageEditPropertiesComponent } from './pages/custom-page-edit-properties/custom-page-edit-properties.component';
 import { ApiModule, Configuration } from './shared/generated';
-import { providePrimeNG } from 'primeng/config';
-import Lara from '@primeuix/themes/lara';
 import { ModuleRegistry } from 'ag-grid-community';
 import { AllCommunityModule } from 'ag-grid-community';
-import { AuthClientConfig, authHttpInterceptorFn, AuthModule, provideAuth0 } from "@auth0/auth0-angular";
+import { AuthClientConfig, authHttpInterceptorFn, AuthModule, provideAuth0 } from '@auth0/auth0-angular';
 import { getAuthConfig } from './auth-config';
 
 export function init_app(authClientConfig: AuthClientConfig) {
@@ -89,20 +86,15 @@ export function init_app(authClientConfig: AuthClientConfig) {
       });
     })
   ],
-  providers: [
-    CookieService,
-    { provide: APP_INITIALIZER, useFactory: init_app, deps: [AuthClientConfig], multi: true },
+  providers: [    { provide: APP_INITIALIZER, useFactory: init_app, deps: [AuthClientConfig], multi: true },
     {
       provide: ErrorHandler,
       useClass: GlobalErrorHandlerService
     },
     DecimalPipe, CurrencyPipe, DatePipe,
-    providePrimeNG({
-      theme: { preset: Lara }
-    }),
     importProvidersFrom(AuthModule.forRoot()),
     provideAuth0(),
-    provideHttpClient(withInterceptors([authHttpInterceptorFn]))
+    provideHttpClient(withXhr(), withInterceptors([authHttpInterceptorFn]))
   ],
   bootstrap: [AppComponent]
 })

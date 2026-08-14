@@ -17,7 +17,6 @@ variables:
   databaseName: 'NebulaDB'
   databaseEdition: 'Standard'
   databaseTier: 'ElasticPool'
-  sqlApiUsername: 'NebulaWeb'
   sqlGeoserverUsername: 'NebulaGeo'
 
   # domainApi: 'api-nebula.esa-$(Environment).sitkatech.com' # this is now in a pipeline variable
@@ -104,6 +103,7 @@ stages:
 
     - template: azure-pipelines/templates/docker/docker-template.yml@BuildTemplates 
       parameters:
+        projectName: 'nebula'
         displayName: 'API'
         subscription: '$(azureSubscription)'
         containerRegistry: '$(kv-containerRegistry)'
@@ -133,6 +133,7 @@ stages:
 
     - template: azure-pipelines/templates/docker/docker-template.yml@BuildTemplates 
       parameters:
+        projectName: 'nebula'
         displayName: 'Web'
         subscription: '$(azureSubscription)'
         containerRegistry: '$(kv-containerRegistry)'
@@ -171,30 +172,37 @@ stages:
         TfStateStorageAccountResourceGroup: "$(azureApplicationTfStateResourceGroup)"
         WorkingDirectory: './'
         TerraformCommand: plan
-        TerraformCommandOptions: |
-          -var "keyVaultName=$(keyVaultName)" 
-          -var "storageAccountName=$(storageAccountName)" 
-          -var "resourceGroupName=$(resourceGroupName)" 
-          -var "dbServerName=$(kv-dbServerName)" 
-          -var "aspNetEnvironment=$(aspNetEnvironment)" 
-          -var "datadogApiKey=$(kv-datadogApiKey)" 
-          -var "datadogAppKey=$(kv-datadogAppKey)" 
-          -var "domainApi=$(domainApi)" 
-          -var "domainWeb=$(domainWeb)" 
-          -var "environment=$(Environment)" 
-          -var "domainGeoserver=$(domainGeoserver)" 
-          -var "databaseName=$(databaseName)" 
-          -var "databaseEdition=$(databaseEdition)" 
-          -var "databaseTier=$(databaseTier)" 
-          -var "sqlPassword=$(kv-sqlAdministratorPassword)" 
-          -var "sqlUsername=$(kv-sqlAdministratorUsername)" 
-          -var "azureClusterResourceGroup=$(kv-azureClusterResourceGroup)" 
-          -var "databaseResourceGroup=$(kv-databaseResourceGroup)" 
-          -var "sqlApiUsername=$(sqlApiUsername)" 
-          -var "sqlGeoserverUsername=$(sqlGeoserverUsername)" 
-          -var "team=$(team)" 
-          -var "projectNumber=$(projectNumber)" 
-          -var "elasticPoolName=$(kv-elasticPoolName)" 
+        # Folded scalar (>-) joins these lines with spaces. The previous literal
+        # block (|) only worked because every line carried an invisible trailing
+        # space -- the TerraformCLI task strips newlines WITHOUT adding one, so a
+        # newly added line without that trailing space would silently glue itself
+        # to its neighbour. Same trap wave-runup hit.
+        TerraformCommandOptions: >-
+          -var "keyVaultName=$(keyVaultName)"
+          -var "storageAccountName=$(storageAccountName)"
+          -var "resourceGroupName=$(resourceGroupName)"
+          -var "dbServerName=$(kv-dbServerName)"
+          -var "aspNetEnvironment=$(aspNetEnvironment)"
+          -var "datadogApiKey=$(kv-datadogApiKey)"
+          -var "datadogAppKey=$(kv-datadogAppKey)"
+          -var "domainApi=$(domainApi)"
+          -var "domainWeb=$(domainWeb)"
+          -var "environment=$(Environment)"
+          -var "domainGeoserver=$(domainGeoserver)"
+          -var "databaseName=$(databaseName)"
+          -var "databaseEdition=$(databaseEdition)"
+          -var "databaseTier=$(databaseTier)"
+          -var "sqlPassword=$(kv-sqlAdministratorPassword)"
+          -var "sqlUsername=$(kv-sqlAdministratorUsername)"
+          -var "azureClusterResourceGroup=$(kv-azureClusterResourceGroup)"
+          -var "databaseResourceGroup=$(kv-databaseResourceGroup)"
+          -var "sqlGeoserverUsername=$(sqlGeoserverUsername)"
+          -var "team=$(team)"
+          -var "projectNumber=$(projectNumber)"
+          -var "elasticPoolName=$(kv-elasticPoolName)"
+          -var "clusterOidcIssuerUrl=$(kv-clusterOidcIssuerUrl)"
+          -var "aksNamespace=$(team)"
+          -var "sendGridApiKey=$(kv-sendGridApiKey)"
 
     - task: CopyFiles@2
       inputs:
@@ -258,10 +266,11 @@ stages:
               echo "##vso[task.setvariable variable=STORAGE_ACCOUNT_SAS_KEY;isOutput=true;issecret=true]$(TF_OUT_STORAGE_ACCOUNT_SAS_KEY)"
               echo "##vso[task.setvariable variable=APPLICATION_STORAGE_ACCOUNT_KEY;isOutput=true;issecret=true]$(TF_OUT_APPLICATION_STORAGE_ACCOUNT_KEY)"
               echo "##vso[task.setvariable variable=INSTRUMENTATION_KEY;isOutput=true]$(TF_OUT_INSTRUMENTATION_KEY)"
-              echo "##vso[task.setvariable variable=SQL_API_PASSWORD;isOutput=true;issecret=true]$(TF_OUT_SQL_API_PASSWORD)"
               echo "##vso[task.setvariable variable=SQL_GEOSERVER_PASSWORD;isOutput=true;issecret=true]$(TF_OUT_SQL_GEOSERVER_PASSWORD)"
               echo "##vso[task.setvariable variable=GEOSERVER_ADMIN_PASSWORD;isOutput=true;issecret=true]$(TF_OUT_GEOSERVER_ADMIN_PASSWORD)"
               echo "##vso[task.setvariable variable=DATABASE_ID;isOutput=true;issecret=true]$(TF_OUT_DATABASE_ID)"
+              echo "##vso[task.setvariable variable=WORKLOAD_IDENTITY_CLIENT_ID;isOutput=true]$(TF_OUT_WORKLOAD_IDENTITY_CLIENT_ID)"
+              echo "##vso[task.setvariable variable=WORKLOAD_IDENTITY_TENANT_ID;isOutput=true]$(TF_OUT_WORKLOAD_IDENTITY_TENANT_ID)"
           - bash: 'env | sort'
 
 - stage: DeployDB
@@ -278,7 +287,6 @@ stages:
     pool:
       vmImage: 'windows-latest'
     variables: 
-      SQL_API_PASSWORD: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.SQL_API_PASSWORD'] ]
       SQL_GEOSERVER_PASSWORD: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.SQL_GEOSERVER_PASSWORD'] ]
       DATABASE_ID: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.DATABASE_ID'] ]
     # creates an environment if it doesn't exist
@@ -317,24 +325,17 @@ stages:
               elasticPoolName: '$(kv-elasticPoolName)'
               sqlAdministratorUsername: '$(kv-sqlAdministratorUsername)'
               sqlAdministratorPassword: '$(kv-sqlAdministratorPassword)'
-              sqlApiUsername: '$(sqlApiUsername)'
               bacpacFile: '$(Pipeline.Workspace)/bacpac/$(databaseName).bacpac'
               dacpacFile: '$(Pipeline.Workspace)/Database/Nebula.Database.dacpac'
               projectResourceGroupName: '$(resourceGroupName)'
               databaseID: '$(DATABASE_ID)'
 
-          - template: azure-pipelines/templates/database/db-user.yml@BuildTemplates 
-            parameters:
-              subscription: '$(azureSubscription)'
-              serverName: '$(kv-dbServerName).database.windows.net'
-              databaseName: '$(databaseName)'
-              sqlAdministratorUsername: '$(kv-sqlAdministratorUsername)'
-              sqlAdministratorPassword: '$(kv-sqlAdministratorPassword)'
-              desiredSqlUsername: '$(sqlApiUsername)'
-              desiredSqlPassword: '$(SQL_API_PASSWORD)'
-              roles: 'db_datawriter,db_datareader'
-
-          - template: azure-pipelines/templates/database/db-user.yml@BuildTemplates 
+          # NOTE: the API's legacy NebulaWeb SQL login is intentionally absent.
+          # The API connects as the workload identity
+          # (Authentication=Active Directory Default); the db-aad-user step
+          # below is what provisions its DB user. The remaining db-user.yml
+          # step is GeoServer's, which stays on SQL auth.
+          - template: azure-pipelines/templates/database/db-user.yml@BuildTemplates
             parameters:
               subscription: '$(azureSubscription)'
               serverName: '$(kv-dbServerName).database.windows.net'
@@ -344,6 +345,110 @@ stages:
               desiredSqlUsername: '$(sqlGeoserverUsername)'
               desiredSqlPassword: '$(SQL_GEOSERVER_PASSWORD)'
               roles: 'db_datareader'
+
+          # Entra-based DB user for the API's managed identity (CREATE USER ...
+          # FROM EXTERNAL PROVIDER), granted after every DacPac deploy.
+          # PREREQ: the pipeline SP must be (in) the SQL server's Entra admin,
+          # or this fails. That is already true for the shared spoke server --
+          # wave-runup's equivalent step runs against it today.
+          # aadPrincipalName is the EXACT Entra display name, which for a
+          # managed identity is its resource name. $(Environment) is already
+          # lowercase, matching nebula.tf; never lower() a runtime var at
+          # compile time.
+          # The legacy SQL login step above is retained during the transition.
+          - template: azure-pipelines/templates/database/db-aad-user.yml@BuildTemplates
+            parameters:
+              subscription: '$(azureSubscription)'
+              serverName: '$(kv-dbServerName).database.windows.net'
+              databaseName: '$(databaseName)'
+              aadPrincipalName: 'nebula-$(Environment)-identity'
+              # db_executor (GRANT EXECUTE, defined in
+              # Nebula.Database/Security/db_executor.sql) lets the identity run
+              # stored procs without db_owner -- no ownership,
+              # permission-management or impersonation rights an app identity
+              # should not have. Ported from the zybach/Shasta standard.
+              roles: 'db_datareader,db_datawriter,db_ddladmin,db_executor'
+
+          # Human access via the H2O Entra groups, granted as contained DB
+          # users. Kept in-repo rather than using the shared template because
+          # the per-env access matrix is app-specific: QA group writes on qa and
+          # reads on prod; Prod group writes everywhere.
+          #
+          # H2O Readers Group is deliberately absent. Verified against Entra on
+          # 2026-08-13: the group has 0 members, so CREATE USER FROM EXTERNAL
+          # PROVIDER cannot resolve it and the grant would be a no-op anyway.
+          # wave-runup dropped it from its matrix for the same reason (5d2c01d).
+          # Its Key Vault role assignment in nebula.tf is retained for parity
+          # with wave-runup -- that one is a harmless no-op rather than a
+          # failure, since role assignments do not need to resolve members.
+          #
+          # Gated at RUNTIME on $(Environment) inside the script. Do NOT gate
+          # with a compile-time ${{ if eq(variables['Environment'], ...) }}:
+          # Environment is a runtime variable (variable group / UI), so it is
+          # empty during YAML compilation and the whole block would be silently
+          # stripped from the pipeline.
+          - task: AzureCLI@2
+            displayName: 'Grant DB access to H2O Entra groups'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: pscore
+              scriptLocation: inlineScript
+              inlineScript: |
+                $ErrorActionPreference = 'Stop'
+
+                # SqlServer module is preinstalled on hosted agents; bootstrap
+                # defensively in case an agent lacks it.
+                if (-not (Get-Module -ListAvailable -Name SqlServer)) {
+                    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser | Out-Null
+                    Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+                    Install-Module -Name SqlServer -Scope CurrentUser -Force -AllowClobber
+                }
+                Import-Module SqlServer
+
+                # An AAD access token is passed to Invoke-Sqlcmd as a parameter
+                # rather than through sqlcmd -P: the legacy ODBC sqlcmd on the
+                # hosted agent caps -P at 128 chars and a SQL access token is a
+                # ~1.5KB JWT.
+                $token = az account get-access-token --resource https://database.windows.net/ --query accessToken -o tsv
+                if ([string]::IsNullOrWhiteSpace($token)) { throw 'Failed to acquire an AAD access token for Azure SQL.' }
+
+                $server = '$(kv-dbServerName).database.windows.net'
+                $db     = '$(databaseName)'
+
+                # group display name -> comma-separated roles, per environment.
+                # A lookup rather than if/else so an unrecognised Environment
+                # throws instead of silently falling through to the branch that
+                # grants WRITE. Runtime gate, not compile-time.
+                $matrix = @{
+                    qa = @{
+                        'H2O Prod Group' = 'db_datareader,db_datawriter,db_executor'
+                        'H2O QA Group'   = 'db_datareader,db_datawriter,db_executor'
+                    }
+                    prod = @{
+                        'H2O Prod Group' = 'db_datareader,db_datawriter,db_executor'
+                        'H2O QA Group'   = 'db_datareader'
+                    }
+                }
+                if (-not $matrix.ContainsKey('$(Environment)')) { throw "No H2O access matrix defined for Environment '$(Environment)'." }
+                $grants = $matrix['$(Environment)']
+
+                foreach ($principal in $grants.Keys) {
+                    $roles = $grants[$principal]
+                    $sql = @"
+                SET ANSI_NULLS ON;
+                SET QUOTED_IDENTIFIER ON;
+                IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'$principal')
+                    CREATE USER [$principal] FROM EXTERNAL PROVIDER;
+                "@
+                    foreach ($role in $roles.Split(',')) {
+                        $r = $role.Trim()
+                        if ($r) {
+                            $sql += "`nIF IS_ROLEMEMBER('$r', N'$principal') = 0 ALTER ROLE [$r] ADD MEMBER [$principal];"
+                        }
+                    }
+                    Write-Host "Granting [$principal] roles: $roles on $db"
+                    Invoke-Sqlcmd -ServerInstance $server -Database $db -AccessToken $token -Query $sql -ConnectionTimeout 60 -ErrorAction Stop
+                }
 
 - stage: DeployGeoServer
   displayName: Deploy GeoServer
@@ -400,7 +505,8 @@ stages:
     variables: 
       APPLICATION_STORAGE_ACCOUNT_KEY: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.APPLICATION_STORAGE_ACCOUNT_KEY'] ]
       INSTRUMENTATION_KEY: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.INSTRUMENTATION_KEY'] ]
-      SQL_API_PASSWORD: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.SQL_API_PASSWORD'] ]
+      WORKLOAD_IDENTITY_CLIENT_ID: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.WORKLOAD_IDENTITY_CLIENT_ID'] ]
+      WORKLOAD_IDENTITY_TENANT_ID: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.WORKLOAD_IDENTITY_TENANT_ID'] ]
       SQL_GEOSERVER_PASSWORD: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.SQL_GEOSERVER_PASSWORD'] ]
       GEOSERVER_ADMIN_PASSWORD: $[ stageDependencies.DeployTerraform.Terraform.outputs['Terraform.Bash.GEOSERVER_ADMIN_PASSWORD'] ]
     # creates an environment if it doesn't exist
@@ -505,25 +611,30 @@ stages:
               chartType: FilePath
               chartPath: '$(Pipeline.Workspace)/ChartArtifacts/chart'
               releaseName: 'nebula'
+              # The API's secret --sets are gone: it reads them from the env Key
+              # Vault at startup via workload identity, so Helm carries only the
+              # vault name and the (non-secret) identity ids.
+              # The GeoServer entries stay -- its JDBC store and Azure File mount
+              # have no Entra path, so those secrets still pass through Helm.
               overrideValues: |
                 global.domains.api="$(domainApi)"
                 global.domains.web="$(domainWeb)"
                 global.domains.geoserver="$(domainGeoserver)"
                 global.env.name="$(Environment)"
+                global.env.keyVaultName="$(keyVaultName)"
+                global.workloadIdentity.clientId="$(WORKLOAD_IDENTITY_CLIENT_ID)"
+                global.workloadIdentity.tenantId="$(WORKLOAD_IDENTITY_TENANT_ID)"
                 global.secrets.geoserverSqlServerPassword="$(SQL_GEOSERVER_PASSWORD)"
                 global.secrets.geoserverAdminPassword="$(GEOSERVER_ADMIN_PASSWORD)"
                 global.secrets.applicationStorageAccountName="$(storageAccountName)"
                 global.secrets.applicationStorageAccountKey="$(APPLICATION_STORAGE_ACCOUNT_KEY)"
                 global.env.dbServer=$(kv-dbServerName).database.windows.net
                 global.env.databaseName=$(databaseName)
-                global.env.sqlUsername=$(sqlApiUsername)
                 global.env.sqlGeoserverUsername=$(sqlGeoserverUsername)
                 global.env.auth0Authority="$(auth0Authority)"
                 global.env.auth0Audience="$(auth0Audience)"
                 global.env.auth0Domain="$(auth0Domain)"
                 global.env.auth0ClientId="$(auth0ClientId)"
-                global.secrets.apiSqlPassword=$(SQL_API_PASSWORD)
-                global.secrets.sendGridApiKey="$(kv-sendGridApiKey)"
                 api.image.tag="$(Build.BuildNumber)-$(environment)"
                 web.image.tag="$(Build.BuildNumber)-$(environment)"
                 api.image.repository="$(kv-containerRegistry)/nebula/api"

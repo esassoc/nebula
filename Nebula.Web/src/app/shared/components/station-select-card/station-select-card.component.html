@@ -1,160 +1,171 @@
 <div class="card">
-    <div class="card-header text-center">Station Selection</div>
-    <div class="card-body table-responsive">
-        <div class="form-group row mb-1">
-            <div class="col-xl-8">
-                <label for="filter" class="col-form-label">
-                    Filter Sites By:
-                </label>
-                <div class="d-inline-block ms-2 ms-lg-1">
-                    <select [(ngModel)]="selectedStationFilter" id="filter" class="form-select"
-                        (change)="updateMarkerDisplay()">
-                        <option *ngFor="let type of stationFilterTypes" [ngValue]="type">
-                            {{ type.Display }}
-                        </option>
-                    </select>
-                </div>
-                <div class="d-inline-block float-lg-right ms-4">
-                    <label class="col-form-label"> Station Search: </label>
-                    <p-autoComplete #stationMapSearch id="stationMapSearch" styleClass="custom"
-                        class="d-inline-block ms-1" appendTo="body" placeholder="Station Name, ID, or Description"
-                        emptyMessage="No Results" [(ngModel)]="searchText" [suggestions]="searchSuggestions"
-                        (completeMethod)="search($event)" (onFocus)="reFocus(stationMapSearch)"
-                        (onSelect)="select($event)" type="search">
-                        <ng-template let-result pTemplate="item">
-                            <div style="border-bottom: 1px solid #d5d5d5;background-color: white;width: 100%;">
-                                <div class="objectType">
-                                    {{ result.StationProperty }}
-                                </div>
-                                {{ result.StationPropertyValue }}
-                            </div>
-                        </ng-template>
-                    </p-autoComplete>
-                </div>
-            </div>
+  <div class="card-header text-center">Station Selection</div>
+  <div class="card-body table-responsive">
+    <div class="form-group row mb-1">
+      <div class="col-xl-8">
+        <label for="filter" class="col-form-label">
+          Filter Sites By:
+        </label>
+        <div class="d-inline-block ms-2 ms-lg-1">
+          <select [ngModel]="selectedStationFilter()" (ngModelChange)="selectedStationFilter.set($event)" id="filter" class="form-select"
+            (change)="updateMarkerDisplay()">
+            @for (type of stationFilterTypes(); track type) {
+              <option [ngValue]="type">
+                {{ type.Display }}
+              </option>
+            }
+          </select>
         </div>
-        <hr />
-        <div class="row">
-            <div class="col-md-7 col-xl-8">
-                <div id="{{ mapID }}" class="location-card" style="height: 100%" [style.min-height]="mapHeight"></div>
+        <div class="d-inline-block float-lg-right ms-4">
+          <label class="col-form-label"> Station Search: </label>
+          <input id="stationMapSearch" type="search" class="form-control custom-station-search d-inline-block ms-1"
+            placeholder="Station Name, ID, or Description" autocomplete="off"
+            [(ngModel)]="searchText" [ngbTypeahead]="search"
+            [resultTemplate]="stationSearchResult" [inputFormatter]="searchResultFormatter"
+            [container]="'body'" (selectItem)="onSearchSelect($event)"
+            (focus)="searchFocus$.next(searchText ?? '')" />
+          <ng-template #stationSearchResult let-result="result">
+            <div class="station-search-result">
+              <div class="objectType">
+                {{ result.StationProperty }}
+              </div>
+              {{ result.StationPropertyValue }}
             </div>
-            <div class="col-md-5 col-xl-4" [style.max-height]="mapHeight" [style.overflow]="'auto'">
-                <ng-container *ngIf="!selectedSiteStation">
-                    <p>Click a station on the map to get started!</p>
-                </ng-container>
-                <ng-container *ngIf="selectedSiteStation">
-                    <dl class="row g-0">
-                        <dt class="text-sm-left col-sm-6 col-xs-12">
-                            <field-definition [fieldDefinitionType]="'StationID'" class="d-inline-block">
-                            </field-definition>:
-                        </dt>
-                        <dd class="col-sm-6 col-xs-12">
-                            {{ selectedSiteStation }}
-                        </dd>
-                        <dt class="text-sm-left col-sm-6 col-xs-12">
-                            <field-definition [fieldDefinitionType]="'StationShortName'" class="d-inline-block">
-                            </field-definition>:
-                        </dt>
-                        <dd class="col-sm-6 col-xs-12">
-                            {{ selectedSiteShortName }}
-                        </dd>
-                        <dt class="text-sm-left col-sm-6 col-xs-12">
-                            <field-definition [fieldDefinitionType]="'StationDescription'" class="d-inline-block">
-                            </field-definition>:
-                        </dt>
-                        <dd class="col-sm-6 col-xs-12">
-                            {{ selectedSiteDescription }}
-                        </dd>
-                        <dd class="col-sm-6 offset-sm-6 col-md-12 offset-md-0 col-xs-12">
-                            <em *ngIf="!canViewTributaryArea">No Tributary Information Available</em>
-                            <button *ngIf="
-                                    canViewTributaryArea &&
-                                    !canZoomTributaryArea
-                                " (click)="viewTributaryArea()" class="btn btn-sm btn-nebula float-end">
-                                <i class="fas fa-map-marker-alt"></i> View
-                                Tributary Area
-                            </button>
-                            <button *ngIf="
-                                    canViewTributaryArea && canZoomTributaryArea
-                                " (click)="zoomInOnTributaryArea()" class="btn btn-sm btn-nebula float-end">
-                                <i class="fas fa-search-plus"></i> Zoom to
-                                Tributary Area
-                            </button>
-                        </dd>
-                    </dl>
-                    <dl class="row">
-                        <dt class="text-sm-left col-sm-6 col-xs-12">
-                            Data Available:
-                        </dt>
-                    </dl>
-                    <dl class="row" style="max-height: 600px; overflow-y: auto">
-                        <dt *ngIf="gettingAvailableVariables" class="text-sm-left col-sm-9 offset-sm-1 col-xs-12">
-                            Fetching available variables
-                            <span class="fa fa-spinner loading-spinner"></span>
-                        </dt>
-                        <ng-container *ngIf="!gettingAvailableVariables">
-                            <span class="text-sm-left col-sm-11 offset-sm-1 col-xs-12 mb-1"
-                                *ngIf="!siteSelectedAndVariablesFound()">No relevant variables available on the selected
-                                station. Please make another selection</span>
-                            <ng-container *ngIf="siteSelectedAndVariablesFound()">
-                                <dt class="text-sm-left col-sm-11 offset-sm-1 col-xs-12 mb-1" *ngFor="
-                                        let variable of selectedSiteAvailableVariables
-                                    ">
-                                    <div class="row g-0">
-                                        <div class="col-10">
-                                            {{ variable.name }}
-                                            <br />
-                                            <ng-container *ngIf="variable.description">
-                                                <div class="row g-0" style="line-height: 1">
-                                                    <div class="col-3 col-md-6 col-lg-4">
-                                                        <small style="
-                                                                font-weight: 400;
-                                                            ">Description:</small>
-                                                    </div>
-                                                    <div class="col-9 col-md-6 col-lg-8">
-                                                        <small>{{
-                                                            variable.description
-                                                            }}</small>
-                                                    </div>
-                                                </div>
-                                            </ng-container>
-                                            <ng-container *ngIf="variable.gage != null">
-                                                <small style="font-weight: 400">Gage:
-                                                    {{ variable.gage }}</small>
-                                                <br />
-                                            </ng-container>
-                                            <small style="font-weight: 400" *ngIf="
-                                                    variable.startDate !=
-                                                        null &&
-                                                    variable.endDate != null
-                                                ">Record:
-                                                {{ variable.startDate }} -
-                                                {{ variable.endDate }}</small>
-                                        </div>
-                                        <div *ngIf="
-                                                variableNameCanBeAddedToSelection(
-                                                    variable.name
-                                                )
-                                            " class="col-2 align-self-center text-end">
-                                            <button class="btn btn-sm btn-nebula" [disabled]="
-                                                    disableAddingVariable(
-                                                        variable
-                                                    )
-                                                " (click)="
-                                                    addVariableToSelection(
-                                                        variable
-                                                    )
-                                                ">
-                                                Add
-                                            </button>
-                                        </div>
-                                    </div>
-                                </dt>
-                            </ng-container>
-                        </ng-container>
-                    </dl>
-                </ng-container>
-            </div>
+          </ng-template>
         </div>
+      </div>
     </div>
+    <hr />
+    <div class="row">
+      <div class="col-md-7 col-xl-8">
+        <div id="{{ mapID }}" class="location-card" style="height: 100%" [style.min-height]="mapHeight"></div>
+      </div>
+      <div class="col-md-5 col-xl-4" [style.max-height]="mapHeight" [style.overflow]="'auto'">
+        @if (!selectedSiteStation()) {
+          <p>Click a station on the map to get started!</p>
+        }
+        @if (selectedSiteStation()) {
+          <dl class="row g-0">
+            <dt class="text-sm-left col-sm-6 col-xs-12">
+              <field-definition [fieldDefinitionType]="'StationID'" class="d-inline-block">
+              </field-definition>:
+            </dt>
+            <dd class="col-sm-6 col-xs-12">
+              {{ selectedSiteStation() }}
+            </dd>
+            <dt class="text-sm-left col-sm-6 col-xs-12">
+              <field-definition [fieldDefinitionType]="'StationShortName'" class="d-inline-block">
+              </field-definition>:
+            </dt>
+            <dd class="col-sm-6 col-xs-12">
+              {{ selectedSiteShortName() }}
+            </dd>
+            <dt class="text-sm-left col-sm-6 col-xs-12">
+              <field-definition [fieldDefinitionType]="'StationDescription'" class="d-inline-block">
+              </field-definition>:
+            </dt>
+            <dd class="col-sm-6 col-xs-12">
+              {{ selectedSiteDescription() }}
+            </dd>
+            <dd class="col-sm-6 offset-sm-6 col-md-12 offset-md-0 col-xs-12">
+              @if (!canViewTributaryArea()) {
+                <em>No Tributary Information Available</em>
+              }
+              @if (
+                canViewTributaryArea() &&
+                !canZoomTributaryArea()
+                ) {
+                <button (click)="viewTributaryArea()" class="btn btn-sm btn-nebula float-end">
+                  <i class="fas fa-map-marker-alt"></i> View
+                  Tributary Area
+                </button>
+              }
+              @if (
+                canViewTributaryArea() && canZoomTributaryArea()
+                ) {
+                <button (click)="zoomInOnTributaryArea()" class="btn btn-sm btn-nebula float-end">
+                  <i class="fas fa-search-plus"></i> Zoom to
+                  Tributary Area
+                </button>
+              }
+            </dd>
+          </dl>
+          <dl class="row">
+            <dt class="text-sm-left col-sm-6 col-xs-12">
+              Data Available:
+            </dt>
+          </dl>
+          <dl class="row" style="max-height: 600px; overflow-y: auto">
+            @if (!siteSelectedAndVariablesFound()) {
+              <span class="text-sm-left col-sm-11 offset-sm-1 col-xs-12 mb-1"
+                >No relevant variables available on the selected
+              station. Please make another selection</span>
+            }
+            @if (siteSelectedAndVariablesFound()) {
+              @for (
+                variable of selectedSiteAvailableVariables()
+                ; track
+                variable) {
+                <dt class="text-sm-left col-sm-11 offset-sm-1 col-xs-12 mb-1">
+                  <div class="row g-0">
+                    <div class="col-10">
+                      {{ variable.name }}
+                      <br />
+                      @if (variable.description) {
+                        <div class="row g-0" style="line-height: 1">
+                          <div class="col-3 col-md-6 col-lg-4">
+                                                      <small style="
+                                                              font-weight: 400;
+                                                          ">Description:</small>
+                          </div>
+                          <div class="col-9 col-md-6 col-lg-8">
+                            <small>{{
+                              variable.description
+                            }}</small>
+                          </div>
+                        </div>
+                      }
+                      @if (variable.gage != null) {
+                        <small style="font-weight: 400">Gage:
+                        {{ variable.gage }}</small>
+                        <br />
+                      }
+                      @if (
+                        variable.startDate !=
+                        null &&
+                        variable.endDate != null
+                        ) {
+                        <small style="font-weight: 400">Record:
+                          {{ variable.startDate }} -
+                        {{ variable.endDate }}</small>
+                      }
+                    </div>
+                    @if (
+                      variableNameCanBeAddedToSelection(
+                      variable.name
+                      )
+                      ) {
+                      <div class="col-2 align-self-center text-end">
+                                          <button class="btn btn-sm btn-nebula" [disabled]="
+                                                  disableAddingVariable(
+                                                      variable
+                                                  )
+                                              " (click)="
+                                                  addVariableToSelection(
+                                                      variable
+                                                  )
+                                              ">
+                          Add
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </dt>
+              }
+            }
+          </dl>
+        }
+      </div>
+    </div>
+  </div>
 </div>

@@ -1,7 +1,9 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, signal, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UntypedFormGroup, UntypedFormControl, Validators, UntypedFormArray, UntypedFormBuilder } from '@angular/forms';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { LyraService } from 'src/app/services/lyra.service';
+import { AlertService } from 'src/app/shared/services/alert.service';
 import { Alert } from 'src/app/shared/models/alert';
 import { AlertContext } from 'src/app/shared/models/enums/alert-context.enum';
 import { HydstraAggregationMethod } from 'src/app/shared/models/hydstra/hydstra-aggregation-mode';
@@ -9,6 +11,7 @@ import { HydstraWeatherCondition } from 'src/app/shared/models/hydstra/hydstra-w
 import { HydstraInterval } from 'src/app/shared/models/hydstra/hydstra-interval';
 import { HydstraRegressionMethod } from 'src/app/shared/models/hydstra/hydstra-regression-method';
 import { SiteVariable } from 'src/app/shared/models/site-variable';
+import DateRangeHelpers from 'src/app/shared/helpers/date-range-helpers';
 import { ActivatedRoute } from '@angular/router';
 import { StationSelectCardComponent } from 'src/app/shared/components/station-select-card/station-select-card.component';
 import { DateTime } from 'luxon';
@@ -24,6 +27,7 @@ declare let vegaEmbed: any;
     standalone: false
 })
 export class PairedRegressionAnalysisComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   
   private currentUser: UserDto;
 
@@ -34,7 +38,7 @@ export class PairedRegressionAnalysisComponent implements OnInit {
 
   public richTextTypeID = CustomRichTextTypeEnum.PairedRegressionAnalysis;
 
-  public vegaSpec: Object = null;
+  public vegaSpec = signal<object>(null);
 
   public hydstraIntervals: HydstraInterval[] = HydstraInterval.all();
   public hydstraWeatherConditions: HydstraWeatherCondition[] = HydstraWeatherCondition.all();
@@ -54,17 +58,17 @@ export class PairedRegressionAnalysisComponent implements OnInit {
   public timeSeriesFormDefault = this.timeSeriesForm.value;
 
   public selectedSiteProperties: any;
-  public selectedSiteAvailableVariables: SiteVariable[] = [];
-  public selectedSiteStation: string = null;
-  public selectedSiteName: string = null;
-  public selectedVariables: SiteVariable[] = [];
+  public selectedSiteAvailableVariables = signal<SiteVariable[]>([]);
+  public selectedSiteStation = signal<string>(null);
+  public selectedSiteName = signal<string>(null);
+  public selectedVariables = signal<SiteVariable[]>([]);
 
-  public errorOccurred: boolean;
-  public errorMessage: string = null;
-  public gettingTimeSeriesData: boolean = false;
+  public errorOccurred = signal(false);
+  public errorMessage = signal<string>(null);
+  public gettingTimeSeriesData = signal(false);
   public currentlyDisplayingRequestDto: any;
-  public downloadingChartData: boolean = false;
-  public lyraMessages: Alert[] = [];
+  public downloadingChartData = signal(false);
+  public lyraMessages = signal<Alert[]>([]);
   currentlyDisplayingRequestLinkText: string;
 
   constructor(
@@ -72,12 +76,13 @@ export class PairedRegressionAnalysisComponent implements OnInit {
     private lyraService: LyraService,
     private formBuilder: UntypedFormBuilder,
     private authenticationService: AuthenticationService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private alertService: AlertService
   ) {
   }
 
   ngOnInit() {
-    this.authenticationService.getCurrentUser().subscribe(currentUser => {
+    this.authenticationService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(currentUser => {
       this.currentUser = currentUser;
       this.setupFormChangeListener();
     });
@@ -88,7 +93,7 @@ export class PairedRegressionAnalysisComponent implements OnInit {
   }
 
   public isActionBeingPerformed() {
-    return this.gettingTimeSeriesData || this.downloadingChartData;
+    return this.gettingTimeSeriesData() || this.downloadingChartData();
   }
 
   public getTimeSeriesData() {
@@ -110,29 +115,29 @@ export class PairedRegressionAnalysisComponent implements OnInit {
       regression_method: this.timeSeriesForm.get('regression_method').value,
       timeseries: this.getTimeSeriesListFromTimerSeriesFormObject()
     };
-    this.gettingTimeSeriesData = true;
-    this.errorOccurred = false;
-    this.vegaSpec = null;
+    this.gettingTimeSeriesData.set(true);
+    this.errorOccurred.set(false);
+    this.vegaSpec.set(null);
     this.currentlyDisplayingRequestDto = null;
-    this.lyraMessages = [];
+    this.lyraMessages.set([]);
     this.timeSeriesForm.disable({emitEvent: false});
     this.lyraService.getRegressionPlot(swnTimeSeriesRequestDto).subscribe(result => {
       if (result.hasOwnProperty('data') && result.data.hasOwnProperty('spec')) {
         if (result.data.hasOwnProperty('messages') && result.data.messages.length > 0) {
-          this.lyraMessages.push(...result.data.messages.filter(x => x != '').map(x => new Alert(x, AlertContext.Warning, true)));
+          this.lyraMessages.update(m => [...m, ...result.data.messages.filter(x => x != '').map(x => new Alert(x, AlertContext.Warning, true))]);
         }
-        this.vegaSpec = result.data.spec;
-        vegaEmbed('#vis', this.vegaSpec);
+        this.vegaSpec.set(result.data.spec);
+        vegaEmbed('#vis', this.vegaSpec());
         this.currentlyDisplayingRequestDto = swnTimeSeriesRequestDto;
         this.currentlyDisplayingRequestLinkText = `${window.location.origin}${window.location.pathname}?json=${JSON.stringify(this.currentlyDisplayingRequestDto)}`;
       }
       else {
-        this.errorOccurred = true;
+        this.errorOccurred.set(true);
         if (result.hasOwnProperty('msg')) {
-          this.lyraMessages.push(new Alert(`There was an error with the entered query. Message: ${result.msg}`, AlertContext.Danger, true));
+          this.lyraMessages.update(m => [...m, new Alert(`There was an error with the entered query. Message: ${result.msg}`, AlertContext.Danger, true)]);
         }
       }
-      this.gettingTimeSeriesData = false;
+      this.gettingTimeSeriesData.set(false);
       this.timeSeriesForm.enable({emitEvent: false});
       this.cdr.detectChanges();
     },
@@ -140,12 +145,12 @@ export class PairedRegressionAnalysisComponent implements OnInit {
       if (error.hasOwnProperty('error') && error.error.hasOwnProperty('detail')) {
         for (const details of error.error.detail) {
           if (details.hasOwnProperty('msg')) {
-            this.lyraMessages.push(new Alert(`There was an error with the entered query. Message: ${details.msg}`, AlertContext.Danger, true));
+            this.lyraMessages.update(m => [...m, new Alert(`There was an error with the entered query. Message: ${details.msg}`, AlertContext.Danger, true)]);
           }
         }
       }
-      this.errorOccurred = true;
-      this.gettingTimeSeriesData = false;
+      this.errorOccurred.set(true);
+      this.gettingTimeSeriesData.set(false);
       this.timeSeriesForm.enable({emitEvent: false});
     });
   }
@@ -155,7 +160,7 @@ export class PairedRegressionAnalysisComponent implements OnInit {
       return;
     }
 
-    this.downloadingChartData = true;
+    this.downloadingChartData.set(true);
     this.timeSeriesForm.disable({emitEvent: false});
     this.lyraService.downloadRegressionData(this.currentlyDisplayingRequestDto).subscribe(result => {
       const blob = new Blob([result], {
@@ -173,7 +178,7 @@ export class PairedRegressionAnalysisComponent implements OnInit {
       a.download = `SWN_Paired_Regression_Analysis_Data_Request_${date.getMonth() + 1}_${date.getDate()}_${date.getFullYear()}_${date.getHours()}_${date.getMinutes()}.csv`;
       a.click();
       window.URL.revokeObjectURL(url);
-      this.downloadingChartData = false;
+      this.downloadingChartData.set(false);
       this.timeSeriesForm.enable({emitEvent: false});
     })
   }
@@ -183,21 +188,28 @@ export class PairedRegressionAnalysisComponent implements OnInit {
   }
 
   public canSelectVariable(): boolean {
-    return this.selectedVariables.length < 2 && !this.isActionBeingPerformed()
+    return this.selectedVariables().length < 2 && !this.isActionBeingPerformed()
   }
 
   public addVariableToSelection(variable: SiteVariable): void {
+    // The parent owns selectedVariables. station-select-card used to push into
+    // this array in place, which a signal cannot observe -- so the Add buttons
+    // kept a stale enabled state until some other signal forced a re-render.
+    this.selectedVariables.update(v => [...v, variable]);
+    DateRangeHelpers.clampFormRangeToVariableRecord(this.timeSeriesForm, variable, this.alertService);
     this.addSiteVariableToQuery(variable);
     this.clearResults();
     this.cdr.detectChanges();
   }
 
   public removeVariableFromSelection(index: number): void {
+    this.selectedVariables.update(v => v.filter((_, i) => i !== index));
     this.removeSiteVariableToQuery(index);
     this.clearResults();
   }
 
   public clearAllVariables(): void {
+    this.selectedVariables.set([]);
     this.timeseries().clear();
     this.clearResults();
   }
@@ -216,24 +228,20 @@ export class PairedRegressionAnalysisComponent implements OnInit {
     }
   }
 
-  public formatDateForNgbDatepicker(date: Date): any {
-    const dateToChange = new Date(date);
-    return { year: dateToChange.getUTCFullYear(), month: dateToChange.getUTCMonth() + 1, day: dateToChange.getUTCDate() };
-  }
 
   public scrollIntoView(el: ElementRef) {
     el.nativeElement.scrollIntoView(true);
   }
 
   public closeAlert(index: number) {
-    this.lyraMessages.splice(index, 1);
+    this.lyraMessages.update(m => m.filter((_, i) => i !== index));
   }
 
   public clearResults() {
-    this.vegaSpec = null;
+    this.vegaSpec.set(null);
     this.currentlyDisplayingRequestDto = null;
-    this.lyraMessages = [];
-    this.errorOccurred = false;
+    this.lyraMessages.set([]);
+    this.errorOccurred.set(false);
   }
 
   //#region Form Functionality
@@ -275,7 +283,7 @@ export class PairedRegressionAnalysisComponent implements OnInit {
   }
 
   public setupFormChangeListener() {
-    this.timeSeriesForm.valueChanges.subscribe(val => {
+    this.timeSeriesForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(val => {
       this.clearResults();
     })
   }
@@ -287,7 +295,7 @@ export class PairedRegressionAnalysisComponent implements OnInit {
   }
   
   public populateFormFromURL() {
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       if (params == null || params == undefined || !params.hasOwnProperty('json')) {
         return;
       }
@@ -325,10 +333,10 @@ export class PairedRegressionAnalysisComponent implements OnInit {
           return;
         }
 
-        this.updateFormWithValueIfProvidedAndPresentPopulateErrorIfNot(x, 'aggregation_method', (x => this.selectedVariables[index-failuresToDecrementBy].allowedAggregations.some(y => x == y)), this.timeseries().controls[index], errorMessagesToDisplay)        
+        this.updateFormWithValueIfProvidedAndPresentPopulateErrorIfNot(x, 'aggregation_method', (x => this.selectedVariables()[index-failuresToDecrementBy].allowedAggregations.some(y => x == y)), this.timeseries().controls[index], errorMessagesToDisplay)        
       })
 
-      this.lyraMessages = errorMessagesToDisplay;
+      this.lyraMessages.set(errorMessagesToDisplay);
       this.cdr.detectChanges();
       this.scrollIntoView(this.selectedDataCardRef)
     })
@@ -349,5 +357,6 @@ export class PairedRegressionAnalysisComponent implements OnInit {
 
     toUpdate.patchValue({[key] : value});
   }
+
 
 }
