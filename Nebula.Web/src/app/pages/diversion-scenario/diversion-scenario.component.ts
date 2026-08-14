@@ -11,6 +11,7 @@ import { SiteFilterEnum } from 'src/app/shared/models/enums/site-filter.enum';
 import { HydstraWeatherCondition } from 'src/app/shared/models/hydstra/hydstra-weather-condition';
 import { SiteVariable } from 'src/app/shared/models/site-variable';
 import { AlertService } from 'src/app/shared/services/alert.service';
+import DateRangeHelpers from 'src/app/shared/helpers/date-range-helpers';
 import { DateTime } from 'luxon';
 import { CustomRichTextTypeEnum } from 'src/app/shared/generated/enum/custom-rich-text-type-enum';
 import { UserDto } from 'src/app/shared/generated';
@@ -297,8 +298,8 @@ export class DiversionScenarioComponent implements OnInit {
   }
 
   public addVariableToSelection(variable: SiteVariable): void {
-    this.selectedVariables.set([]);
-    this.selectedVariables.update(v => [...v, variable]);
+    this.selectedVariables.set([variable]);
+    this.clampDateRangeToVariableRecord(variable);
     this.timeSeriesForm.patchValue({ site: variable.station });
     this.timeSeriesForm.patchValue({ nearest_rainfall_station: variable.nearestRainfallStationInfo.station});
     this.clearResults();
@@ -491,5 +492,38 @@ export class DiversionScenarioComponent implements OnInit {
     }
 
     return row[column];
+  }
+
+  /**
+   * Keeps the requested window inside the record for the variable just added.
+   * Lyra 500s on a window containing no data, and that crash bypasses its CORS
+   * middleware, so the browser cannot read the reason -- the page would just
+   * fail silently. The default window is the last three months, which is
+   * entirely after the end of the record for any station whose data lags.
+   */
+  private clampDateRangeToVariableRecord(variable: SiteVariable): void {
+    if (!variable || !variable.periodStart || !variable.periodEnd) {
+      return;
+    }
+
+    const clamped = DateRangeHelpers.clampToAvailableRange(
+      this.getDateFromTimeSeriesFormDateObject('start_date'),
+      this.getDateFromTimeSeriesFormDateObject('end_date'),
+      variable.periodStart,
+      variable.periodEnd);
+
+    if (!clamped) {
+      return;
+    }
+
+    this.timeSeriesForm.patchValue({
+      start_date: this.formatDateForNgbDatepicker(clamped.start),
+      end_date: this.formatDateForNgbDatepicker(clamped.end),
+    });
+
+    const asIsoDate = (date: Date) => date.toISOString().slice(0, 10);
+    this.alertService.pushAlert(new Alert(
+      `${variable.name} has no data at this station for the dates you selected, so the range was changed to ${asIsoDate(clamped.start)} - ${asIsoDate(clamped.end)} (available record: ${variable.startDate} - ${variable.endDate}).`,
+      AlertContext.Info, true));
   }
 }

@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UntypedFormGroup, UntypedFormControl, Validators, UntypedFormArray, UntypedFormBuilder } from '@angular/forms';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { LyraService } from 'src/app/services/lyra.service';
+import { AlertService } from 'src/app/shared/services/alert.service';
 import { Alert } from 'src/app/shared/models/alert';
 import { AlertContext } from 'src/app/shared/models/enums/alert-context.enum';
 import { HydstraAggregationMethod } from 'src/app/shared/models/hydstra/hydstra-aggregation-mode';
@@ -10,6 +11,7 @@ import { HydstraWeatherCondition } from 'src/app/shared/models/hydstra/hydstra-w
 import { HydstraInterval } from 'src/app/shared/models/hydstra/hydstra-interval';
 import { HydstraRegressionMethod } from 'src/app/shared/models/hydstra/hydstra-regression-method';
 import { SiteVariable } from 'src/app/shared/models/site-variable';
+import DateRangeHelpers from 'src/app/shared/helpers/date-range-helpers';
 import { ActivatedRoute } from '@angular/router';
 import { StationSelectCardComponent } from 'src/app/shared/components/station-select-card/station-select-card.component';
 import { DateTime } from 'luxon';
@@ -74,7 +76,8 @@ export class PairedRegressionAnalysisComponent implements OnInit {
     private lyraService: LyraService,
     private formBuilder: UntypedFormBuilder,
     private authenticationService: AuthenticationService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private alertService: AlertService
   ) {
   }
 
@@ -193,6 +196,7 @@ export class PairedRegressionAnalysisComponent implements OnInit {
     // this array in place, which a signal cannot observe -- so the Add buttons
     // kept a stale enabled state until some other signal forced a re-render.
     this.selectedVariables.update(v => [...v, variable]);
+    this.clampDateRangeToVariableRecord(variable);
     this.addSiteVariableToQuery(variable);
     this.clearResults();
     this.cdr.detectChanges();
@@ -358,4 +362,37 @@ export class PairedRegressionAnalysisComponent implements OnInit {
     toUpdate.patchValue({[key] : value});
   }
 
+
+  /**
+   * Keeps the requested window inside the record for the variable just added.
+   * Lyra 500s on a window containing no data, and that crash bypasses its CORS
+   * middleware, so the browser cannot read the reason -- the page would just
+   * fail silently. The default window is the last three months, which is
+   * entirely after the end of the record for any station whose data lags.
+   */
+  private clampDateRangeToVariableRecord(variable: SiteVariable): void {
+    if (!variable || !variable.periodStart || !variable.periodEnd) {
+      return;
+    }
+
+    const clamped = DateRangeHelpers.clampToAvailableRange(
+      this.getDateFromTimeSeriesFormDateObject('start_date'),
+      this.getDateFromTimeSeriesFormDateObject('end_date'),
+      variable.periodStart,
+      variable.periodEnd);
+
+    if (!clamped) {
+      return;
+    }
+
+    this.timeSeriesForm.patchValue({
+      start_date: this.formatDateForNgbDatepicker(clamped.start),
+      end_date: this.formatDateForNgbDatepicker(clamped.end),
+    });
+
+    const asIsoDate = (date: Date) => date.toISOString().slice(0, 10);
+    this.alertService.pushAlert(new Alert(
+      `${variable.name} has no data at this station for the dates you selected, so the range was changed to ${asIsoDate(clamped.start)} - ${asIsoDate(clamped.end)} (available record: ${variable.startDate} - ${variable.endDate}).`,
+      AlertContext.Info, true));
+  }
 }

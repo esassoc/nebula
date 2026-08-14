@@ -14,6 +14,7 @@ import { NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
 import { LyraService } from 'src/app/services/lyra.service';
 import './leaflet.topojson.js'
 import { WatershedService } from '../../generated';
+import DateRangeHelpers from 'src/app/shared/helpers/date-range-helpers';
 
 declare let $: any;
 
@@ -225,6 +226,8 @@ export class StationSelectCardComponent implements OnInit {
         variable: variableInfo.variable,
         startDate: new Date(`${variableInfo.period_start.slice(0, 4)}-${variableInfo.period_start.slice(4, 6)}-${variableInfo.period_start.slice(6, 8)}`).toLocaleDateString(),
         endDate: new Date(`${variableInfo.period_end.slice(0, 4)}-${variableInfo.period_end.slice(4, 6)}-${variableInfo.period_end.slice(6, 8)}`).toLocaleDateString(),
+        periodStart: DateRangeHelpers.periodToIso(variableInfo.period_start),
+        periodEnd: DateRangeHelpers.periodToIso(variableInfo.period_end),
         allowedAggregations: variableInfo.allowed_aggregations
       }), baseSiteVariable);
       availableVariables.push(siteVariable);
@@ -240,6 +243,8 @@ export class StationSelectCardComponent implements OnInit {
         gage: rainfallStationProperties.stname,
         startDate: new Date(`${rainfallInfo.period_start.slice(0, 4)}-${rainfallInfo.period_start.slice(4, 6)}-${rainfallInfo.period_start.slice(6, 8)}`).toLocaleDateString(),
         endDate: new Date(`${rainfallInfo.period_end.slice(0, 4)}-${rainfallInfo.period_end.slice(4, 6)}-${rainfallInfo.period_end.slice(6, 8)}`).toLocaleDateString(),
+        periodStart: DateRangeHelpers.periodToIso(rainfallInfo.period_start),
+        periodEnd: DateRangeHelpers.periodToIso(rainfallInfo.period_end),
         allowedAggregations: rainfallInfo.allowed_aggregations,
         stationShortName: rainfallStationProperties.shortname,
         station: rainfallStationProperties.station
