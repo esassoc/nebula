@@ -5,7 +5,7 @@ import { AlertService } from '../shared/services/alert.service';
 import { Alert } from '../shared/models/alert';
 import { AlertContext } from '../shared/models/enums/alert-context.enum';
 import { Observable, of } from "rxjs";
-import { switchMap, } from "rxjs/operators";
+import { catchError, switchMap, } from "rxjs/operators";
 import { UserDto, UserService } from '../shared/generated';
 import { Router } from "@angular/router";
 import { RoleEnum } from "../shared/generated/enum/role-enum";
@@ -39,7 +39,26 @@ export class AuthenticationService {
             return of(null);
           }
           this.hasClaims = true;
-          return this.userService.userClaimsPost();
+          // catchError INSIDE the switchMap: an error here would otherwise
+          // terminate the outer idTokenClaims$ subscription for the lifetime of
+          // the page, so a single failed /user-claims call left the app with no
+          // user and no message -- which is how a 500 on this endpoint presented.
+          return this.userService.userClaimsPost().pipe(
+            catchError((error) => {
+              console.error("Failed to load user claims:", error);
+              // Auth0 authenticated us, but without an app account there is no
+              // usable session -- so report unauthenticated rather than leave
+              // hasClaims true with a null currentUser, which showed the
+              // signed-in header (Welcome / Sign Out) with a blank name.
+              // The route guards already keyed off currentUser, so access
+              // control was never affected; this only realigns the chrome.
+              this.hasClaims = false;
+              this.alertService.pushAlert(new Alert(
+                "We could not load your account. Please try signing in again, or contact support if this continues.",
+                AlertContext.Danger));
+              return of(null);
+            }),
+          );
         }),
       ).subscribe(
         (user) => {
