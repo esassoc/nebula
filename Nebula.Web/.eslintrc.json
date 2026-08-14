@@ -35,7 +35,6 @@
                         }
                     }
                 ],
-                "import/prefer-default-export": "off",
                 "@typescript-eslint/lines-between-class-members": "off",
                 "@typescript-eslint/dot-notation": "error",
                 "@angular-eslint/template/label-has-associated-control": ["off"]

@@ -1,9 +1,9 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -26,9 +26,9 @@ RUN dotnet restore Nebula.Web/Nebula.Web.csproj
 RUN dotnet build ./Nebula.Web/Nebula.Web.csproj -c Release -o /app
 WORKDIR /src/Nebula.Web/
 
-RUN npm cache clean --force
-RUN npm uninstall   -g angular-cli
-RUN npm install     -g @angular/cli@17.1.0
+# No global @angular/cli install: it was pinned to 17.1.0 while the workspace
+# is on Angular 22, and `npm run build-${env}` resolves the LOCAL cli out of
+# node_modules anyway.
 RUN npm ci
 
 ARG env

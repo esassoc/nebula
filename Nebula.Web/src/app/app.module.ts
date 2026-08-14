@@ -5,7 +5,6 @@ import { provideHttpClient, withInterceptors, withXhr } from "@angular/common/ht
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SharedModule } from './shared/shared.module';
-import { CookieService } from 'ngx-cookie-service';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { HomeIndexComponent } from './pages/home/home-index/home-index.component';
 import { UserListComponent } from './pages/user-list/user-list.component';
@@ -87,9 +86,7 @@ export function init_app(authClientConfig: AuthClientConfig) {
       });
     })
   ],
-  providers: [
-    CookieService,
-    { provide: APP_INITIALIZER, useFactory: init_app, deps: [AuthClientConfig], multi: true },
+  providers: [    { provide: APP_INITIALIZER, useFactory: init_app, deps: [AuthClientConfig], multi: true },
     {
       provide: ErrorHandler,
       useClass: GlobalErrorHandlerService
