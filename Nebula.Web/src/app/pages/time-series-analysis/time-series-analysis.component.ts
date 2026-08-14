@@ -1,8 +1,10 @@
 import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef, signal, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LyraService } from 'src/app/services/lyra.service';
+import { AlertService } from 'src/app/shared/services/alert.service';
 import { UntypedFormGroup, UntypedFormControl, Validators, UntypedFormArray, UntypedFormBuilder } from '@angular/forms';
 import { SiteVariable } from 'src/app/shared/models/site-variable';
+import DateRangeHelpers from 'src/app/shared/helpers/date-range-helpers';
 import { Alert } from 'src/app/shared/models/alert';
 import { AlertContext } from 'src/app/shared/models/enums/alert-context.enum';
 import { HydstraAggregationMethod } from 'src/app/shared/models/hydstra/hydstra-aggregation-mode';
@@ -69,7 +71,8 @@ export class TimeSeriesAnalysisComponent implements OnInit {
     private lyraService: LyraService,
     private formBuilder: UntypedFormBuilder,
     private authenticationService: AuthenticationService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private alertService: AlertService
   ) {
   }
 
@@ -189,6 +192,7 @@ export class TimeSeriesAnalysisComponent implements OnInit {
     // this array in place, which a signal cannot observe -- so the Add buttons
     // kept a stale enabled state until some other signal forced a re-render.
     this.selectedVariables.update(v => [...v, variable]);
+    DateRangeHelpers.clampFormRangeToVariableRecord(this.timeSeriesForm, variable, this.alertService);
     this.addSiteVariableToQuery(variable);
     this.clearResults();
     this.cdr.detectChanges();
@@ -358,4 +362,5 @@ export class TimeSeriesAnalysisComponent implements OnInit {
 
     toUpdate.patchValue({ [key]: value });
   }
+
 }

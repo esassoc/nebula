@@ -11,6 +11,7 @@ import { SiteFilterEnum } from 'src/app/shared/models/enums/site-filter.enum';
 import { HydstraWeatherCondition } from 'src/app/shared/models/hydstra/hydstra-weather-condition';
 import { SiteVariable } from 'src/app/shared/models/site-variable';
 import { AlertService } from 'src/app/shared/services/alert.service';
+import DateRangeHelpers from 'src/app/shared/helpers/date-range-helpers';
 import { DateTime } from 'luxon';
 import { CustomRichTextTypeEnum } from 'src/app/shared/generated/enum/custom-rich-text-type-enum';
 import { UserDto } from 'src/app/shared/generated';
@@ -297,8 +298,8 @@ export class DiversionScenarioComponent implements OnInit {
   }
 
   public addVariableToSelection(variable: SiteVariable): void {
-    this.selectedVariables.set([]);
-    this.selectedVariables.update(v => [...v, variable]);
+    this.selectedVariables.set([variable]);
+    DateRangeHelpers.clampFormRangeToVariableRecord(this.timeSeriesForm, variable, this.alertService);
     this.timeSeriesForm.patchValue({ site: variable.station });
     this.timeSeriesForm.patchValue({ nearest_rainfall_station: variable.nearestRainfallStationInfo.station});
     this.clearResults();
@@ -492,4 +493,5 @@ export class DiversionScenarioComponent implements OnInit {
 
     return row[column];
   }
+
 }
