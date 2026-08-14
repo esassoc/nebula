@@ -96,79 +96,71 @@
             </dt>
           </dl>
           <dl class="row" style="max-height: 600px; overflow-y: auto">
-            @if (gettingAvailableVariables) {
-              <dt class="text-sm-left col-sm-9 offset-sm-1 col-xs-12">
-                Fetching available variables
-                <span class="fa fa-spinner loading-spinner"></span>
-              </dt>
+            @if (!siteSelectedAndVariablesFound()) {
+              <span class="text-sm-left col-sm-11 offset-sm-1 col-xs-12 mb-1"
+                >No relevant variables available on the selected
+              station. Please make another selection</span>
             }
-            @if (!gettingAvailableVariables) {
-              @if (!siteSelectedAndVariablesFound()) {
-                <span class="text-sm-left col-sm-11 offset-sm-1 col-xs-12 mb-1"
-                  >No relevant variables available on the selected
-                station. Please make another selection</span>
-              }
-              @if (siteSelectedAndVariablesFound()) {
-                @for (
-                  variable of selectedSiteAvailableVariables()
-                  ; track
-                  variable) {
-                  <dt class="text-sm-left col-sm-11 offset-sm-1 col-xs-12 mb-1">
-                    <div class="row g-0">
-                      <div class="col-10">
-                        {{ variable.name }}
-                        <br />
-                        @if (variable.description) {
-                          <div class="row g-0" style="line-height: 1">
-                            <div class="col-3 col-md-6 col-lg-4">
-                                                        <small style="
-                                                                font-weight: 400;
-                                                            ">Description:</small>
-                            </div>
-                            <div class="col-9 col-md-6 col-lg-8">
-                              <small>{{
-                                variable.description
-                              }}</small>
-                            </div>
+            @if (siteSelectedAndVariablesFound()) {
+              @for (
+                variable of selectedSiteAvailableVariables()
+                ; track
+                variable) {
+                <dt class="text-sm-left col-sm-11 offset-sm-1 col-xs-12 mb-1">
+                  <div class="row g-0">
+                    <div class="col-10">
+                      {{ variable.name }}
+                      <br />
+                      @if (variable.description) {
+                        <div class="row g-0" style="line-height: 1">
+                          <div class="col-3 col-md-6 col-lg-4">
+                                                      <small style="
+                                                              font-weight: 400;
+                                                          ">Description:</small>
                           </div>
-                        }
-                        @if (variable.gage != null) {
-                          <small style="font-weight: 400">Gage:
-                          {{ variable.gage }}</small>
-                          <br />
-                        }
-                        @if (
-                          variable.startDate !=
-                          null &&
-                          variable.endDate != null
-                          ) {
-                          <small style="font-weight: 400">Record:
-                            {{ variable.startDate }} -
-                          {{ variable.endDate }}</small>
-                        }
-                      </div>
-                      @if (
-                        variableNameCanBeAddedToSelection(
-                        variable.name
-                        )
-                        ) {
-                        <div class="col-2 align-self-center text-end">
-                                            <button class="btn btn-sm btn-nebula" [disabled]="
-                                                    disableAddingVariable(
-                                                        variable
-                                                    )
-                                                " (click)="
-                                                    addVariableToSelection(
-                                                        variable
-                                                    )
-                                                ">
-                            Add
-                          </button>
+                          <div class="col-9 col-md-6 col-lg-8">
+                            <small>{{
+                              variable.description
+                            }}</small>
+                          </div>
                         </div>
                       }
+                      @if (variable.gage != null) {
+                        <small style="font-weight: 400">Gage:
+                        {{ variable.gage }}</small>
+                        <br />
+                      }
+                      @if (
+                        variable.startDate !=
+                        null &&
+                        variable.endDate != null
+                        ) {
+                        <small style="font-weight: 400">Record:
+                          {{ variable.startDate }} -
+                        {{ variable.endDate }}</small>
+                      }
                     </div>
-                  </dt>
-                }
+                    @if (
+                      variableNameCanBeAddedToSelection(
+                      variable.name
+                      )
+                      ) {
+                      <div class="col-2 align-self-center text-end">
+                                          <button class="btn btn-sm btn-nebula" [disabled]="
+                                                  disableAddingVariable(
+                                                      variable
+                                                  )
+                                              " (click)="
+                                                  addVariableToSelection(
+                                                      variable
+                                                  )
+                                              ">
+                          Add
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </dt>
               }
             }
           </dl>
