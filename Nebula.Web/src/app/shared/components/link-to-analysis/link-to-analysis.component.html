@@ -5,7 +5,7 @@
     triggers="manual"
     #p="ngbPopover"
     [ngbPopover]="popContent"
-    placement="top-end top bottom-end bottom"
+    [placement]="['top-end', 'top', 'bottom-end', 'bottom']"
     (click)="openPopoverAndSelectText()"
 >
     Link to this analysis
