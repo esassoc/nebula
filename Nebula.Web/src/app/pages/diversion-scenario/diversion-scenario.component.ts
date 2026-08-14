@@ -305,6 +305,10 @@ export class DiversionScenarioComponent implements OnInit {
   }
 
   public removeVariableFromSelection(): void {
+    // This page holds at most one variable, so removing means emptying it.
+    // Previously selected-data-card spliced the array in place; now the parent
+    // owns it.
+    this.selectedVariables.set([]);
     this.timeSeriesForm.patchValue({ site: null });
     this.lyraMessages.set([]);
     this.clearResults();

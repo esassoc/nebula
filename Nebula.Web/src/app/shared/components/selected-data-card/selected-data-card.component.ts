@@ -16,8 +16,6 @@ export class SelectedDataCardComponent implements OnInit {
   @Input()
   public headerText: string = 'Selected Data';
   @Output()
-  public selectedVariablesChange = new EventEmitter<SiteVariable[]>();
-  @Output()
   public singleVariableRemoved = new EventEmitter<number>();
   @Output()
   public allVariablesCleared = new EventEmitter();
@@ -33,16 +31,16 @@ export class SelectedDataCardComponent implements OnInit {
     this.selectStationOnMap.emit(variable.station);
   }
 
+  // Neither of these mutates this.selectedVariables. It is an @Input, and
+  // splicing it edited the parent's array in place -- invisible to a signal, so
+  // the parent never re-rendered and its predicates went stale. The parent owns
+  // the list and updates it from these events; the new value comes back through
+  // the input.
   public removeVariableFromSelection(index: number): void {
-    this.selectedVariables.splice(index, 1);
-    //Need to spread here to adequately trigger change detection
-    this.selectedVariablesChange.emit([...this.selectedVariables]);
     this.singleVariableRemoved.emit(index);
   }
 
   public clearAllVariables(): void {
-    this.selectedVariables = [];
-    this.selectedVariablesChange.emit(this.selectedVariables);
     this.allVariablesCleared.emit();
   }
 
