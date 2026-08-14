@@ -268,8 +268,12 @@ export class StationSelectCardComponent implements OnInit {
     // the parent never re-rendered and its disabled-state predicates went
     // stale. The parent owns the list and updates it from addingVariableEvent;
     // the new value arrives back through the input setter.
+    //
+    // No updateSelectedDataStationsLayer() call here either: the setter runs it
+    // when the new array arrives. Calling it now would redraw from the OLD
+    // list, because input propagation happens during change detection rather
+    // than synchronously inside this handler.
     this.addingVariableEvent.emit(variable);
-    this.updateSelectedDataStationsLayer();
   }
 
   public variablePresentInSelectedVariables(variable: SiteVariable): boolean {

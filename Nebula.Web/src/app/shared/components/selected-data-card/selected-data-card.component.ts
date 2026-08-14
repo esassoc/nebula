@@ -16,8 +16,6 @@ export class SelectedDataCardComponent implements OnInit {
   @Input()
   public headerText: string = 'Selected Data';
   @Output()
-  public selectedVariablesChange = new EventEmitter<SiteVariable[]>();
-  @Output()
   public singleVariableRemoved = new EventEmitter<number>();
   @Output()
   public allVariablesCleared = new EventEmitter();
@@ -39,12 +37,10 @@ export class SelectedDataCardComponent implements OnInit {
   // the list and updates it from these events; the new value comes back through
   // the input.
   public removeVariableFromSelection(index: number): void {
-    this.selectedVariablesChange.emit(this.selectedVariables.filter((_, i) => i !== index));
     this.singleVariableRemoved.emit(index);
   }
 
   public clearAllVariables(): void {
-    this.selectedVariablesChange.emit([]);
     this.allVariablesCleared.emit();
   }
 
