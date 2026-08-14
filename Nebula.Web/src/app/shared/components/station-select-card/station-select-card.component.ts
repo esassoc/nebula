@@ -16,8 +16,6 @@ import './leaflet.topojson.js'
 import { WatershedService } from '../../generated';
 import DateRangeHelpers from 'src/app/shared/helpers/date-range-helpers';
 
-declare let $: any;
-
 @Component({
     selector: 'station-select-card',
     templateUrl: './station-select-card.component.html',
@@ -49,8 +47,6 @@ export class StationSelectCardComponent implements OnInit, AfterViewInit {
   public disableAddingVariables: boolean = false;
   @Input()
   public mapHeight: string = '500px';
-  @Input()
-  public layerControlOpen: boolean = false;
   @Input()
   public defaultMapZoom = 12;
   @Input()
@@ -471,7 +467,6 @@ export class StationSelectCardComponent implements OnInit, AfterViewInit {
 
     //to handle click for select area vs double click for zoom
     this.map.on('click', (event: L.LeafletEvent) => {
-      this.layerControlOpen = false;
       if (dblClickTimer !== null) {
         return;
       }
@@ -484,11 +479,6 @@ export class StationSelectCardComponent implements OnInit, AfterViewInit {
       dblClickTimer = null;
       this.map.zoomIn();
     })
-
-    $('.leaflet-control-layers').hover(
-      () => { this.layerControlOpen = true; },
-      () => { this.layerControlOpen = false; }
-    );
   }
 
   //fitBounds will use it's default zoom level over what is sent in
