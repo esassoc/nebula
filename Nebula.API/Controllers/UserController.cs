@@ -46,9 +46,11 @@ namespace Nebula.API.Controllers
             var userDto = EFModels.Entities.User.GetByGlobalUserID(_dbContext, globalID) ?? EFModels.Entities.User.GetByEmail(_dbContext, email);  // get by globalid or email
             if (userDto == null)
             {
-                var firstName = claims?.Claims.SingleOrDefault(c => c.Type == ClaimsConstants.GivenName)?.Value;
-                var lastName = claims?.Claims.SingleOrDefault(c => c.Type == ClaimsConstants.FamilyName)?.Value;
-                var loginName = claims?.Claims.SingleOrDefault(c => c.Type == "nickname")?.Value;
+                // FirstOrDefault, not SingleOrDefault: the latter throws on a duplicate claim type,
+                // which an Auth0 Action can produce. Trimmed so "" and "   " behave the same.
+                var firstName = claims?.Claims.FirstOrDefault(c => c.Type == ClaimsConstants.GivenName)?.Value?.Trim();
+                var lastName = claims?.Claims.FirstOrDefault(c => c.Type == ClaimsConstants.FamilyName)?.Value?.Trim();
+                var loginName = claims?.Claims.FirstOrDefault(c => c.Type == "nickname")?.Value?.Trim();
                 var userCreateDto = new UserCreateDto()
                 {
                     FirstName = firstName ?? "First",
