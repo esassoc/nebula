@@ -12,6 +12,7 @@ using Nebula.Models.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Mail;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -133,30 +134,18 @@ namespace Nebula.API.Controllers
         }
 
         [HttpGet("users/{userID}")]
-        [UserViewFeature]
+        [LoggedInUnclassifiedFeature]
         public ActionResult<UserDto> GetByUserID([FromRoute] int userID)
         {
+            // any signed-in user may read their own record; only an Admin may read anyone else's
+            var callingUser = UserContext.GetUserFromHttpContext(_dbContext, HttpContext);
+            if (!UserRecordAccess.IsSelfOrAdmin(callingUser, userID))
+            {
+                return StatusCode((int) HttpStatusCode.Forbidden);
+            }
+
             var userDto = EFModels.Entities.User.GetByUserID(_dbContext, userID);
             return RequireNotNullThrowNotFound(userDto, "User", userID);
-        }
-
-        [HttpGet("user-claims/{globalID}")]
-        public ActionResult<UserDto> GetByGlobalID([FromRoute] string globalID)
-        {
-            if (!string.IsNullOrWhiteSpace(globalID))
-            {
-                return BadRequest();
-            }
-
-            var userDto = EFModels.Entities.User.GetByGlobalUserID(_dbContext, globalID);
-            if (userDto == null)
-            {
-                var notFoundMessage = $"User with GUID {globalID} does not exist!";
-                _logger.LogError(notFoundMessage);
-                return NotFound(notFoundMessage);
-            }
-
-            return Ok(userDto);
         }
 
         [HttpPut("users/{userID}")]
@@ -188,15 +177,17 @@ namespace Nebula.API.Controllers
         }
 
         [HttpPut("users/set-disclaimer-acknowledged-date")]
-        public ActionResult<UserDto> SetDisclaimerAcknowledgedDate([FromBody] int userID)
+        [LoggedInUnclassifiedFeature]
+        public ActionResult<UserDto> SetDisclaimerAcknowledgedDate()
         {
-            var userDto = EFModels.Entities.User.GetByUserID(_dbContext, userID);
-            if (ThrowNotFound(userDto, "User", userID, out var actionResult))
+            // a user acknowledges the disclaimer for themselves only, so the caller comes from the token, never the request
+            var callingUser = UserContext.GetUserFromHttpContext(_dbContext, HttpContext);
+            if (callingUser == null)
             {
-                return actionResult;
+                return StatusCode((int) HttpStatusCode.Forbidden);
             }
 
-            var updatedUserDto = EFModels.Entities.User.SetDisclaimerAcknowledgedDate(_dbContext, userID);
+            var updatedUserDto = EFModels.Entities.User.SetDisclaimerAcknowledgedDate(_dbContext, callingUser.UserID);
             return Ok(updatedUserDto);
         }
 
