@@ -44,7 +44,7 @@ export class DisclaimerComponent implements OnInit {
   }
 
   public setDisclaimerAcknowledged(): void {
-    this.userService.usersSetDisclaimerAcknowledgedDatePut(this.currentUser().UserID).subscribe(x=>{
+    this.userService.usersSetDisclaimerAcknowledgedDatePut().subscribe(x=>{
       this.authenticationService.refreshUserInfo(x);
 
       this.router.navigate([this.returnRoute], {queryParams : JSON.parse(this.returnQueryParams)});

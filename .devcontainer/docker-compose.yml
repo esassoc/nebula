@@ -22,7 +22,7 @@ services:
   # path (docker-compose/docker-compose.override.yml hardcodes
   # c:/git/sitkatech/nebula/..., which only works on one machine).
   nebula.geoserver:
-    image: kartoza/geoserver:2.28.0
+    image: kartoza/geoserver:3.0.1
     environment:
       ENABLE_JSONP: "true"
       CATALINA_OPTS: "-DALLOW_ENV_PARAMETRIZATION=true"

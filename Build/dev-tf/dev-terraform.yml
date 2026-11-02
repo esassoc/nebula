@@ -7,7 +7,6 @@
 # BEFORE FIRST RUN -- supply these (Azure DevOps variable group / library);
 # they are intentionally NOT in the repo:
 #   - azureSubscription ........... service-connection name (as the main pipeline)
-#   - devReaderGroupObjectId ...... AAD group object id for the dev team (or "")
 #   - secretSendGridApiKey ........ (secret) dev SendGrid key (optional)
 #
 # PREREQ, same as the deployed vaults: the pipeline SP needs "Role Based Access
@@ -19,6 +18,13 @@ trigger: none
 
 variables:
   team: 'h2o'
+  # The dev team's AAD group, granted Key Vault Secrets User on the dev vault and Reader
+  # on the dev resource group. (No Storage Blob Data Contributor: nebula has no dev storage
+  # account -- see Build/dev-tf/Main.tf.)
+  # An object id is an identifier, not a secret, and this group is the same across ESA's
+  # h2o apps -- so it lives here rather than as a pipeline variable someone has to
+  # remember to set. Matches ltinfo and projectfirma2.
+  devReaderGroupObjectId: 'c17266ef-57de-4cb9-b505-80a1eeccec60'   # H2O QA Group
   projectNumber: 'D020211956.00'
   environment: 'dev'
   # tfstate backend -- the dev tfstate account mirrors the main pipeline's

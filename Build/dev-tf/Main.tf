@@ -136,15 +136,46 @@ resource "time_sleep" "kv_rbac_propagation" {
 
 # Developers read the dev vault with their own `az login` identity.
 resource "azurerm_role_assignment" "dev_group_secrets_user" {
-  count                = var.devReaderGroupObjectId != "" ? 1 : 0
+  count                = var.devReaderGroupObjectId != "" && !can(regex("^[$][(]", var.devReaderGroupObjectId)) ? 1 : 0
   scope                = azurerm_key_vault.dev.id
   role_definition_name = "Key Vault Secrets User"
   principal_id         = var.devReaderGroupObjectId
 }
 
+# Dev's half of the access matrix in nebula.tf, which puts H2O QA in QA and dev.
+# What the group gets here is deliberately NOT uniform:
+#
+#   Key Vault       Secrets User          read only -- see below
+#   resource group  Reader                read only
+#
+# The vault stays read-only on purpose. The pipeline SP holds Secrets Officer and
+# is what seeds these secrets; a developer only ever reads them at runtime through
+# `az login` + DefaultAzureCredential. Nothing here needs a person writing dev
+# secrets by hand, so do not "align" this to the Officer grant the QA vault gives
+# the same group.
+#
+# Without the RG Reader, opening a resource in this group in the portal fails
+# outright with 'does not have authorization to perform action .../read': the H2O
+# groups' only subscription-scope grant is Security Reader, whose 14 actions cover
+# Microsoft.Security/* and resourceGroups/read but nothing else. Diagnosed on
+# ltinfo; see esassoc/ltinfo#317.
+resource "azurerm_role_assignment" "dev_group_rg_reader" {
+  count                = var.devReaderGroupObjectId != "" && !can(regex("^[$][(]", var.devReaderGroupObjectId)) ? 1 : 0
+  scope                = azurerm_resource_group.dev.id
+  role_definition_name = "Reader"
+  principal_id         = var.devReaderGroupObjectId
+}
+
 # --- Seeded secrets ----------------------------------------------------------
+# Azure DevOps substitutes an UNDEFINED $(name) macro as the LITERAL text "$(name)" rather
+# than as an empty string, and dev-terraform.yml passes these vars unconditionally. A bare
+# `!= ""` guard therefore passes for a variable never defined on the pipeline definition,
+# and Terraform seeds that literal into the vault as a junk secret. The guard below also
+# rejects anything still shaped like a macro, so an undefined variable is skipped exactly
+# as an empty one is. can(regex(...)) rather than a bare regex(): regex() raises an error
+# on a non-match, so it needs can() to yield a boolean instead of failing the plan.
 resource "azurerm_key_vault_secret" "sendGridApiKey" {
-  count        = var.secretSendGridApiKey != "" ? 1 : 0
+  count        = var.secretSendGridApiKey != "" && !can(regex("^[$][(]", var.secretSendGridApiKey)) ? 1 : 0
   name         = "SendGridApiKey"
   value        = var.secretSendGridApiKey
   key_vault_id = azurerm_key_vault.dev.id
