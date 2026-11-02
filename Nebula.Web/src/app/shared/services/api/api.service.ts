@@ -4,6 +4,7 @@ import { Observable, throwError as _throw } from 'rxjs';
 import { BusyService } from '../busy/busy.service';
 import { AlertService } from '../alert.service';
 import { Alert } from 'src/app/shared/models/alert';
+import { isAuth0SessionRejected } from '../../helpers/auth0-session-helpers';
 
 
 @Injectable({
@@ -27,7 +28,8 @@ export class ApiService {
       this.busyService.setBusy(false);
     }
 
-    if (!supressErrorMessage) {
+    // A rejected Auth0 session never reached the API: AuthenticationService clears it and tells the user once.
+    if (!supressErrorMessage && !isAuth0SessionRejected(error)) {
       if (error && (error.status === 401)) {
         this.alertService.pushAlert(new Alert('Access token expired...'));
       } else if (error && (error.status === 403)) {

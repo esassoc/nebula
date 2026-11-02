@@ -10,6 +10,7 @@ import { UserDto, UserService } from '../shared/generated';
 import { Router } from '@angular/router';
 import { RoleEnum } from '../shared/generated/enum/role-enum';
 import { HttpErrorResponse } from '@angular/common/http';
+import { isAuth0SessionRejected } from '../shared/helpers/auth0-session-helpers';
 
 @Injectable({
   providedIn: 'root',
@@ -52,9 +53,12 @@ export class AuthenticationService {
               // The route guards already keyed off currentUser, so access
               // control was never affected; this only realigns the chrome.
               this.hasClaims = false;
-              this.alertService.pushAlert(new Alert(
-                'We could not load your account. Please try signing in again, or contact support if this continues.',
-                AlertContext.Danger));
+              // A rejected session is reported (and cleared) by auth.error$ below; a second alert would repeat it.
+              if (!isAuth0SessionRejected(error)) {
+                this.alertService.pushAlert(new Alert(
+                  'We could not load your account. Please try signing in again, or contact support if this continues.',
+                  AlertContext.Danger));
+              }
               return of(null);
             }),
           );
@@ -67,9 +71,20 @@ export class AuthenticationService {
 
     this.auth.error$.subscribe((err: HttpErrorResponse) => {
       console.error('Auth0 Error:', err);
+      if (isAuth0SessionRejected(err)) {
+        // The stored refresh token is dead but the cached ID token still reads as signed in, so each
+        // failed token fetch refreshes the auth state, re-emits the same claims and calls /user-claims
+        // again -- an endless loop of alerts. Dropping the local session (no redirect) ends it.
+        this.alertService.pushAlert(new Alert('Your session has expired. Please sign in again.',
+          AlertContext.Info, true, AuthenticationService.SESSION_EXPIRED));
+        this.auth.logout({ openUrl: false }).subscribe();
+        return;
+      }
       this.alertService.pushAlert(new Alert(`An error occurred during authentication: ${err.message}`, AlertContext.Danger));
     });
   }
+
+  private static readonly SESSION_EXPIRED = 'SessionExpired';
 
   public login() {
     this.auth.loginWithRedirect();
